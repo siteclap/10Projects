@@ -37,6 +37,7 @@ class Plugin {
     public function init() {
         self::$instance = $this;
 
+        $this->setup_cors();
         $this->register_cpts();
         $this->register_taxonomies();
         $this->register_services();
@@ -53,6 +54,16 @@ class Plugin {
 
         // Check DB version on admin init.
         add_action( 'admin_init', array( $this, 'check_db_version' ) );
+
+        // ISR revalidation on CPT save.
+        $this->register_isr_hooks();
+    }
+
+    /**
+     * Initialize CORS handler for headless frontend.
+     */
+    private function setup_cors() {
+        new CORS();
     }
 
     /**
@@ -250,5 +261,95 @@ class Plugin {
             $db_manager->run_migrations();
             update_option( 'tp_db_version', TP_DB_VERSION );
         }
+    }
+
+    /**
+     * Register save_post hooks for ISR revalidation on CPT updates.
+     *
+     * When a supported CPT is published or updated, a non-blocking POST
+     * request is sent to the Next.js revalidation endpoint so that
+     * statically-generated pages are refreshed without a full rebuild.
+     */
+    private function register_isr_hooks() {
+        $cpt_types = array(
+            'tp_project',
+            'tp_developer',
+            'tp_location',
+            'tp_guide',
+        );
+
+        foreach ( $cpt_types as $cpt ) {
+            add_action( "save_post_{$cpt}", array( $this, 'trigger_isr_revalidation' ), 20, 2 );
+        }
+    }
+
+    /**
+     * Send a non-blocking revalidation request to the Next.js frontend.
+     *
+     * Only fires for published posts. Uses wp_remote_post with a 0.01s
+     * timeout and blocking disabled so the WordPress admin does not wait
+     * for the Next.js response.
+     *
+     * @param int      $post_id Post ID being saved.
+     * @param \WP_Post $post    Post object being saved.
+     */
+    public function trigger_isr_revalidation( $post_id, $post ) {
+        // Bail on autosaves and revisions.
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return;
+        }
+
+        if ( wp_is_post_revision( $post_id ) ) {
+            return;
+        }
+
+        // Only revalidate published posts.
+        if ( 'publish' !== $post->post_status ) {
+            return;
+        }
+
+        $revalidate_url = defined( 'TP_NEXTJS_REVALIDATE_URL' )
+            ? TP_NEXTJS_REVALIDATE_URL
+            : '';
+
+        $revalidate_secret = defined( 'TP_NEXTJS_REVALIDATE_SECRET' )
+            ? TP_NEXTJS_REVALIDATE_SECRET
+            : '';
+
+        if ( empty( $revalidate_url ) || empty( $revalidate_secret ) ) {
+            return;
+        }
+
+        $slug      = $post->post_name;
+        $post_type = $post->post_type;
+
+        // Build the explicit path for project pages (location/project).
+        $path = null;
+        if ( 'tp_project' === $post_type ) {
+            $locations = wp_get_post_terms( $post_id, 'tp_location', array( 'fields' => 'slugs' ) );
+            if ( ! is_wp_error( $locations ) && ! empty( $locations ) ) {
+                $path = '/navi-mumbai/' . $locations[0] . '/' . $slug;
+            }
+        }
+
+        $body = array(
+            'secret' => $revalidate_secret,
+            'type'   => $post_type,
+            'slug'   => $slug,
+        );
+
+        if ( $path ) {
+            $body['path'] = $path;
+        }
+
+        // Non-blocking request — fire and forget.
+        wp_remote_post( $revalidate_url, array(
+            'body'     => wp_json_encode( $body ),
+            'headers'  => array(
+                'Content-Type' => 'application/json',
+            ),
+            'timeout'  => 0.01,
+            'blocking' => false,
+        ) );
     }
 }

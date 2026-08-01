@@ -1,0 +1,20 @@
+export const ROUTES = {
+  HOME: '/',
+  ASSESSMENT: '/start',
+  RESULTS: (sessionUuid: string) => `/results/${sessionUuid}`,
+  COMPARE: '/compare',
+  DASHBOARD: '/dashboard',
+  DASHBOARD_SAVED: '/dashboard/saved',
+  DASHBOARD_ASSESSMENTS: '/dashboard/assessments',
+  DASHBOARD_SITE_VISITS: '/dashboard/site-visits',
+  METHODOLOGY: '/methodology',
+  PROJECTS: '/projects',
+  PROJECT: (location: string, project: string) =>
+    `/navi-mumbai/${location}/${project}`,
+  LOCATION: (location: string) => `/navi-mumbai/${location}`,
+  CITY: '/navi-mumbai',
+  DEVELOPERS: '/developers',
+  DEVELOPER: (slug: string) => `/developers/${slug}`,
+  GUIDES: '/guides',
+  GUIDE: (slug: string) => `/guides/${slug}`,
+} as const;
