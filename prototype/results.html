@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Top 5 Results — 10Projects</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    @media (max-width: 768px) {
+      .result-card { flex-direction: column !important; }
+      .result-card__image { width: 100% !important; height: 200px !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Prototype Nav -->
+<nav class="proto-nav">
+  <a href="index.html">Homepage</a>
+  <a href="assessment.html">AI Chat</a>
+  <a href="results.html" class="active">Results</a>
+  <a href="project.html">Project Detail</a>
+</nav>
+
+<!-- ====== HEADER ====== -->
+<header class="header">
+  <div class="container header__inner">
+    <a href="index.html" class="header__logo">
+      <div class="header__logo-mark">10</div>
+      <span class="header__logo-text">Projects</span>
+    </a>
+    <ul class="header__nav">
+      <li><a href="#">Locations</a></li>
+      <li><a href="#">How It Works</a></li>
+      <li><a href="#">About</a></li>
+    </ul>
+    <div class="header__actions">
+      <a href="#" class="btn btn--ghost btn--sm">Login</a>
+      <a href="assessment.html" class="btn btn--primary btn--sm">Find My 10</a>
+    </div>
+  </div>
+</header>
+
+<!-- ====== RESULTS HEADER ====== -->
+<div class="results-header">
+  <div class="container">
+    <h1 class="results-header__title">Your Top 5 Results</h1>
+    <p class="results-header__meta">We analysed 147 projects in Kharghar &amp; Upper Kharghar against your requirements.</p>
+    <div class="results-header__accuracy">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      Match Accuracy: 72% &mdash; <a href="assessment.html" style="color: var(--brand-primary); font-weight: 600;">Answer 4 more to reach 92%</a>
+    </div>
+
+    <!-- Requirements Summary -->
+    <div class="requirements-summary">
+      <div class="requirements-summary__title">Your Requirements</div>
+      <div class="requirements-summary__content">
+        2 BHK &bull; Kharghar, Upper Kharghar &bull; &#8377;75L–&#8377;1Cr &bull; Near railway station
+      </div>
+      <div class="requirements-summary__actions">
+        <a href="assessment.html" class="btn btn--secondary btn--sm">Edit Requirements</a>
+        <button class="btn btn--ghost btn--sm" style="font-size: 13px;">Re-run analysis</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== RESULTS LIST ====== -->
+<section class="section" style="padding-top: 32px; background: var(--bg-section-alt);">
+  <div class="container">
+
+    <!-- Phase 2 CTA Banner -->
+    <div class="phase-cta">
+      <div class="phase-cta__title">Want better results? Answer 4 more questions.</div>
+      <div class="phase-cta__desc">Add your purpose, timeline, funding, and priorities to improve accuracy from 72% to 92% and unlock your Top 10.</div>
+      <a href="assessment.html" class="btn btn--primary btn--sm">Improve My Match &rarr;</a>
+    </div>
+
+    <!-- Result Cards -->
+    <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 28px;">
+
+      <!-- Result #1 -->
+      <div class="result-card">
+        <div class="result-card__image" style="width: 300px;">
+          <div class="project-card__badges">
+            <span class="project-card__badge project-card__badge--rank">#1</span>
+            <span class="project-card__badge project-card__badge--verified">10P Verified</span>
+          </div>
+          Project Image
+        </div>
+        <div class="result-card__body">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <div>
+              <div style="font-size: 20px; font-weight: 700; color: var(--gray-900);">Skyline Heights</div>
+              <div style="font-size: 14px; color: var(--gray-500);">ABC Realty &bull; Kharghar, Navi Mumbai</div>
+            </div>
+            <div class="fit-badge fit-badge--static">
+              <span class="fit-badge__score">94</span>
+              <span class="fit-badge__label">Fit</span>
+            </div>
+          </div>
+
+          <div class="emi-display">
+            <div class="emi-display__primary">EMI from &#8377;56,000/month*</div>
+            <div class="emi-display__secondary">All-in cost: &#8377;88L–&#8377;98L &bull; 2 BHK &bull; 680 sq ft</div>
+            <div class="emi-display__vs">&#10003; Under your comfort by &#8377;9,000/month</div>
+          </div>
+
+          <div class="project-card__tags">
+            <span class="project-card__tag project-card__tag--positive">&#10003; 1.2 km from station</span>
+            <span class="project-card__tag project-card__tag--positive">&#10003; 85% track record</span>
+            <span class="project-card__tag project-card__tag--warning">Dec 2028 (2+ years)</span>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: center; margin-top: 12px;">
+            <div style="flex: 1;">
+              <div class="advisor-card">
+                <div class="advisor-card__avatar">SK</div>
+                <div class="advisor-card__info">
+                  <div class="advisor-card__name">Sunil K.</div>
+                  <div class="advisor-card__role">Property Advisor &bull; <span class="advisor-card__rating">&#9733; 4.6</span></div>
+                </div>
+                <a href="project.html" class="advisor-card__cta">View Details</a>
+              </div>
+            </div>
+            <button class="btn btn--secondary btn--sm">Compare</button>
+            <button class="btn btn--secondary btn--sm">&#9825;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result #2 -->
+      <div class="result-card">
+        <div class="result-card__image" style="width: 300px; background: linear-gradient(135deg, #D1FAE5, #ECFDF5);">
+          <div class="project-card__badges">
+            <span class="project-card__badge project-card__badge--rank">#2</span>
+          </div>
+          Project Image
+        </div>
+        <div class="result-card__body">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <div>
+              <div style="font-size: 20px; font-weight: 700; color: var(--gray-900);">Green Valley Residences</div>
+              <div style="font-size: 14px; color: var(--gray-500);">XYZ Developers &bull; Kharghar, Navi Mumbai</div>
+            </div>
+            <div class="fit-badge fit-badge--static">
+              <span class="fit-badge__score">89</span>
+              <span class="fit-badge__label">Fit</span>
+            </div>
+          </div>
+
+          <div class="emi-display">
+            <div class="emi-display__primary">EMI from &#8377;48,000/month*</div>
+            <div class="emi-display__secondary">All-in cost: &#8377;75L–&#8377;85L &bull; 2 BHK &bull; 620 sq ft</div>
+            <div class="emi-display__vs">&#10003; Under your comfort by &#8377;17,000/month</div>
+          </div>
+
+          <div class="project-card__tags">
+            <span class="project-card__tag project-card__tag--positive">&#10003; Well within budget</span>
+            <span class="project-card__tag project-card__tag--positive">&#10003; RERA registered</span>
+            <span class="project-card__tag project-card__tag--warning">2.5 km from station</span>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: center; margin-top: 12px;">
+            <div style="flex: 1;">
+              <div class="advisor-card">
+                <div class="advisor-card__avatar">RP</div>
+                <div class="advisor-card__info">
+                  <div class="advisor-card__name">Riya P.</div>
+                  <div class="advisor-card__role">Property Advisor &bull; <span class="advisor-card__rating">&#9733; 4.8</span></div>
+                </div>
+                <a href="project.html" class="advisor-card__cta">View Details</a>
+              </div>
+            </div>
+            <button class="btn btn--secondary btn--sm">Compare</button>
+            <button class="btn btn--secondary btn--sm">&#9825;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result #3 -->
+      <div class="result-card">
+        <div class="result-card__image" style="width: 300px; background: linear-gradient(135deg, #FEF3C7, #FFFBEB);">
+          <div class="project-card__badges">
+            <span class="project-card__badge project-card__badge--rank">#3</span>
+            <span class="project-card__badge project-card__badge--new">New Launch</span>
+          </div>
+          Project Image
+        </div>
+        <div class="result-card__body">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <div>
+              <div style="font-size: 20px; font-weight: 700; color: var(--gray-900);">Palm Residency</div>
+              <div style="font-size: 14px; color: var(--gray-500);">LMN Constructions &bull; Upper Kharghar</div>
+            </div>
+            <div class="fit-badge fit-badge--static fit-badge--good">
+              <span class="fit-badge__score">82</span>
+              <span class="fit-badge__label">Fit</span>
+            </div>
+          </div>
+          <div class="emi-display">
+            <div class="emi-display__primary">EMI from &#8377;62,000/month*</div>
+            <div class="emi-display__secondary">All-in cost: &#8377;92L–&#8377;1.1Cr &bull; 2 BHK &bull; 720 sq ft</div>
+          </div>
+          <div class="project-card__tags">
+            <span class="project-card__tag project-card__tag--positive">&#10003; Near airport</span>
+            <span class="project-card__tag project-card__tag--warning">Slightly over budget</span>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center; margin-top: 12px;">
+            <div style="flex: 1;">
+              <div class="advisor-card">
+                <div class="advisor-card__avatar">AK</div>
+                <div class="advisor-card__info">
+                  <div class="advisor-card__name">Amit K.</div>
+                  <div class="advisor-card__role">Property Advisor &bull; <span class="advisor-card__rating">&#9733; 4.5</span></div>
+                </div>
+                <a href="project.html" class="advisor-card__cta">View Details</a>
+              </div>
+            </div>
+            <button class="btn btn--secondary btn--sm">Compare</button>
+            <button class="btn btn--secondary btn--sm">&#9825;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result #4 -->
+      <div class="result-card">
+        <div class="result-card__image" style="width: 300px; background: linear-gradient(135deg, #E5E7EB, #F3F4F6);">
+          <div class="project-card__badges">
+            <span class="project-card__badge project-card__badge--rank">#4</span>
+          </div>
+          Project Image
+        </div>
+        <div class="result-card__body">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <div>
+              <div style="font-size: 20px; font-weight: 700; color: var(--gray-900);">Horizon Towers</div>
+              <div style="font-size: 14px; color: var(--gray-500);">RST Group &bull; Kharghar Sector 35</div>
+            </div>
+            <div class="fit-badge fit-badge--static fit-badge--good">
+              <span class="fit-badge__score">78</span>
+              <span class="fit-badge__label">Fit</span>
+            </div>
+          </div>
+          <div class="emi-display">
+            <div class="emi-display__primary">EMI from &#8377;52,000/month*</div>
+            <div class="emi-display__secondary">All-in cost: &#8377;82L–&#8377;90L &bull; 2 BHK &bull; 650 sq ft</div>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center; margin-top: 12px;">
+            <div style="flex: 1;">
+              <div class="advisor-card">
+                <div class="advisor-card__avatar">PD</div>
+                <div class="advisor-card__info">
+                  <div class="advisor-card__name">Priya D.</div>
+                  <div class="advisor-card__role">Property Advisor &bull; <span class="advisor-card__rating">&#9733; 4.7</span></div>
+                </div>
+                <a href="project.html" class="advisor-card__cta">View Details</a>
+              </div>
+            </div>
+            <button class="btn btn--secondary btn--sm">Compare</button>
+            <button class="btn btn--secondary btn--sm">&#9825;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result #5 -->
+      <div class="result-card">
+        <div class="result-card__image" style="width: 300px; background: linear-gradient(135deg, #E5E7EB, #F3F4F6);">
+          <div class="project-card__badges">
+            <span class="project-card__badge project-card__badge--rank">#5</span>
+          </div>
+          Project Image
+        </div>
+        <div class="result-card__body">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <div>
+              <div style="font-size: 20px; font-weight: 700; color: var(--gray-900);">Lake View Heights</div>
+              <div style="font-size: 14px; color: var(--gray-500);">UVW Realty &bull; Upper Kharghar</div>
+            </div>
+            <div class="fit-badge fit-badge--static fit-badge--good">
+              <span class="fit-badge__score">74</span>
+              <span class="fit-badge__label">Fit</span>
+            </div>
+          </div>
+          <div class="emi-display">
+            <div class="emi-display__primary">EMI from &#8377;58,000/month*</div>
+            <div class="emi-display__secondary">All-in cost: &#8377;85L–&#8377;95L &bull; 2 BHK &bull; 690 sq ft</div>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center; margin-top: 12px;">
+            <div style="flex: 1;">
+              <div class="advisor-card">
+                <div class="advisor-card__avatar">VT</div>
+                <div class="advisor-card__info">
+                  <div class="advisor-card__name">Vishal T.</div>
+                  <div class="advisor-card__role">Property Advisor &bull; <span class="advisor-card__rating">&#9733; 4.2</span></div>
+                </div>
+                <a href="project.html" class="advisor-card__cta">View Details</a>
+              </div>
+            </div>
+            <button class="btn btn--secondary btn--sm">Compare</button>
+            <button class="btn btn--secondary btn--sm">&#9825;</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Phase 2 CTA -->
+    <div class="phase-cta" style="margin-top: 28px;">
+      <div class="phase-cta__title">Unlock Your Top 10 &mdash; Answer 4 More Questions</div>
+      <div class="phase-cta__desc">Add purpose, timeline, funding type, and your top 3 priorities. Takes 60 seconds.</div>
+      <a href="assessment.html" class="btn btn--primary">Continue to Better Match &rarr;</a>
+    </div>
+
+    <!-- What Next -->
+    <div style="background: var(--white); border: 1px solid var(--gray-200); border-radius: 16px; padding: 28px; margin-top: 28px;">
+      <div style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">What would you like to do?</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+        <button class="btn btn--secondary btn--sm">Compare Top 3</button>
+        <button class="btn btn--whatsapp btn--sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.613.613l4.458-1.495A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+          Share via WhatsApp
+        </button>
+        <button class="btn btn--secondary btn--sm">Talk to an Advisor</button>
+        <button class="btn btn--secondary btn--sm">Book a Site Visit</button>
+      </div>
+    </div>
+
+    <div class="text-center mt-xl">
+      <p class="text-sm text-muted">Not finding what you need? <a href="assessment.html">Update requirements</a> &bull; <a href="#">Browse all projects</a></p>
+      <p class="text-xs text-muted mt-sm">*EMI at 80% loan, 8.5% interest, 20 years. Verify with your bank.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ====== FOOTER ====== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__bottom" style="border-top: none; padding-top: 0;">
+      <span>&copy; 2026 10Projects.com</span>
+      <span>Prices are indicative. Verify before booking.</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

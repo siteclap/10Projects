@@ -1,0 +1,17 @@
+{
+    "name": "tenprojects/ai-matcher",
+    "description": "10Projects AI-powered real estate matching engine",
+    "type": "wordpress-plugin",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "TenProjects\\": "includes/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "tenprojects/emi-calculator",
+    "title": "EMI Calculator",
+    "category": "tenprojects",
+    "icon": "calculator",
+    "description": "Interactive EMI calculator widget with loan amount, interest rate, and tenure sliders.",
+    "textdomain": "tenprojects",
+    "attributes": {
+        "default_amount": {
+            "type": "number",
+            "default": 7500000
+        },
+        "default_rate": {
+            "type": "number",
+            "default": 8.5
+        },
+        "default_tenure": {
+            "type": "number",
+            "default": 20
+        }
+    },
+    "supports": {
+        "html": false,
+        "align": true
+    },
+    "render": "file:./render.php",
+    "editorScript": "file:./edit.js"
+}

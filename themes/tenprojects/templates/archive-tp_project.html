@@ -1,0 +1,167 @@
+<!-- wp:template-part {"slug":"header","area":"header"} /-->
+
+<!-- Page Header -->
+<!-- wp:group {"className":"section section--white","style":{"spacing":{"padding":{"top":"var:preset|spacing|3-xl","bottom":"var:preset|spacing|xl"}}},"layout":{"type":"constrained","contentSize":"1280px"}} -->
+<div class="wp-block-group section section--white" style="padding-top:var(--wp--preset--spacing--3-xl);padding-bottom:var(--wp--preset--spacing--xl)">
+    <!-- wp:heading {"level":1,"className":"section__title"} -->
+    <h1 class="wp-block-heading section__title">Explore Projects</h1>
+    <!-- /wp:heading -->
+    <!-- wp:paragraph {"className":"section__subtitle"} -->
+    <p class="section__subtitle">Browse all verified projects across Navi Mumbai, Mumbai, and Thane</p>
+    <!-- /wp:paragraph -->
+</div>
+<!-- /wp:group -->
+
+<!-- Filter Bar -->
+<!-- wp:group {"className":"archive-filters","layout":{"type":"default"}} -->
+<div class="wp-block-group archive-filters">
+    <!-- wp:group {"className":"container","layout":{"type":"default"}} -->
+    <div class="wp-block-group container">
+        <!-- wp:html -->
+        <div class="filter-bar" id="tp-filter-bar">
+            <div class="filter-bar__inner">
+
+                <!-- City Filter -->
+                <div class="filter-item">
+                    <label class="filter-item__label" for="tp-filter-city">City</label>
+                    <select class="filter-item__select" id="tp-filter-city" name="city">
+                        <option value="">All Cities</option>
+                        <option value="navi-mumbai">Navi Mumbai</option>
+                        <option value="mumbai">Mumbai</option>
+                        <option value="thane">Thane</option>
+                        <option value="pune">Pune</option>
+                    </select>
+                </div>
+
+                <!-- Location Filter -->
+                <div class="filter-item">
+                    <label class="filter-item__label" for="tp-filter-location">Location</label>
+                    <select class="filter-item__select" id="tp-filter-location" name="location">
+                        <option value="">All Locations</option>
+                        <!-- JS populates based on selected city -->
+                    </select>
+                </div>
+
+                <!-- Configuration Filter -->
+                <div class="filter-item">
+                    <label class="filter-item__label" for="tp-filter-config">Configuration</label>
+                    <select class="filter-item__select" id="tp-filter-config" name="config">
+                        <option value="">All Configs</option>
+                        <option value="1bhk">1 BHK</option>
+                        <option value="2bhk">2 BHK</option>
+                        <option value="3bhk">3 BHK</option>
+                        <option value="4bhk">4 BHK</option>
+                        <option value="5bhk">5+ BHK</option>
+                    </select>
+                </div>
+
+                <!-- Budget Filter -->
+                <div class="filter-item">
+                    <label class="filter-item__label" for="tp-filter-budget">Budget</label>
+                    <select class="filter-item__select" id="tp-filter-budget" name="budget">
+                        <option value="">Any Budget</option>
+                        <option value="0-5000000">Under 50 L</option>
+                        <option value="5000000-10000000">50 L - 1 Cr</option>
+                        <option value="10000000-20000000">1 Cr - 2 Cr</option>
+                        <option value="20000000-50000000">2 Cr - 5 Cr</option>
+                        <option value="50000000-0">5 Cr+</option>
+                    </select>
+                </div>
+
+                <!-- Construction Stage Filter -->
+                <div class="filter-item">
+                    <label class="filter-item__label" for="tp-filter-stage">Status</label>
+                    <select class="filter-item__select" id="tp-filter-stage" name="stage">
+                        <option value="">All Stages</option>
+                        <option value="new_launch">New Launch</option>
+                        <option value="foundation">Under Construction</option>
+                        <option value="finishing">Nearing Completion</option>
+                        <option value="ready">Ready to Move</option>
+                    </select>
+                </div>
+
+                <!-- Sort -->
+                <div class="filter-item">
+                    <label class="filter-item__label" for="tp-filter-sort">Sort By</label>
+                    <select class="filter-item__select" id="tp-filter-sort" name="sort">
+                        <option value="relevance">Relevance</option>
+                        <option value="price_low">Price: Low to High</option>
+                        <option value="price_high">Price: High to Low</option>
+                        <option value="newest">Newest First</option>
+                        <option value="possession">Possession Date</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <!-- Active Filters -->
+            <div class="filter-bar__active" id="tp-active-filters" style="display:none">
+                <span class="filter-bar__active-label">Active filters:</span>
+                <div class="filter-bar__chips" id="tp-filter-chips">
+                    <!-- JS renders active filter chips -->
+                </div>
+                <button class="btn btn--ghost btn--xs" id="tp-clear-filters">Clear All</button>
+            </div>
+
+            <!-- Results Count -->
+            <div class="filter-bar__count">
+                <span id="tp-results-count">--</span> projects found
+            </div>
+        </div>
+        <!-- /wp:html -->
+    </div>
+    <!-- /wp:group -->
+</div>
+<!-- /wp:group -->
+
+<!-- Project Grid -->
+<!-- wp:group {"className":"section","layout":{"type":"constrained","contentSize":"1280px"}} -->
+<div class="wp-block-group section">
+    <!-- wp:html -->
+    <div class="project-grid" id="tp-project-grid">
+        <!-- JS renders project cards via tp_project_card() AJAX, or initial server render via shortcode below -->
+    </div>
+    <!-- /wp:html -->
+
+    <!-- wp:shortcode -->
+    [tp_project_archive]
+    <!-- /wp:shortcode -->
+
+    <!-- Pagination -->
+    <!-- wp:html -->
+    <nav class="archive-pagination" id="tp-pagination" aria-label="Project listing pagination">
+        <!-- JS renders pagination controls -->
+    </nav>
+    <!-- /wp:html -->
+</div>
+<!-- /wp:group -->
+
+<!-- AI CTA Banner -->
+<!-- wp:group {"className":"cta-section","layout":{"type":"constrained","contentSize":"640px"}} -->
+<div class="wp-block-group cta-section">
+    <!-- wp:heading {"textAlign":"center","className":"cta-section__title"} -->
+    <h2 class="wp-block-heading has-text-align-center cta-section__title">Can't decide? Let AI pick your top 10</h2>
+    <!-- /wp:heading -->
+    <!-- wp:paragraph {"align":"center","className":"cta-section__subtitle"} -->
+    <p class="has-text-align-center cta-section__subtitle">Answer a few quick questions and our AI will rank every project based on what actually matters to you.</p>
+    <!-- /wp:paragraph -->
+    <!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
+    <div class="wp-block-buttons">
+        <!-- wp:button {"className":"btn btn--primary btn--lg"} -->
+        <div class="wp-block-button btn btn--primary btn--lg"><a class="wp-block-button__link wp-element-button" href="/start">Find My Top 10 &mdash; Free</a></div>
+        <!-- /wp:button -->
+    </div>
+    <!-- /wp:buttons -->
+    <!-- wp:html -->
+    <div class="cta-section__trust">
+        <span>No sign-up required</span>
+        <span>&bull;</span>
+        <span>Takes under 2 minutes</span>
+        <span>&bull;</span>
+        <span>100% free</span>
+    </div>
+    <!-- /wp:html -->
+</div>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer","area":"footer"} /-->

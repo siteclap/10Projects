@@ -1,0 +1,164 @@
+<!-- wp:template-part {"slug":"header","area":"header"} /-->
+
+<!-- Comparison Header -->
+<!-- wp:group {"className":"section section--white","style":{"spacing":{"padding":{"top":"var:preset|spacing|2-xl","bottom":"var:preset|spacing|xl"}}},"layout":{"type":"constrained","contentSize":"1280px"}} -->
+<div class="wp-block-group section section--white" style="padding-top:var(--wp--preset--spacing--2-xl);padding-bottom:var(--wp--preset--spacing--xl)">
+    <!-- wp:html -->
+    <div class="compare-header" id="tp-compare-header">
+        <div class="compare-header__info">
+            <h1 class="compare-header__title">Compare Projects</h1>
+            <p class="compare-header__subtitle">Side-by-side comparison across price, location, developer, amenities, and more.</p>
+        </div>
+        <div class="compare-header__actions">
+            <button class="btn btn--secondary btn--sm" id="tp-compare-share">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                Share Comparison
+            </button>
+            <button class="btn btn--secondary btn--sm" id="tp-compare-add" data-max="4">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Project
+            </button>
+        </div>
+    </div>
+    <!-- /wp:html -->
+</div>
+<!-- /wp:group -->
+
+<!-- Comparison Table -->
+<!-- wp:group {"className":"section","layout":{"type":"constrained","contentSize":"1280px"}} -->
+<div class="wp-block-group section">
+    <!-- wp:html -->
+    <div class="compare-wrapper" id="tp-compare-wrapper">
+
+        <!-- Empty state (shown when no projects selected) -->
+        <div class="compare-empty" id="tp-compare-empty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            <h2 class="compare-empty__title">Select projects to compare</h2>
+            <p class="compare-empty__desc">Choose 2 to 4 projects from your saved list or search to start a side-by-side comparison.</p>
+            <div class="compare-empty__actions">
+                <button class="btn btn--primary" id="tp-compare-pick">Choose Projects</button>
+                <a href="/start" class="btn btn--secondary">Or start an AI assessment first</a>
+            </div>
+        </div>
+
+        <!-- Comparison table (JS populated) -->
+        <div class="compare-table-container" id="tp-compare-table-container" style="display:none">
+            <table class="compare-table" id="tp-compare-table">
+                <thead>
+                    <tr class="compare-table__header-row" id="tp-compare-projects-row">
+                        <th class="compare-table__label-cell"></th>
+                        <!-- JS inserts 2-4 project header cells:
+                             <th class="compare-table__project-cell">
+                                 <img src="..." class="compare-table__thumb" />
+                                 <a href="..." class="compare-table__name">Project Name</a>
+                                 <span class="compare-table__location">Kharghar</span>
+                                 <button class="compare-table__remove" data-id="...">Remove</button>
+                             </th>
+                        -->
+                    </tr>
+                </thead>
+                <tbody id="tp-compare-tbody">
+                    <!-- JS renders rows for each category. Rows include:
+
+                    Category: Price
+                    - Starting Price
+                    - Price / sq.ft.
+                    - EMI Estimate
+
+                    Category: Size
+                    - Configurations
+                    - Carpet Area
+                    - Super Built-Up Area
+
+                    Category: Location
+                    - Area / Locality
+                    - Nearest Station
+                    - Highway Distance
+
+                    Category: Developer
+                    - Developer Name
+                    - On-Time Delivery
+                    - Projects Completed
+                    - 10P Rating
+
+                    Category: Legal
+                    - RERA Number
+                    - Construction Stage
+                    - Expected Possession
+
+                    Category: Amenities
+                    - Total Amenities
+                    - Key Amenities List
+
+                    Category: Score (if user has assessment)
+                    - Fit Score
+                    - Top Strength
+                    - Top Consideration
+
+                    Each row structure:
+                    <tr class="compare-table__row">
+                        <td class="compare-table__label">Starting Price</td>
+                        <td class="compare-table__value">₹85 L</td>
+                        <td class="compare-table__value compare-table__value--winner">₹72 L <span class="compare-table__winner-badge">Best</span></td>
+                        <td class="compare-table__value">₹1.1 Cr</td>
+                    </tr>
+
+                    Category headers:
+                    <tr class="compare-table__category">
+                        <td colspan="5">Price</td>
+                    </tr>
+                    -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+    <!-- /wp:html -->
+</div>
+<!-- /wp:group -->
+
+<!-- Highlights Section (JS populated after comparison) -->
+<!-- wp:group {"className":"section section--alt","layout":{"type":"constrained","contentSize":"1280px"}} -->
+<div class="wp-block-group section section--alt">
+    <!-- wp:html -->
+    <div class="compare-highlights" id="tp-compare-highlights" style="display:none">
+        <h2 class="section__title">Quick Highlights</h2>
+        <div class="compare-highlights__grid" id="tp-compare-highlights-grid">
+            <!-- JS renders highlight cards:
+                 <div class="compare-highlight">
+                     <div class="compare-highlight__label">Lowest Price</div>
+                     <div class="compare-highlight__project">Skyline Heights</div>
+                     <div class="compare-highlight__value">₹72 L</div>
+                 </div>
+                 <div class="compare-highlight">
+                     <div class="compare-highlight__label">Best Fit Score</div>
+                     <div class="compare-highlight__project">Green Valley</div>
+                     <div class="compare-highlight__value">92/100</div>
+                 </div>
+            -->
+        </div>
+    </div>
+    <!-- /wp:html -->
+</div>
+<!-- /wp:group -->
+
+<!-- CTA Section -->
+<!-- wp:group {"className":"cta-section","layout":{"type":"constrained","contentSize":"640px"}} -->
+<div class="wp-block-group cta-section">
+    <!-- wp:heading {"textAlign":"center","className":"cta-section__title"} -->
+    <h2 class="wp-block-heading has-text-align-center cta-section__title">Not sure which to pick?</h2>
+    <!-- /wp:heading -->
+    <!-- wp:paragraph {"align":"center","className":"cta-section__subtitle"} -->
+    <p class="has-text-align-center cta-section__subtitle">Let our AI analyse your specific requirements and pick the best one for you in under 2 minutes.</p>
+    <!-- /wp:paragraph -->
+    <!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
+    <div class="wp-block-buttons">
+        <!-- wp:button {"className":"btn btn--primary"} -->
+        <div class="wp-block-button btn btn--primary"><a class="wp-block-button__link wp-element-button" href="/start">Let AI Decide</a></div>
+        <!-- /wp:button -->
+    </div>
+    <!-- /wp:buttons -->
+</div>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer","area":"footer"} /-->

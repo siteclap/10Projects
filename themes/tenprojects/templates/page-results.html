@@ -1,0 +1,169 @@
+<!-- wp:template-part {"slug":"header","area":"header"} /-->
+
+<!-- Results Header -->
+<!-- wp:group {"className":"results-header","layout":{"type":"default"}} -->
+<div class="wp-block-group results-header">
+    <!-- wp:group {"className":"container","layout":{"type":"default"}} -->
+    <div class="wp-block-group container">
+        <!-- wp:html -->
+        <h1 class="results-header__title">Your Top 10 Projects</h1>
+        <p class="results-header__meta">Ranked by AI based on your preferences &bull; <span id="tp-results-date"></span></p>
+
+        <!-- Accuracy Bar -->
+        <div class="results-header__accuracy">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>Match Accuracy: <strong id="tp-results-accuracy">0%</strong></span>
+            <div class="accuracy-bar accuracy-bar--inline">
+                <div id="tp-results-accuracy-fill" class="accuracy-fill" style="width:0%"></div>
+            </div>
+        </div>
+
+        <!-- Requirements Summary -->
+        <div class="requirements-summary" id="tp-requirements-summary">
+            <div class="requirements-summary__title">Your Requirements</div>
+            <div class="requirements-summary__chips" id="tp-requirement-chips">
+                <!-- JS populates chips like: <span class="chip chip--badge chip--rera">2 BHK</span> -->
+            </div>
+            <div class="requirements-summary__actions">
+                <a href="/start" class="btn btn--ghost btn--sm">Refine Preferences</a>
+            </div>
+        </div>
+        <!-- /wp:html -->
+    </div>
+    <!-- /wp:group -->
+</div>
+<!-- /wp:group -->
+
+<!-- Results List -->
+<!-- wp:group {"className":"section","layout":{"type":"constrained","contentSize":"1280px"}} -->
+<div class="wp-block-group section">
+
+    <!-- Improve Results CTA (shown if assessment phases remain) -->
+    <!-- wp:html -->
+    <div class="phase-cta" id="tp-phase-cta" style="display:none">
+        <div class="phase-cta__text">
+            <div class="phase-cta__title">Improve your results</div>
+            <div class="phase-cta__desc">Answer a few more questions to increase match accuracy from <span id="tp-phase-cta-accuracy">72%</span> to ~95%.</div>
+        </div>
+        <a href="/start?resume=1" class="btn btn--primary btn--sm">Continue Assessment</a>
+    </div>
+    <!-- /wp:html -->
+
+    <!-- Ranked Project Cards -->
+    <!-- wp:html -->
+    <div class="results-list" id="tp-results-list">
+        <!-- JS renders ranked result cards here using tp_project_card() via AJAX -->
+        <!-- Skeleton loading state shown initially -->
+        <div class="result-card result-card--skeleton">
+            <div class="result-card__image"></div>
+            <div class="result-card__body">
+                <div class="skeleton-line skeleton-line--short"></div>
+                <div class="skeleton-line skeleton-line--wide"></div>
+                <div class="skeleton-line skeleton-line--medium"></div>
+            </div>
+        </div>
+        <div class="result-card result-card--skeleton">
+            <div class="result-card__image"></div>
+            <div class="result-card__body">
+                <div class="skeleton-line skeleton-line--short"></div>
+                <div class="skeleton-line skeleton-line--wide"></div>
+                <div class="skeleton-line skeleton-line--medium"></div>
+            </div>
+        </div>
+        <div class="result-card result-card--skeleton">
+            <div class="result-card__image"></div>
+            <div class="result-card__body">
+                <div class="skeleton-line skeleton-line--short"></div>
+                <div class="skeleton-line skeleton-line--wide"></div>
+                <div class="skeleton-line skeleton-line--medium"></div>
+            </div>
+        </div>
+    </div>
+    <!-- /wp:html -->
+
+    <!-- Lead Gate Section -->
+    <!-- wp:html -->
+    <div class="lead-gate" id="tp-lead-gate">
+        <div class="lead-gate__card">
+            <div class="lead-gate__icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <h3 class="lead-gate__title">Unlock Full Details</h3>
+            <p class="lead-gate__desc">Enter your phone number to see exact prices, floor plans, and connect with verified advisors.</p>
+
+            <div class="lead-gate__form">
+                <div class="lead-gate__input-group">
+                    <span class="lead-gate__prefix">+91</span>
+                    <input type="tel" class="lead-gate__input" id="tp-lead-phone" placeholder="Enter your mobile number" maxlength="10" pattern="[6-9][0-9]{9}" aria-label="Mobile number">
+                </div>
+                <button class="btn btn--primary btn--lg lead-gate__submit" id="tp-lead-submit">View Full Results</button>
+            </div>
+
+            <div class="lead-gate__trust">
+                <div class="lead-gate__trust-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>No spam calls</span>
+                </div>
+                <div class="lead-gate__trust-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Data encrypted</span>
+                </div>
+                <div class="lead-gate__trust-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Unsubscribe anytime</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /wp:html -->
+
+    <!-- Action Panel -->
+    <!-- wp:html -->
+    <div class="action-panel" id="tp-action-panel">
+        <div class="action-panel__title">What would you like to do?</div>
+        <div class="action-panel__grid">
+            <a href="#" class="action-item" id="tp-action-save">
+                <div class="action-item__icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </div>
+                <div class="action-item__label">Save Results</div>
+            </a>
+            <a href="#" class="action-item" id="tp-action-compare">
+                <div class="action-item__icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                </div>
+                <div class="action-item__label">Compare Top 3</div>
+            </a>
+            <a href="#" class="action-item" id="tp-action-share">
+                <div class="action-item__icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                </div>
+                <div class="action-item__label">Share with Family</div>
+            </a>
+        </div>
+    </div>
+    <!-- /wp:html -->
+
+</div>
+<!-- /wp:group -->
+
+<!-- CTA Banner -->
+<!-- wp:group {"className":"cta-section","layout":{"type":"constrained","contentSize":"640px"}} -->
+<div class="wp-block-group cta-section">
+    <!-- wp:heading {"textAlign":"center","className":"cta-section__title"} -->
+    <h2 class="wp-block-heading has-text-align-center cta-section__title">Not finding what you need?</h2>
+    <!-- /wp:heading -->
+    <!-- wp:paragraph {"align":"center","className":"cta-section__subtitle"} -->
+    <p class="has-text-align-center cta-section__subtitle">Refine your preferences or talk to a real estate advisor who specializes in your preferred locations.</p>
+    <!-- /wp:paragraph -->
+    <!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
+    <div class="wp-block-buttons">
+        <!-- wp:button {"className":"btn btn--primary"} -->
+        <div class="wp-block-button btn btn--primary"><a class="wp-block-button__link wp-element-button" href="/start?resume=1">Refine My Results</a></div>
+        <!-- /wp:button -->
+    </div>
+    <!-- /wp:buttons -->
+</div>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer","area":"footer"} /-->

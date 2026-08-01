@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10Projects — Find the 10 projects that fit you best</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Prototype Nav -->
+<nav class="proto-nav">
+  <a href="index.html" class="active">Homepage</a>
+  <a href="assessment.html">AI Chat</a>
+  <a href="results.html">Results</a>
+  <a href="project.html">Project Detail</a>
+</nav>
+
+<!-- ====== HEADER ====== -->
+<header class="header">
+  <div class="container header__inner">
+    <a href="index.html" class="header__logo">
+      <div class="header__logo-mark">10</div>
+      <span class="header__logo-text">Projects</span>
+    </a>
+    <div class="header__center">
+      <div class="city-selector">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Navi Mumbai
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <ul class="header__nav">
+        <li><a href="#">Locations</a></li>
+        <li><a href="#">How It Works</a></li>
+        <li><a href="#">About</a></li>
+      </ul>
+    </div>
+    <div class="header__actions">
+      <a href="#" class="btn btn--ghost btn--sm">Login</a>
+      <a href="assessment.html" class="btn btn--primary btn--sm">Find My 10</a>
+    </div>
+  </div>
+</header>
+
+<!-- ====== HERO ====== -->
+<section class="hero">
+  <div class="container">
+    <div class="hero__inner">
+
+      <!-- Badge -->
+      <div class="hero__badge">
+        <span class="hero__badge-dot"></span>
+        AI-powered property matching
+      </div>
+
+      <!-- Headline -->
+      <h1 class="hero__headline">
+        Find your dream home,<br>
+        <span>intelligently.</span>
+      </h1>
+      <p class="hero__subtitle">
+        India's first AI-powered real estate platform. Tell us what you need — we'll analyse 150+ projects and find the 10 that actually match.
+      </p>
+
+      <!-- Search Bar -->
+      <div class="hero__search">
+        <input type="text" class="hero__search-input" placeholder="Search by location, project, or describe your ideal home...">
+        <button class="hero__search-btn" onclick="window.location='assessment.html'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <p class="hero__search-hint">No sign-up required &bull; Free forever</p>
+      </div>
+
+      <!-- City Chips -->
+      <div class="city-chips">
+        <a href="#" class="city-chip city-chip--active">Navi Mumbai</a>
+        <a href="#" class="city-chip">Mumbai</a>
+        <a href="#" class="city-chip">Thane</a>
+        <a href="#" class="city-chip">Pune</a>
+        <a href="#" class="city-chip">Panvel</a>
+      </div>
+
+      <!-- Stats -->
+      <div class="hero__stats">
+        <div class="hero__stat">
+          <div class="hero__stat-number">156</div>
+          <div class="hero__stat-label">Projects Analysed</div>
+        </div>
+        <div class="hero__stat">
+          <div class="hero__stat-number">12,847</div>
+          <div class="hero__stat-label">Buyers Matched</div>
+        </div>
+        <div class="hero__stat">
+          <div class="hero__stat-number">94%</div>
+          <div class="hero__stat-label">Said "Accurate"</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ====== AI-PICKED PROPERTIES (Carousel) ====== -->
+<section class="section">
+  <div class="container">
+    <div class="section__header">
+      <div class="section__header-left">
+        <h2 class="section__title">AI-Picked Properties</h2>
+        <p class="section__subtitle">Curated by our AI based on buyer demand, value, and reliability</p>
+      </div>
+      <a href="results.html" class="section__see-all">
+        See All
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
+
+    <div class="project-scroll">
+
+      <!-- Card 1 -->
+      <div class="project-card">
+        <div class="project-card__image">
+          <div class="project-card__badges">
+            <span class="project-card__badge project-card__badge--verified">10P Verified</span>
+            <span class="project-card__badge project-card__badge--hot">Fast Selling</span>
+          </div>
+          <button class="project-card__save">&#9825;</button>
+          Project Image
+        </div>
+        <div class="project-card__body" style="position: relative;">
+          <div class="fit-badge"><span class="fit-badge__score">94</span><span class="fit-badge__label">Fit</span></div>
+          <div class="project-card__config">2, 3 BHK Apartments</div>
+          <div class="project-card__price">&#8377;88L &ndash; &#8377;1.55 Cr</div>
+          <div class="project-card__emi">EMI from &#8377;56,000/mo</div>
+          <div class="project-card__name">Skyline Heights</div>
+          <div class="project-card__location">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Kharghar Sector 35, Navi Mumbai
+          </div>
+          <div class="project-card__tags">
+            <span class="project-card__tag project-card__tag--positive">&#10003; Near Station</span>
+            <span class="project-card__tag project-card__tag--info">Dec 2028</span>
+          </div>
+          <div class="advisor-card">
+            <div class="advisor-card__avatar">SK</div>
+            <div class="advisor-card__info">
+              <div class="advisor-card__name">Sunil K.</div>
+              <div class="advisor-card__role">Property Advisor &bull; <span class="advisor-card__rating">&#9733; 4.6</span></div>
+            </div>
+            <a href="project.html" class="advisor-card__cta">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="project-card">
+        <div class="project-card__image">
+          <div class="project-card__badges">
+            <span class="project-card__badge project-card__badge--verified">10P Verified</span>
+          </div>
+          <button class="project-card__save">&#9825;</button>
+          Project Image
+        </div>
+        <div class="project-card__body" style="position: relative;">
+          <div class="fit-badge"><span class="fit-badge__score">89</span><span class="fit-badge__label">Fit</span></div>
+          <div class="project-card__config">2 BHK Apartments</div>
+          <div class="project-card__price">&#8377;75L &ndash; &#8377;85L</div>
+          <div class="project-card__emi">EMI from &#8377;48,000/mo</div>
+          <div class="project-card__name">Green Valley Residences</div>
+          <div class="project-card__location">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Kharghar, Navi Mumbai
+          </div>
+          <div class="project-card__tags">
+            <span class="project-card__tag project-card__tag--positive">&#10003; Under Budget</span>
+            <span class="project-card__tag project-card__tag--positive">&#10003; RERA Verified</span>
+          </div>
+          <div class="advisor-card">
+            <div class="advisor-card__avatar">RP</div>
+            <div class="advisor-card__info">
+              <div class="advisor-card__name">Riya P.</div>
+              <div class="advisor-card__role">Property Advisor &bull; <span class="advisor-card__rating">&#9733; 4.8</span></div>
+            </div>
+            <a href="project.html" class="advisor-card__cta">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="project-card">
+        <div class="project-card__image">
+          <div class="project-card__badges">
+            <span class="project-card__badge project-card__badge--new">New Launch</span>
+          </div>
+          <button class="project-card__save">&#9825;</button>
+          Project Image
+        </div>
+        <div class="project-card__body" style="position: relative;">
+          <div class="fit-badge fit-badge--good"><span class="fit-badge__score">82</span><span class="fit-badge__label">Fit</span></div>
+          <div class="project-card__config">2, 3 BHK Apartments</div>
+          <div class="project-card__price">&#8377;92L &ndash; &#8377;1.1 Cr</div>
+          <div class="project-card__emi">EMI from &#8377;62,000/mo</div>
+          <div class="project-card__name">Palm Residency</div>
+          <div class="project-card__location">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Upper Kharghar, Navi Mumbai
+          </div>
+          <div class="project-card__tags">
+            <span class="project-card__tag project-card__tag--positive">&#10003; Near Airport</span>
+            <span class="project-card__tag project-card__tag--warning">Slightly Over Budget</span>
+          </div>
+          <div class="advisor-card">
+            <div class="advisor-card__avatar">AK</div>
+            <div class="advisor-card__info">
+              <div class="advisor-card__name">Amit K.</div>
+              <div class="advisor-card__role">Property Advisor &bull; <span class="advisor-card__rating">&#9733; 4.5</span></div>
+            </div>
+            <a href="project.html" class="advisor-card__cta">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="project-card">
+        <div class="project-card__image">
+          <div class="project-card__badges">
+            <span class="project-card__badge project-card__badge--verified">10P Verified</span>
+          </div>
+          <button class="project-card__save">&#9825;</button>
+          Project Image
+        </div>
+        <div class="project-card__body" style="position: relative;">
+          <div class="fit-badge fit-badge--good"><span class="fit-badge__score">78</span><span class="fit-badge__label">Fit</span></div>
+          <div class="project-card__config">2 BHK Apartments</div>
+          <div class="project-card__price">&#8377;82L &ndash; &#8377;90L</div>
+          <div class="project-card__emi">EMI from &#8377;52,000/mo</div>
+          <div class="project-card__name">Horizon Towers</div>
+          <div class="project-card__location">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Panvel, Navi Mumbai
+          </div>
+          <div class="project-card__tags">
+            <span class="project-card__tag project-card__tag--positive">&#10003; Best Value</span>
+          </div>
+          <div class="advisor-card">
+            <div class="advisor-card__avatar">PD</div>
+            <div class="advisor-card__info">
+              <div class="advisor-card__name">Priya D.</div>
+              <div class="advisor-card__role">Property Advisor &bull; <span class="advisor-card__rating">&#9733; 4.7</span></div>
+            </div>
+            <a href="project.html" class="advisor-card__cta">View Details</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ====== FAST SELLING PROPERTIES (Carousel) ====== -->
+<section class="section section--alt">
+  <div class="container">
+    <div class="section__header">
+      <div class="section__header-left">
+        <h2 class="section__title">Fast Selling in Navi Mumbai</h2>
+        <p class="section__subtitle">Projects with highest booking momentum this month</p>
+      </div>
+      <a href="#" class="section__see-all">
+        See All
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
+
+    <div class="project-scroll">
+
+      <div class="project-card">
+        <div class="project-card__image">
+          <div class="project-card__badges">
+            <span class="project-card__badge project-card__badge--hot">90% Sold</span>
+          </div>
+          <button class="project-card__save">&#9825;</button>
+          Project Image
+        </div>
+        <div class="project-card__body" style="position: relative;">
+          <div class="project-card__config">1, 2 BHK Apartments</div>
+          <div class="project-card__price">&#8377;52L &ndash; &#8377;78L</div>
+          <div class="project-card__emi">EMI from &#8377;34,000/mo</div>
+          <div class="project-card__name">Metro Heights</div>
+          <div class="project-card__location">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Ulwe, Navi Mumbai
+          </div>
+          <div class="advisor-card">
+            <div class="advisor-card__avatar">MK</div>
+            <div class="advisor-card__info">
+              <div class="advisor-card__name">Meena K.</div>
+              <div class="advisor-card__role">Property Advisor &bull; <span class="advisor-card__rating">&#9733; 4.4</span></div>
+            </div>
+            <a href="project.html" class="advisor-card__cta">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card__image">
+          <div class="project-card__badges">
+            <span class="project-card__badge project-card__badge--hot">85% Sold</span>
+          </div>
+          <button class="project-card__save">&#9825;</button>
+          Project Image
+        </div>
+        <div class="project-card__body" style="position: relative;">
+          <div class="project-card__config">2, 3 BHK Apartments</div>
+          <div class="project-card__price">&#8377;1.1 Cr &ndash; &#8377;1.8 Cr</div>
+          <div class="project-card__emi">EMI from &#8377;72,000/mo</div>
+          <div class="project-card__name">Orchid Gardens</div>
+          <div class="project-card__location">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Vashi, Navi Mumbai
+          </div>
+          <div class="advisor-card">
+            <div class="advisor-card__avatar">RV</div>
+            <div class="advisor-card__info">
+              <div class="advisor-card__name">Rahul V.</div>
+              <div class="advisor-card__role">Property Advisor &bull; <span class="advisor-card__rating">&#9733; 4.9</span></div>
+            </div>
+            <a href="project.html" class="advisor-card__cta">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card__image">
+          <div class="project-card__badges">
+            <span class="project-card__badge project-card__badge--hot">78% Sold</span>
+          </div>
+          <button class="project-card__save">&#9825;</button>
+          Project Image
+        </div>
+        <div class="project-card__body" style="position: relative;">
+          <div class="project-card__config">2 BHK Apartments</div>
+          <div class="project-card__price">&#8377;68L &ndash; &#8377;85L</div>
+          <div class="project-card__emi">EMI from &#8377;44,000/mo</div>
+          <div class="project-card__name">Sunrise Towers</div>
+          <div class="project-card__location">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Panvel, Navi Mumbai
+          </div>
+          <div class="advisor-card">
+            <div class="advisor-card__avatar">NS</div>
+            <div class="advisor-card__info">
+              <div class="advisor-card__name">Neha S.</div>
+              <div class="advisor-card__role">Property Advisor &bull; <span class="advisor-card__rating">&#9733; 4.3</span></div>
+            </div>
+            <a href="project.html" class="advisor-card__cta">View Details</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ====== HOW IT WORKS ====== -->
+<section class="section">
+  <div class="container">
+    <div class="section__header" style="justify-content: center; text-align: center; display: block;">
+      <h2 class="section__title">How It Works</h2>
+      <p class="section__subtitle" style="margin-top: 8px;">Just tell us what you need. Our AI does the rest in 60 seconds.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step__icon">&#128172;</div>
+        <h3 class="step__title">Describe Your Needs</h3>
+        <p class="step__desc">Type or tell us in your own words — BHK, location, budget, timeline. No forms to fill.</p>
+      </div>
+      <div class="step">
+        <div class="step__icon">&#129302;</div>
+        <h3 class="step__title">AI Analyses 150+ Projects</h3>
+        <p class="step__desc">Our AI scores every project across 20 factors — budget fit, developer track record, risk, and more.</p>
+      </div>
+      <div class="step">
+        <div class="step__icon">&#127942;</div>
+        <h3 class="step__title">Get Your Top 10 Matches</h3>
+        <p class="step__desc">See ranked results with Fit Scores, honest pros &amp; cons, EMI estimates, and personalised analysis.</p>
+      </div>
+    </div>
+    <div class="text-center mt-xl">
+      <a href="assessment.html" class="btn btn--primary btn--lg">Start AI Matching &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<!-- ====== POPULAR LOCATIONS ====== -->
+<section class="section section--alt" id="locations">
+  <div class="container">
+    <div class="section__header">
+      <div class="section__header-left">
+        <h2 class="section__title">Popular Locations in Navi Mumbai</h2>
+        <p class="section__subtitle">AI-analysed projects across the most sought-after areas</p>
+      </div>
+      <a href="#" class="section__see-all">
+        All Locations
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
+    <div class="location-grid">
+      <a href="#" class="location-card">
+        <div class="location-card__image">Kharghar</div>
+        <div class="location-card__body">
+          <div class="location-card__name">Kharghar</div>
+          <div class="location-card__stats">42 projects &bull; &#8377;8,500/sq ft avg</div>
+          <div class="location-card__growth">&#8593; 8.2% (3yr CAGR)</div>
+        </div>
+      </a>
+      <a href="#" class="location-card">
+        <div class="location-card__image">Panvel</div>
+        <div class="location-card__body">
+          <div class="location-card__name">Panvel</div>
+          <div class="location-card__stats">38 projects &bull; &#8377;6,200/sq ft avg</div>
+          <div class="location-card__growth">&#8593; 12.1% (3yr CAGR)</div>
+        </div>
+      </a>
+      <a href="#" class="location-card">
+        <div class="location-card__image">Ulwe</div>
+        <div class="location-card__body">
+          <div class="location-card__name">Ulwe</div>
+          <div class="location-card__stats">28 projects &bull; &#8377;7,800/sq ft avg</div>
+          <div class="location-card__growth">&#8593; 15.3% (3yr CAGR)</div>
+        </div>
+      </a>
+      <a href="#" class="location-card">
+        <div class="location-card__image">Vashi</div>
+        <div class="location-card__body">
+          <div class="location-card__name">Vashi</div>
+          <div class="location-card__stats">18 projects &bull; &#8377;12,500/sq ft avg</div>
+          <div class="location-card__growth">&#8593; 5.4% (3yr CAGR)</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ====== DEVELOPER PARTNERS ====== -->
+<section class="section">
+  <div class="container">
+    <div class="section__header" style="justify-content: center; text-align: center; display: block;">
+      <h2 class="section__title">Trusted Developer Partners</h2>
+      <p class="section__subtitle" style="margin-top: 8px;">We work with verified developers across Navi Mumbai</p>
+    </div>
+    <div class="developer-logos">
+      <div class="developer-logo">ABC Realty</div>
+      <div class="developer-logo">XYZ Group</div>
+      <div class="developer-logo">LMN Infra</div>
+      <div class="developer-logo">RST Builders</div>
+      <div class="developer-logo">Godrej</div>
+      <div class="developer-logo">Lodha</div>
+      <div class="developer-logo">Tata Housing</div>
+      <div class="developer-logo">Hiranandani</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== TRUST ====== -->
+<section class="section section--alt">
+  <div class="container">
+    <div class="trust-bar">
+      <div class="trust-item">
+        <div class="trust-item__icon">&#9989;</div>
+        <div class="trust-item__title">RERA-Verified Data</div>
+        <div class="trust-item__desc">Every project linked to official RERA registration. No unverified listings.</div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-item__icon">&#9878;</div>
+        <div class="trust-item__title">Unbiased AI Rankings</div>
+        <div class="trust-item__desc">AI ranks by fit to YOUR needs, not by who pays us more. Transparent methodology.</div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-item__icon">&#128274;</div>
+        <div class="trust-item__title">No Spam Promise</div>
+        <div class="trust-item__desc">Max 1 advisor contacts you. You control contact. One-tap "stop all" anytime.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== FINAL CTA ====== -->
+<section class="cta-section">
+  <div class="container">
+    <h2 class="cta-section__title">Ready to find your best-fit projects?</h2>
+    <p class="cta-section__subtitle">Just describe what you need. AI finds your Top 10 in 60 seconds.</p>
+    <a href="assessment.html" class="btn btn--primary btn--lg">Get My Personalised Top 10 &rarr;</a>
+  </div>
+</section>
+
+<!-- ====== FOOTER ====== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a href="#" class="footer__logo">
+          <div class="footer__logo-mark">10</div>
+          <span class="footer__logo-text">Projects</span>
+        </a>
+        <p class="footer__tagline">You need one right home — not hundreds of listings. AI-powered real estate discovery for Navi Mumbai.</p>
+        <div class="footer__social">
+          <a href="#" title="Facebook">f</a>
+          <a href="#" title="Instagram">ig</a>
+          <a href="#" title="LinkedIn">in</a>
+          <a href="#" title="YouTube">yt</a>
+          <a href="#" title="X/Twitter">x</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer__heading">Locations</div>
+        <ul class="footer__links">
+          <li><a href="#">Kharghar</a></li>
+          <li><a href="#">Panvel</a></li>
+          <li><a href="#">Ulwe</a></li>
+          <li><a href="#">Vashi</a></li>
+          <li><a href="#">Airoli</a></li>
+          <li><a href="#">Ghansoli</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer__heading">Explore</div>
+        <ul class="footer__links">
+          <li><a href="#">How It Works</a></li>
+          <li><a href="#">Scoring Methodology</a></li>
+          <li><a href="#">Buyer Guides</a></li>
+          <li><a href="#">EMI Calculator</a></li>
+          <li><a href="#">Blog</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer__heading">Company</div>
+        <ul class="footer__links">
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Partner With Us</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>&copy; 2026 10Projects.com. All rights reserved.</span>
+      <span>Prices are indicative. Verify with developer before booking.</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

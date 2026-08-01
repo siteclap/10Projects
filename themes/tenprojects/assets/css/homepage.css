@@ -1,0 +1,156 @@
+/* ============================================================
+   10Projects.com — Homepage Styles
+   Hero, carousels, how-it-works, locations grid
+   ============================================================ */
+
+/* --- Hero --- */
+.hero {
+  position: relative;
+  padding: 80px 0 60px;
+  background: linear-gradient(135deg, #EFF6FF 0%, #F0F4FF 50%, #F8FAFC 100%);
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -200px;
+  right: -200px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(26,86,219,0.06) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -150px;
+  left: -100px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(245,158,11,0.05) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.hero__inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--r-full);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-600);
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-xs);
+}
+.hero__badge-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--success);
+  border-radius: 50%;
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.hero__headline {
+  font-size: 48px;
+  line-height: 58px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--gray-900);
+  margin-bottom: 16px;
+}
+.hero__headline span {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero__subtitle {
+  font-size: 18px;
+  line-height: 28px;
+  color: var(--gray-500);
+  margin-bottom: 32px;
+}
+
+/* Hero Search Bar */
+.hero__search {
+  max-width: 600px;
+  margin: 0 auto 24px;
+  position: relative;
+}
+.hero__search-input {
+  width: 100%;
+  padding: 18px 60px 18px 24px;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--r-lg);
+  font-family: var(--font);
+  font-size: 16px;
+  color: var(--gray-900);
+  background: var(--white);
+  box-shadow: var(--shadow-hero);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.hero__search-input::placeholder { color: var(--gray-400); }
+.hero__search-input:focus { border-color: var(--brand-primary); }
+.hero__search-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  background: var(--brand-primary);
+  border: none;
+  border-radius: var(--r-sm);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.hero__search-btn:hover { background: var(--brand-primary-dark); }
+.hero__search-hint {
+  font-size: 13px;
+  color: var(--gray-400);
+  margin-top: 8px;
+}
+
+/* Hero Stats */
+.hero__stats {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  padding-top: 24px;
+  border-top: 1px solid var(--gray-200);
+}
+.hero__stat { text-align: center; }
+.hero__stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+.hero__stat-label {
+  font-size: 13px;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+@media (max-width: 640px) {
+  .hero { padding: 48px 0 40px; }
+  .hero__headline { font-size: 32px; line-height: 40px; }
+  .hero__stats { gap: 24px; }
+  .hero__stat-number { font-size: 20px; }
+}

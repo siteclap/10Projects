@@ -1,0 +1,98 @@
+<!-- wp:template-part {"slug":"header","area":"header"} /-->
+
+<!-- wp:group {"className":"chat-page","layout":{"type":"default"}} -->
+<div class="wp-block-group chat-page">
+
+    <!-- Chat Header with Accuracy -->
+    <!-- wp:group {"className":"chat-header","layout":{"type":"default"}} -->
+    <div class="wp-block-group chat-header">
+        <!-- wp:group {"className":"container container--assessment chat-header__inner","layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"space-between"}} -->
+        <div class="wp-block-group container container--assessment chat-header__inner">
+            <!-- wp:html -->
+            <div class="chat-header__title">AI Property Matcher</div>
+            <div class="chat-header__accuracy">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span id="tp-accuracy-label">Match Accuracy: <strong>0%</strong></span>
+            </div>
+            <!-- /wp:html -->
+        </div>
+        <!-- /wp:group -->
+    </div>
+    <!-- /wp:group -->
+
+    <!-- Progress Bar -->
+    <!-- wp:group {"className":"container container--assessment","layout":{"type":"default"}} -->
+    <div class="wp-block-group container container--assessment">
+        <!-- wp:html -->
+        <div class="assessment-progress">
+            <div class="accuracy-bar">
+                <div id="tp-accuracy-fill" class="accuracy-fill" style="width:0%"></div>
+            </div>
+            <div class="accuracy-phases">
+                <span class="accuracy-phase accuracy-phase--active" data-phase="1">Basics</span>
+                <span class="accuracy-phase" data-phase="2">Lifestyle</span>
+                <span class="accuracy-phase" data-phase="3">Finance</span>
+                <span class="accuracy-phase" data-phase="4">Location</span>
+                <span class="accuracy-phase" data-phase="5">Priorities</span>
+            </div>
+        </div>
+        <!-- /wp:html -->
+    </div>
+    <!-- /wp:group -->
+
+    <!-- Chat Messages Area -->
+    <!-- wp:group {"className":"chat-messages","layout":{"type":"default"}} -->
+    <div class="wp-block-group chat-messages">
+        <!-- wp:group {"className":"container container--assessment","layout":{"type":"default"}} -->
+        <div class="wp-block-group container container--assessment">
+            <!-- wp:html -->
+            <div id="tp-chat-messages">
+                <!-- AI Welcome Message -->
+                <div class="chat-message chat-message--ai">
+                    <div class="chat-message__avatar">10</div>
+                    <div class="chat-message__bubble">
+                        <p>Hi! I'm your AI property matcher. I'll find your <strong>top 10 best-fit projects</strong> in under 2 minutes.</p>
+                        <p>Let's start with the basics. What type of property are you looking for?</p>
+                    </div>
+                </div>
+
+                <!-- Initial Option Chips (rendered server-side, then JS takes over) -->
+                <div class="chat-chips" data-question="property_type">
+                    <button class="chip" data-value="apartment">Apartment</button>
+                    <button class="chip" data-value="villa">Villa / Row House</button>
+                    <button class="chip" data-value="plot">Plot / Land</button>
+                    <button class="chip" data-value="penthouse">Penthouse</button>
+                    <button class="chip" data-value="studio">Studio</button>
+                </div>
+            </div>
+            <!-- /wp:html -->
+        </div>
+        <!-- /wp:group -->
+    </div>
+    <!-- /wp:group -->
+
+    <!-- Chat Input Area (sticky bottom) -->
+    <!-- wp:group {"className":"chat-input","layout":{"type":"default"}} -->
+    <div class="wp-block-group chat-input">
+        <!-- wp:group {"className":"container container--assessment","layout":{"type":"default"}} -->
+        <div class="wp-block-group container container--assessment">
+            <!-- wp:html -->
+            <div id="tp-chat-input" class="chat-input__inner">
+                <textarea class="chat-input__field" id="tp-chat-field" placeholder="Type your answer or pick an option above..." rows="1" aria-label="Your answer"></textarea>
+                <button class="chat-input__send" id="tp-chat-send" aria-label="Send message" disabled>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+            </div>
+            <div class="chat-input__hint">
+                <span>Your data is encrypted and never shared without consent</span>
+            </div>
+            <!-- /wp:html -->
+        </div>
+        <!-- /wp:group -->
+    </div>
+    <!-- /wp:group -->
+
+</div>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer","area":"footer"} /-->
