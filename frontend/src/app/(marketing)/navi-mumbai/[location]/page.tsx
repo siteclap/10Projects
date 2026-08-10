@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { prisma } from '@/lib/db';
 import { Container } from '@/components/layout/Container';
 import { Section } from '@/components/layout/Section';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
@@ -7,6 +8,8 @@ import { ProjectCard } from '@/components/project/ProjectCard';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { locationMetadata } from '@/lib/seo/metadata';
 import { placeJsonLd, breadcrumbJsonLd } from '@/lib/seo/json-ld';
+import Link from 'next/link';
+import { formatPrice } from '@/lib/utils/format-price';
 import type { Location } from '@/lib/types/location';
 import type { ProjectCard as ProjectCardType } from '@/lib/types/project';
 
@@ -447,6 +450,141 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
   ],
 };
 
+/* ---------- About locality content ---------- */
+
+const MOCK_ABOUT: Record<string, { highlights: string[]; whyBuy: string }> = {
+  kharghar: {
+    highlights: [
+      'Home to Central Park — one of Asia\'s largest parks spanning 80+ acres',
+      'Premium educational institutions including NMIMS, ITM, and DY Patil',
+      'Well-connected via Kharghar railway station on the Harbour Line',
+      'Upcoming Navi Mumbai Metro Line 1 with a station at Kharghar',
+      'Proximity to Navi Mumbai International Airport (15 km)',
+      'Active golf course and recreational sports infrastructure',
+    ],
+    whyBuy:
+      'Kharghar offers the perfect blend of nature and urban convenience. With CIDCO-planned infrastructure, wide roads, and a growing social fabric, it consistently ranks among the top residential choices in Navi Mumbai. The upcoming metro and airport are expected to boost appreciation by 15–20% over the next 3 years.',
+  },
+  panvel: {
+    highlights: [
+      'Gateway to Navi Mumbai International Airport (just 8 km away)',
+      'Part of NAINA Smart City — a 600 sq km planned township',
+      'Mumbai-Pune Expressway and NH-4 provide seamless connectivity',
+      'Virar-Alibaug Multimodal Corridor planned with a station at Panvel',
+      'Among the most affordable locations in the Mumbai Metropolitan Region',
+      'Multiple large-scale townships by reputed developers',
+    ],
+    whyBuy:
+      'Panvel is the fastest-appreciating micro-market in MMR, driven by the airport and NAINA development. First-time buyers get larger apartments at 40–50% lower prices compared to established nodes like Vashi or Kharghar, with strong appreciation potential as infrastructure develops.',
+  },
+  ulwe: {
+    highlights: [
+      'Closest residential node to the upcoming NMIA (just 5 km)',
+      'Direct access via Mumbai Trans Harbour Link (MTHL)',
+      'CIDCO-planned sectors with wide roads and green spaces',
+      'Creek-facing properties with scenic waterfront views',
+      'Highest price appreciation in Navi Mumbai — 22% YoY growth',
+      'Planned metro extension and waterfront promenade',
+    ],
+    whyBuy:
+      'Ulwe is the top pick for investors seeking high returns. With MTHL now operational and the airport nearing completion, property values have surged. Early buyers stand to benefit from continued infrastructure development and increasing demand.',
+  },
+  vashi: {
+    highlights: [
+      'Commercial hub of Navi Mumbai with Inorbit Mall and APMC Market',
+      'Excellent railway connectivity — Vashi station on Harbour Line',
+      'Premium schools, hospitals, and entertainment infrastructure',
+      'Upcoming Navi Mumbai Metro station at Vashi',
+      'Mature neighbourhood with established amenities and social infrastructure',
+      'High rental yield due to commercial activity and demand',
+    ],
+    whyBuy:
+      'Vashi is a premium, established market best suited for end-users who value urban convenience. While prices are higher, buyers get a fully developed neighbourhood with zero dependency on upcoming infrastructure. Rental yields are among the highest in Navi Mumbai.',
+  },
+};
+
+/* ---------- Location FAQs ---------- */
+
+const MOCK_FAQS: Record<string, Array<{ question: string; answer: string }>> = {
+  kharghar: [
+    { question: 'What is the average property price in Kharghar?', answer: 'The average property price in Kharghar is approximately ₹8,500 per sq ft. A 2 BHK apartment typically ranges from ₹85 Lac to ₹1.4 Cr, while 3 BHK units range from ₹1.2 Cr to ₹2 Cr depending on the developer and amenities.' },
+    { question: 'Is Kharghar a good location to buy a flat?', answer: 'Yes, Kharghar is one of the best locations in Navi Mumbai for homebuyers. It offers excellent infrastructure, green spaces like Central Park, top educational institutions, and strong connectivity. The upcoming metro and proximity to the Navi Mumbai airport make it a solid long-term investment.' },
+    { question: 'How far is Kharghar from the Navi Mumbai airport?', answer: 'Kharghar is approximately 15 km from the upcoming Navi Mumbai International Airport (NMIA). Once operational, the airport combined with metro connectivity will significantly enhance Kharghar\'s accessibility and property values.' },
+    { question: 'What are the top developers in Kharghar?', answer: 'Leading developers in Kharghar include Lodha Group, Paradise Group, Adhiraj Constructions, Dosti Realty, Balaji Group, and Haware. These developers offer RERA-registered projects with modern amenities and reliable delivery records.' },
+  ],
+  panvel: [
+    { question: 'What is the average property price in Panvel?', answer: 'The average property price in Panvel is approximately ₹5,800 per sq ft. A 1 BHK starts from ₹36 Lac, while 2 BHK apartments range from ₹62 Lac to ₹1.05 Cr, making it one of the most affordable locations in the Mumbai Metropolitan Region.' },
+    { question: 'Is Panvel good for real estate investment?', answer: 'Yes, Panvel is among the best locations for real estate investment in MMR. With 18.2% price growth in the last year, proximity to the upcoming airport, and inclusion in the NAINA Smart City plan, Panvel offers strong appreciation potential at affordable entry prices.' },
+    { question: 'How far is Panvel from the Navi Mumbai airport?', answer: 'Panvel is just 8 km from the upcoming Navi Mumbai International Airport. This close proximity is the primary growth driver for the area, with property prices expected to rise significantly once the airport becomes operational.' },
+    { question: 'What are the upcoming infrastructure projects near Panvel?', answer: 'Key upcoming projects include the Navi Mumbai International Airport (8 km), Virar-Alibaug Multimodal Corridor, NAINA Smart City township development, and the Panvel-Karjat railway line upgrade. These will transform Panvel\'s connectivity and livability.' },
+  ],
+  ulwe: [
+    { question: 'What is the average property price in Ulwe?', answer: 'The average property price in Ulwe is approximately ₹6,200 per sq ft. A 1 BHK starts from around ₹41 Lac, while 2 BHK apartments range from ₹65 Lac to ₹79 Lac, offering excellent value given its proximity to the airport and MTHL.' },
+    { question: 'Is Ulwe a good place to invest in property?', answer: 'Ulwe is currently the highest-appreciating location in Navi Mumbai with 22% YoY price growth. Its proximity to the Navi Mumbai airport (5 km) and direct MTHL access make it a top investment destination. Early buyers have seen significant returns.' },
+    { question: 'How is the connectivity of Ulwe?', answer: 'Ulwe is connected via the Mumbai Trans Harbour Link (MTHL), providing direct access to South Mumbai. The nearest railway station is Nerul (8 km). A metro extension to Ulwe is planned, which will further improve connectivity.' },
+    { question: 'What is the future of Ulwe real estate?', answer: 'Ulwe\'s future is extremely promising. With the airport 5 km away, MTHL operational, proposed metro extension, and waterfront promenade development, property values are expected to continue appreciating strongly over the next 3-5 years.' },
+  ],
+  vashi: [
+    { question: 'What is the average property price in Vashi?', answer: 'Vashi commands premium pricing with an average of ₹14,200 per sq ft. A 2 BHK typically costs ₹1.28 Cr to ₹1.58 Cr, while 3 BHK apartments range from ₹2 Cr to ₹3.3 Cr. Prices reflect its status as Navi Mumbai\'s most established node.' },
+    { question: 'Why is Vashi more expensive than other Navi Mumbai locations?', answer: 'Vashi is the commercial hub of Navi Mumbai with mature infrastructure, premium malls (Inorbit), APMC market, top schools, and excellent railway connectivity. The established social infrastructure and high demand for both residential and commercial spaces justify the premium pricing.' },
+    { question: 'Is Vashi good for end-users or investors?', answer: 'Vashi is primarily suited for end-users who want a ready, fully-developed neighbourhood. While appreciation (8.5% YoY) is moderate compared to emerging nodes, it offers stability, high rental yields, and zero infrastructure dependency — everything is already built.' },
+    { question: 'What are the best projects in Vashi?', answer: 'Top projects in Vashi include L&T Seawoods Residences, Ekta Tripolis, Ariisto Sommet, and Sai Mannat. These are from reputed developers offering premium specifications, modern amenities, and excellent locations within the Vashi node.' },
+  ],
+};
+
+/* ---------- Nearby locations ---------- */
+
+const ALL_LOCATIONS = [
+  { title: 'Kharghar', slug: 'kharghar', projectCount: 42, avgPrice: 8500 },
+  { title: 'Panvel', slug: 'panvel', projectCount: 38, avgPrice: 5800 },
+  { title: 'Ulwe', slug: 'ulwe', projectCount: 35, avgPrice: 6200 },
+  { title: 'Vashi', slug: 'vashi', projectCount: 18, avgPrice: 14200 },
+  { title: 'Airoli', slug: 'airoli', projectCount: 12, avgPrice: 11500 },
+  { title: 'Ghansoli', slug: 'ghansoli', projectCount: 10, avgPrice: 9800 },
+  { title: 'Nerul', slug: 'nerul', projectCount: 15, avgPrice: 12500 },
+  { title: 'Taloja', slug: 'taloja', projectCount: 28, avgPrice: 4200 },
+];
+
+/* ---------- Fetch projects from DB ---------- */
+
+async function getDbProjects(locationSlug: string): Promise<ProjectCardType[]> {
+  const dbProjects = await prisma.project.findMany({
+    where: {
+      published: true,
+      location: { slug: locationSlug },
+    },
+    include: {
+      location: true,
+      configurations: { orderBy: { basePrice: 'asc' } },
+    },
+    orderBy: { fitScore: 'desc' },
+  });
+
+  return dbProjects.map((p) => ({
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    permalink: `/navi-mumbai/${p.location?.slug || locationSlug}/${p.slug}`,
+    thumbnail: p.thumbnail || '',
+    developer: p.developer,
+    location: p.location?.name || locationSlug,
+    construction_stage: p.constructionStage || 'Under Construction',
+    expected_possession: p.expectedPossession || '',
+    rera_number: p.reraNumber || '',
+    configurations: p.configurations.map((c) => ({
+      config_type: c.configType,
+      carpet_area_sqft: c.carpetAreaSqft,
+      base_price: c.basePrice,
+      total_price: c.totalPrice,
+      inventory_total: c.inventoryTotal,
+      inventory_available: c.inventoryAvailable,
+    })),
+    price_min: p.priceMin,
+    price_max: p.priceMax,
+    fit_score: p.fitScore ?? undefined,
+  }));
+}
+
 /* ---------- Static params ---------- */
 
 type PageProps = {
@@ -476,7 +614,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function LocationDetailPage({ params }: PageProps) {
   const { location: locationSlug } = await params;
   const location = MOCK_LOCATIONS[locationSlug];
-  const projects = MOCK_PROJECTS[locationSlug] ?? [];
+  const dbProjects = await getDbProjects(locationSlug);
+  // Use DB projects if available, fall back to mock data
+  const projects = dbProjects.length > 0 ? dbProjects : (MOCK_PROJECTS[locationSlug] ?? []);
+  const aboutData = MOCK_ABOUT[locationSlug];
+  const faqs = MOCK_FAQS[locationSlug] ?? [];
+  const nearbyLocations = ALL_LOCATIONS.filter((l) => l.slug !== locationSlug);
 
   if (!location) {
     return (
@@ -586,6 +729,161 @@ export default async function LocationDetailPage({ params }: PageProps) {
           </div>
         </Container>
       </Section>
+
+      {/* About the locality */}
+      {aboutData && (
+        <Section>
+          <Container>
+            <h2 className="text-h2 text-gray-900">
+              About {location.title}, Navi Mumbai
+            </h2>
+            <p className="mt-lg max-w-[720px] text-sm leading-relaxed text-gray-600">
+              {location.description}
+            </p>
+
+            {/* Highlights */}
+            <div className="mt-xl">
+              <h3 className="text-base font-semibold text-gray-900">
+                Key Highlights
+              </h3>
+              <div className="mt-lg grid grid-cols-1 gap-sm sm:grid-cols-2">
+                {aboutData.highlights.map((item, i) => (
+                  <div key={i} className="flex items-start gap-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mt-[2px] shrink-0 text-success" aria-hidden="true">
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    <span className="text-sm text-gray-700">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Why buy */}
+            <div className="mt-xl rounded-md border border-brand-primary/10 bg-brand-primary-bg p-xl">
+              <h3 className="text-base font-semibold text-gray-900">
+                Why Buy in {location.title}?
+              </h3>
+              <p className="mt-md text-sm leading-relaxed text-gray-700">
+                {aboutData.whyBuy}
+              </p>
+            </div>
+          </Container>
+        </Section>
+      )}
+
+      {/* FAQ Section */}
+      {faqs && faqs.length > 0 && (
+        <Section variant="alt">
+          <Container>
+            <h2 className="text-h2 text-gray-900">
+              Frequently Asked Questions — {location.title}
+            </h2>
+            <p className="mt-sm text-sm text-gray-500">
+              Common questions about buying property in {location.title}, Navi Mumbai
+            </p>
+            <div className="mt-xl flex flex-col gap-md">
+              {faqs.map((faq, index) => (
+                <details
+                  key={index}
+                  className="group rounded-md border border-gray-200 bg-white"
+                >
+                  <summary className="flex cursor-pointer items-center justify-between px-xl py-lg text-sm font-medium text-gray-900 [&::-webkit-details-marker]:hidden">
+                    {faq.question}
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="ml-lg shrink-0 text-gray-400 transition-transform group-open:rotate-180"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </summary>
+                  <div className="border-t border-gray-100 px-xl py-lg">
+                    <p className="text-sm leading-relaxed text-gray-600">
+                      {faq.answer}
+                    </p>
+                  </div>
+                </details>
+              ))}
+            </div>
+          </Container>
+        </Section>
+      )}
+
+      {/* Explore Nearby Locations */}
+      <Section>
+        <Container>
+          <h2 className="text-h2 text-gray-900">
+            Explore Other Locations in Navi Mumbai
+          </h2>
+          <p className="mt-sm text-sm text-gray-500">
+            Compare projects across Navi Mumbai&apos;s top residential nodes
+          </p>
+          <div className="mt-xl grid grid-cols-2 gap-md sm:grid-cols-3 lg:grid-cols-4">
+            {nearbyLocations.map((loc) => (
+              <Link
+                key={loc.slug}
+                href={`/navi-mumbai/${loc.slug}`}
+                className="group flex flex-col rounded-lg border border-gray-200 bg-white p-lg no-underline transition-shadow hover:shadow-card hover:no-underline"
+              >
+                <h3 className="text-base font-semibold text-gray-900 group-hover:text-brand-primary">
+                  {loc.title}
+                </h3>
+                <p className="mt-xs text-caption text-gray-500">
+                  {loc.projectCount} projects
+                </p>
+                <p className="mt-sm text-sm font-semibold text-gray-900">
+                  {'\u20B9'}{loc.avgPrice.toLocaleString('en-IN')}/sqft
+                </p>
+                <span className="mt-md text-caption font-medium text-brand-primary">
+                  View Projects →
+                </span>
+              </Link>
+            ))}
+          </div>
+        </Container>
+      </Section>
+
+      {/* Lead Capture CTA */}
+      <section className="bg-gradient-to-br from-brand-primary to-brand-primary-dark py-3xl">
+        <Container>
+          <div className="mx-auto max-w-narrow text-center">
+            <h2 className="text-h2 text-white">
+              Need help finding the right project in {location.title}?
+            </h2>
+            <p className="mx-auto mt-md max-w-[480px] text-sm text-white/70">
+              Our property advisors have in-depth knowledge of {location.title} and can help
+              you shortlist the best options based on your budget and requirements.
+            </p>
+            <div className="mt-2xl flex flex-col items-center justify-center gap-md sm:flex-row">
+              <Link
+                href="/"
+                className="inline-flex h-[48px] items-center justify-center rounded-sm bg-white px-2xl text-sm font-semibold text-brand-primary no-underline transition-colors hover:bg-white/90 hover:no-underline"
+              >
+                Get AI Recommendations
+              </Link>
+              <a
+                href="tel:+919876543210"
+                className="inline-flex h-[48px] items-center justify-center gap-sm rounded-sm border border-white/30 px-2xl text-sm font-medium text-white no-underline transition-colors hover:bg-white/10 hover:no-underline"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+                </svg>
+                Call Us Now
+              </a>
+            </div>
+            <p className="mt-lg text-caption text-white/50">
+              Free consultation • No brokerage • RERA verified projects only
+            </p>
+          </div>
+        </Container>
+      </section>
     </>
   );
 }

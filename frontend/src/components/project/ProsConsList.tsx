@@ -52,21 +52,21 @@ export function ProsConsList({ pros, cons }: ProsConsListProps) {
   if (!hasPros && !hasCons) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-xl md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-3xl md:grid-cols-2">
       {/* Strengths */}
       {hasPros && (
         <div>
-          <h4 className="flex items-center gap-sm text-base font-semibold text-gray-900">
+          <h4 className="flex items-center gap-md text-base font-semibold text-gray-900">
             <span className="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-success-light">
               <CheckIcon />
             </span>
             Strengths
           </h4>
-          <ul className="mt-lg flex flex-col gap-md">
+          <ul className="mt-xl flex flex-col gap-lg">
             {pros.map((item, index) => (
               <li key={index} className="flex items-start gap-md">
                 <CheckIcon />
-                <span className="text-sm text-gray-700">{item}</span>
+                <span className="text-sm leading-relaxed text-gray-700">{item}</span>
               </li>
             ))}
           </ul>
@@ -76,17 +76,17 @@ export function ProsConsList({ pros, cons }: ProsConsListProps) {
       {/* Considerations */}
       {hasCons && (
         <div>
-          <h4 className="flex items-center gap-sm text-base font-semibold text-gray-900">
+          <h4 className="flex items-center gap-md text-base font-semibold text-gray-900">
             <span className="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-accent-pale">
               <AlertIcon />
             </span>
             Considerations
           </h4>
-          <ul className="mt-lg flex flex-col gap-md">
+          <ul className="mt-xl flex flex-col gap-lg">
             {cons.map((item, index) => (
               <li key={index} className="flex items-start gap-md">
                 <AlertIcon />
-                <span className="text-sm text-gray-700">{item}</span>
+                <span className="text-sm leading-relaxed text-gray-700">{item}</span>
               </li>
             ))}
           </ul>

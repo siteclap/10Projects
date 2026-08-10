@@ -2,18 +2,18 @@ import { type ReactNode } from 'react';
 import { cn } from '@/lib/utils/cn';
 
 const variantStyles = {
-  default: 'bg-gray-100 text-gray-700 border-gray-200',
-  primary: 'bg-brand-primary-light text-brand-primary border-brand-primary/20',
-  accent: 'bg-accent-light text-amber-800 border-amber-200',
-  success: 'bg-success-light text-green-800 border-green-200',
-  warning: 'bg-warning-light text-amber-800 border-amber-200',
-  danger: 'bg-danger-light text-red-800 border-red-200',
-  outline: 'bg-transparent text-gray-700 border-gray-300',
+  default: 'bg-gray-50 text-gray-600 border-gray-200',
+  primary: 'bg-brand-primary-bg text-brand-primary-dark border-brand-primary-pale',
+  accent: 'bg-accent-pale text-gray-700 border-accent-pale',
+  success: 'bg-success-bg text-gray-700 border-success-light',
+  warning: 'bg-warning-bg text-gray-700 border-warning-bg',
+  danger: 'bg-danger-light text-gray-700 border-danger-light',
+  outline: 'bg-transparent text-gray-600 border-gray-200',
 } as const;
 
 const sizeStyles = {
-  sm: 'px-2 py-0.5 text-xs',
-  md: 'px-2.5 py-1 text-sm',
+  sm: 'px-sm py-xs text-caption',
+  md: 'px-md py-xs text-sm',
 } as const;
 
 type BadgeVariant = keyof typeof variantStyles;

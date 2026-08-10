@@ -20,7 +20,7 @@ export function ProjectCarousel({
   className,
 }: ProjectCarouselProps) {
   return (
-    <div className={cn('py-3xl', className)}>
+    <div className={cn('py-3xl md:py-4xl', className)}>
       {/* Section header */}
       <div className="mx-auto mb-xl flex max-w-container items-end justify-between px-lg md:px-2xl">
         <div>

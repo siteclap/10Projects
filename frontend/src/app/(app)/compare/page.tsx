@@ -16,7 +16,7 @@ import type { ComparisonProject } from '@/lib/types/comparison';
  * In production, project data will be fetched from the API
  * using the project IDs stored in localStorage via useCompare.
  */
-const MOCK_PROJECTS: Record<number, ComparisonProject> = {
+const MOCK_PROJECTS: Record<string | number, ComparisonProject> = {
   101: {
     id: 101,
     title: 'Lodha Palava City',

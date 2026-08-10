@@ -20,7 +20,7 @@ export function LocationGrid({
   className,
 }: LocationGridProps) {
   return (
-    <div className={cn('py-3xl', className)}>
+    <div className={cn('py-3xl md:py-4xl', className)}>
       <Container>
         {title && (
           <div className="mb-xl flex items-end justify-between">

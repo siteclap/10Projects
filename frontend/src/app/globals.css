@@ -19,12 +19,15 @@ body {
   color: var(--color-foreground);
 }
 
-a {
-  color: #1a56db;
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
+/* Base link styles — in @layer base so Tailwind utilities can override */
+@layer base {
+  a {
+    color: #4b1cb0;
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
 }
 
 img {
@@ -89,6 +92,17 @@ img {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes fadeScale {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 

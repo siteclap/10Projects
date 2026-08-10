@@ -6,7 +6,7 @@ import { useToast } from '@/lib/hooks/use-toast';
 import { useCompare } from '@/lib/hooks/use-compare';
 
 interface ProjectActionsProps {
-  projectId: number;
+  projectId: number | string;
   projectTitle: string;
   projectUrl: string;
 }

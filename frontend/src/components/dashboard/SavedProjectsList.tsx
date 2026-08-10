@@ -120,7 +120,7 @@ const MOCK_SAVED_PROJECTS: SavedProjectEntry[] = [
 export function SavedProjectsList() {
   const [savedProjects, setSavedProjects] = useState(MOCK_SAVED_PROJECTS);
 
-  function handleUnsave(projectId: number) {
+  function handleUnsave(projectId: number | string) {
     setSavedProjects((prev) => prev.filter((sp) => sp.project.id !== projectId));
   }
 

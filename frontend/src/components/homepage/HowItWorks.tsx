@@ -37,7 +37,7 @@ export function HowItWorks() {
           </p>
         </div>
 
-        <div className="mt-3xl grid grid-cols-1 gap-2xl md:grid-cols-3">
+        <div className="mt-xl grid grid-cols-1 gap-2xl md:grid-cols-3">
           {steps.map((step, index) => (
             <div
               key={step.title}
@@ -59,7 +59,7 @@ export function HowItWorks() {
           ))}
         </div>
 
-        <div className="mt-3xl flex justify-center">
+        <div className="mt-xl flex justify-center">
           <Button variant="primary" size="lg" asChild>
             <Link href={ROUTES.ASSESSMENT}>
               Start AI Matching

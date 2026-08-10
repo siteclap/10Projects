@@ -1,149 +1,264 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { cn } from '@/lib/utils/cn';
+import { useState } from 'react';
 import { calculateEMI, calculateTotalInterest, calculateTotalPayable } from '@/lib/utils/calculate-emi';
 import { formatPrice } from '@/lib/utils/format-price';
 
-const LTV_DEFAULT = 0.8;
-const DEBOUNCE_MS = 200;
+const DOWN_PAYMENT_PCT = 20;
 
 interface EmiCalculatorProps {
   defaultPrice?: number;
 }
 
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+function formatInputPrice(value: number): string {
+  if (value >= 10000000) return `${(value / 10000000).toFixed(2)} Cr`;
+  if (value >= 100000) return `${(value / 100000).toFixed(2)} L`;
+  return value.toLocaleString('en-IN');
+}
 
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
+function DonutChart({ principal, interest }: { principal: number; interest: number }) {
+  const total = principal + interest;
+  if (total === 0) return null;
+  const principalPct = principal / total;
+  const radius = 54;
+  const circumference = 2 * Math.PI * radius;
+  const principalArc = circumference * principalPct;
+  const interestArc = circumference - principalArc;
 
-  return debouncedValue;
+  return (
+    <svg width="140" height="140" viewBox="0 0 140 140" className="shrink-0">
+      <circle cx="70" cy="70" r={radius} fill="none" stroke="#E5E7EB" strokeWidth="16" />
+      {/* Principal arc */}
+      <circle
+        cx="70"
+        cy="70"
+        r={radius}
+        fill="none"
+        stroke="#4B1CB0"
+        strokeWidth="16"
+        strokeDasharray={`${principalArc} ${interestArc}`}
+        strokeDashoffset={circumference * 0.25}
+        strokeLinecap="round"
+        className="transition-all duration-500"
+      />
+      {/* Interest arc */}
+      <circle
+        cx="70"
+        cy="70"
+        r={radius}
+        fill="none"
+        stroke="#F59E0B"
+        strokeWidth="16"
+        strokeDasharray={`${interestArc} ${principalArc}`}
+        strokeDashoffset={circumference * 0.25 - principalArc}
+        strokeLinecap="round"
+        className="transition-all duration-500"
+      />
+      {/* Center text */}
+      <text x="70" y="64" textAnchor="middle" className="fill-gray-400 text-[10px]">
+        EMI/mo
+      </text>
+      <text x="70" y="80" textAnchor="middle" className="fill-gray-900 text-[13px] font-semibold">
+        {formatPrice(Math.round(calculateEMI(principal / 0.8, 8.5, 20)))}
+      </text>
+    </svg>
+  );
 }
 
 export function EmiCalculator({ defaultPrice = 8500000 }: EmiCalculatorProps) {
   const [price, setPrice] = useState(defaultPrice);
+  const [downPaymentPct, setDownPaymentPct] = useState(DOWN_PAYMENT_PCT);
   const [rate, setRate] = useState(8.5);
   const [tenure, setTenure] = useState(20);
 
-  const debouncedPrice = useDebounce(price, DEBOUNCE_MS);
-  const debouncedRate = useDebounce(rate, DEBOUNCE_MS);
-  const debouncedTenure = useDebounce(tenure, DEBOUNCE_MS);
+  const downPayment = Math.round(price * (downPaymentPct / 100));
+  const loanAmount = price - downPayment;
+  const emi = calculateEMI(loanAmount, rate, tenure);
+  const totalInterest = calculateTotalInterest(loanAmount, rate, tenure);
+  const totalPayable = calculateTotalPayable(loanAmount, rate, tenure);
 
-  const emi = calculateEMI(debouncedPrice, debouncedRate, debouncedTenure);
-  const totalInterest = calculateTotalInterest(debouncedPrice, debouncedRate, debouncedTenure);
-  const totalPayable = calculateTotalPayable(debouncedPrice, debouncedRate, debouncedTenure);
-  const loanAmount = debouncedPrice * LTV_DEFAULT;
+  // Donut chart values
+  const principalPct = totalPayable > 0 ? loanAmount / totalPayable : 0;
+  const radius = 54;
+  const circumference = 2 * Math.PI * radius;
+  const principalArc = circumference * principalPct;
+  const interestArc = circumference - principalArc;
 
   return (
-    <div className="rounded-md border border-gray-200 bg-white p-xl shadow-card">
-      <h3 className="text-h4 text-gray-900">EMI Calculator</h3>
-      <p className="mt-xs text-sm text-gray-500">
-        Loan of {formatPrice(Math.round(loanAmount))} (80% LTV)
-      </p>
-
-      <div className="mt-xl flex flex-col gap-xl">
-        {/* Property Price */}
-        <div>
-          <div className="flex items-center justify-between">
-            <label htmlFor="emi-price" className="text-sm font-medium text-gray-700">
-              Property Price
-            </label>
-            <span className="text-sm font-semibold text-gray-900 tabular-nums">
-              {formatPrice(price)}
-            </span>
-          </div>
-          <input
-            id="emi-price"
-            type="range"
-            min={1000000}
-            max={100000000}
-            step={500000}
-            value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
-            className="mt-sm w-full accent-brand-primary"
-          />
-          <div className="mt-xs flex justify-between text-caption text-gray-400">
-            <span>10 L</span>
-            <span>10 Cr</span>
-          </div>
-        </div>
-
-        {/* Interest Rate */}
-        <div>
-          <div className="flex items-center justify-between">
-            <label htmlFor="emi-rate" className="text-sm font-medium text-gray-700">
-              Interest Rate
-            </label>
-            <span className="text-sm font-semibold text-gray-900 tabular-nums">
-              {rate.toFixed(1)}%
-            </span>
-          </div>
-          <input
-            id="emi-rate"
-            type="range"
-            min={5}
-            max={15}
-            step={0.1}
-            value={rate}
-            onChange={(e) => setRate(Number(e.target.value))}
-            className="mt-sm w-full accent-brand-primary"
-          />
-          <div className="mt-xs flex justify-between text-caption text-gray-400">
-            <span>5%</span>
-            <span>15%</span>
-          </div>
-        </div>
-
-        {/* Tenure */}
-        <div>
-          <div className="flex items-center justify-between">
-            <label htmlFor="emi-tenure" className="text-sm font-medium text-gray-700">
-              Loan Tenure
-            </label>
-            <span className="text-sm font-semibold text-gray-900 tabular-nums">
-              {tenure} yrs
-            </span>
-          </div>
-          <input
-            id="emi-tenure"
-            type="range"
-            min={5}
-            max={30}
-            step={1}
-            value={tenure}
-            onChange={(e) => setTenure(Number(e.target.value))}
-            className="mt-sm w-full accent-brand-primary"
-          />
-          <div className="mt-xs flex justify-between text-caption text-gray-400">
-            <span>5 yrs</span>
-            <span>30 yrs</span>
-          </div>
-        </div>
+    <div className="rounded-lg border border-gray-200 bg-white shadow-card">
+      {/* Header */}
+      <div className="p-xl pb-0">
+        <h3 className="text-base font-semibold text-gray-900">Home Loan Calculator</h3>
+        <p className="mt-xs text-sm text-gray-500">
+          Starting from <span className="font-semibold text-brand-primary">{formatPrice(Math.round(emi))}/month</span>
+        </p>
       </div>
 
-      {/* Results */}
-      <div className="mt-xl border-t border-gray-200 pt-xl">
-        <div className="flex flex-col gap-md">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Monthly EMI</span>
-            <span className="text-price text-brand-primary">
+      <div className="flex flex-col gap-xl p-xl lg:flex-row">
+        {/* Left — Inputs */}
+        <div className="flex-1 rounded-lg bg-gray-50 p-lg">
+          <p className="text-caption text-gray-500">
+            Explore the cost of your home by adjusting the details
+          </p>
+
+          <div className="mt-lg grid grid-cols-2 gap-md">
+            {/* Property Price */}
+            <div>
+              <label htmlFor="emi-price" className="text-caption font-medium text-gray-600">
+                Property Price
+              </label>
+              <div className="relative mt-xs">
+                <span className="absolute left-md top-1/2 -translate-y-1/2 text-sm text-gray-400">&#8377;</span>
+                <input
+                  id="emi-price"
+                  type="number"
+                  min={100000}
+                  max={500000000}
+                  step={100000}
+                  value={price}
+                  onChange={(e) => {
+                    const num = Number(e.target.value);
+                    if (!isNaN(num) && num >= 0) setPrice(num);
+                  }}
+                  className="h-[40px] w-full rounded-md border border-gray-200 bg-white pl-[28px] pr-md text-sm font-medium text-gray-900 tabular-nums focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary [&::-webkit-inner-spin-button]:opacity-100"
+                />
+                <span className="absolute right-md top-1/2 -translate-y-1/2 text-[10px] text-gray-400">
+                  {formatInputPrice(price)}
+                </span>
+              </div>
+            </div>
+
+            {/* Down Payment */}
+            <div>
+              <label htmlFor="emi-down" className="text-caption font-medium text-gray-600">
+                Down Payment
+              </label>
+              <div className="relative mt-xs">
+                <input
+                  id="emi-down"
+                  type="number"
+                  min={5}
+                  max={90}
+                  value={downPaymentPct}
+                  onChange={(e) => setDownPaymentPct(Math.min(90, Math.max(5, Number(e.target.value))))}
+                  className="h-[40px] w-full rounded-md border border-gray-200 bg-white px-md pr-[36px] text-sm font-medium text-gray-900 tabular-nums focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                />
+                <span className="absolute right-md top-1/2 -translate-y-1/2 text-sm text-gray-400">%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Loan Amount */}
+          <div className="mt-md">
+            <label className="text-caption font-medium text-gray-600">
+              Loan Amount after down payment
+            </label>
+            <div className="relative mt-xs">
+              <span className="absolute left-md top-1/2 -translate-y-1/2 text-sm text-gray-400">&#8377;</span>
+              <div className="flex h-[40px] w-full items-center justify-between rounded-md border border-gray-200 bg-gray-100 pl-[28px] pr-md text-sm font-medium text-gray-900 tabular-nums">
+                <span>{loanAmount.toLocaleString('en-IN')}</span>
+                <span className="text-[10px] text-gray-400">{formatInputPrice(loanAmount)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-md grid grid-cols-2 gap-md">
+            {/* Tenure */}
+            <div>
+              <label htmlFor="emi-tenure" className="text-caption font-medium text-gray-600">
+                Loan Tenure
+              </label>
+              <div className="relative mt-xs">
+                <input
+                  id="emi-tenure"
+                  type="number"
+                  min={1}
+                  max={30}
+                  value={tenure}
+                  onChange={(e) => setTenure(Math.min(30, Math.max(1, Number(e.target.value))))}
+                  className="h-[40px] w-full rounded-md border border-gray-200 bg-white px-md pr-[40px] text-sm font-medium text-gray-900 tabular-nums focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                />
+                <span className="absolute right-md top-1/2 -translate-y-1/2 text-sm text-gray-400">Years</span>
+              </div>
+            </div>
+
+            {/* Interest Rate */}
+            <div>
+              <label htmlFor="emi-rate" className="text-caption font-medium text-gray-600">
+                Rate of Interest
+              </label>
+              <div className="relative mt-xs">
+                <input
+                  id="emi-rate"
+                  type="number"
+                  min={1}
+                  max={20}
+                  step={0.1}
+                  value={rate}
+                  onChange={(e) => setRate(Math.min(20, Math.max(1, Number(e.target.value))))}
+                  className="h-[40px] w-full rounded-md border border-gray-200 bg-white px-md pr-[28px] text-sm font-medium text-gray-900 tabular-nums focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                />
+                <span className="absolute right-md top-1/2 -translate-y-1/2 text-sm text-gray-400">%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right — Donut Chart */}
+        <div className="flex flex-col items-center justify-center gap-lg lg:w-[200px]">
+          <svg width="160" height="160" viewBox="0 0 160 160" aria-hidden="true">
+            {/* Background circle */}
+            <circle cx="80" cy="80" r={radius} fill="none" stroke="#F3F4F6" strokeWidth="18" />
+            {/* Principal arc */}
+            <circle
+              cx="80"
+              cy="80"
+              r={radius}
+              fill="none"
+              stroke="#4B1CB0"
+              strokeWidth="18"
+              strokeDasharray={`${principalArc} ${interestArc}`}
+              strokeDashoffset={circumference * 0.25}
+              strokeLinecap="round"
+              className="transition-all duration-500"
+            />
+            {/* Interest arc */}
+            <circle
+              cx="80"
+              cy="80"
+              r={radius}
+              fill="none"
+              stroke="#F59E0B"
+              strokeWidth="18"
+              strokeDasharray={`${interestArc} ${principalArc}`}
+              strokeDashoffset={circumference * 0.25 - principalArc}
+              strokeLinecap="round"
+              className="transition-all duration-500"
+            />
+            {/* Center text */}
+            <text x="80" y="72" textAnchor="middle" className="fill-gray-400 text-[10px]">
+              EMI/mo
+            </text>
+            <text x="80" y="90" textAnchor="middle" className="fill-gray-900 text-[15px] font-bold">
               {formatPrice(Math.round(emi))}
-            </span>
+            </text>
+          </svg>
+
+          {/* Legend */}
+          <div className="flex flex-col gap-sm text-sm">
+            <div className="flex items-center gap-sm">
+              <span className="h-[10px] w-[10px] rounded-full bg-brand-primary" />
+              <span className="text-caption text-gray-600">Principal: {formatPrice(Math.round(loanAmount))}</span>
+            </div>
+            <div className="flex items-center gap-sm">
+              <span className="h-[10px] w-[10px] rounded-full bg-accent" />
+              <span className="text-caption text-gray-600">Interest: {formatPrice(Math.round(totalInterest))}</span>
+            </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Total Interest</span>
-            <span className="text-sm font-semibold text-gray-900 tabular-nums">
-              {formatPrice(Math.round(totalInterest))}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Total Payable</span>
-            <span className="text-sm font-semibold text-gray-900 tabular-nums">
-              {formatPrice(Math.round(totalPayable))}
-            </span>
+
+          <div className="w-full border-t border-gray-100 pt-md text-center">
+            <p className="text-[10px] uppercase tracking-wider text-gray-400">Total Amount</p>
+            <p className="text-sm font-bold text-gray-900 tabular-nums">{formatPrice(Math.round(totalPayable))}</p>
           </div>
         </div>
       </div>

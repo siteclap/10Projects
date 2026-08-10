@@ -24,6 +24,7 @@ const companyLinks = [
   { label: 'Partner With Us', href: '/partners' },
   { label: 'Privacy Policy', href: '/privacy' },
   { label: 'Terms of Service', href: '/terms' },
+  { label: 'Disclaimer', href: '/disclaimer' },
 ] as const;
 
 const socialLinks = [
@@ -116,12 +117,16 @@ export function Footer() {
           <div>
             <Link
               href={ROUTES.HOME}
-              className="mb-lg inline-flex items-center gap-xs no-underline hover:no-underline"
+              className="mb-lg inline-flex items-center gap-sm no-underline hover:no-underline"
               aria-label="10Projects home"
             >
-              <span className="flex h-[32px] w-[32px] items-center justify-center rounded-sm bg-brand-primary text-base font-bold text-white">
-                10
-              </span>
+              <img
+                src="/logo.svg"
+                alt=""
+                width={32}
+                height={32}
+                className="h-[32px] w-[32px]"
+              />
               <span className="text-h4 text-white">Projects</span>
             </Link>
             <p className="mb-xl text-sm leading-relaxed text-gray-400">

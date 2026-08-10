@@ -24,7 +24,7 @@ export function Section({
   return (
     <section
       id={id}
-      className={cn('py-16', variantStyles[variant], className)}
+      className={cn('py-3xl md:py-4xl', variantStyles[variant], className)}
       {...props}
     >
       {children}

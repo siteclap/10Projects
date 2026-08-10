@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { prisma } from '@/lib/db';
 import { Container } from '@/components/layout/Container';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { Badge } from '@/components/ui/Badge';
@@ -7,10 +9,12 @@ import { ProjectGallery } from '@/components/project/ProjectGallery';
 import { ProjectTabs } from '@/components/project/ProjectTabs';
 import { ProjectSidebar } from '@/components/project/ProjectSidebar';
 import { FitScoreBreakdown } from '@/components/project/FitScoreBreakdown';
-import { ProsConsList } from '@/components/project/ProsConsList';
 import { AmenityGrid } from '@/components/project/AmenityGrid';
 import { ProjectActionsWrapper } from './ProjectActionsWrapper';
 import { MobileStickyBar } from './MobileStickyBar';
+import { LeadFormWrapper } from './LeadFormWrapper';
+import { InlineLeadCTA } from '@/components/lead/InlineLeadCTA';
+import { FloorPlanSection } from '@/components/project/FloorPlanSection';
 import { EmiCalculator } from '@/components/widgets/EmiCalculator';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { projectMetadata } from '@/lib/seo/metadata';
@@ -20,160 +24,146 @@ import {
   faqJsonLd,
 } from '@/lib/seo/json-ld';
 import { formatPrice, formatPriceRange } from '@/lib/utils/format-price';
-import type { Project, ProjectScore } from '@/lib/types/project';
+import type { Project } from '@/lib/types/project';
 
 // --- ISR: revalidate every 30 minutes ---
 export const revalidate = 1800;
 
-// --- Mock data ---
+// --- Data fetching ---
 
-const MOCK_IMAGES = [
-  'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=450&fit=crop',
-  'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=450&fit=crop',
-  'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&h=450&fit=crop',
-  'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=450&fit=crop',
-  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=450&fit=crop',
-  'https://images.unsplash.com/photo-1600566753376-12c8ab7c5a38?w=800&h=450&fit=crop',
-];
-
-const MOCK_SCORES: ProjectScore = {
-  value_for_money: 82,
-  location_connectivity: 88,
-  construction_quality: 75,
-  developer_reputation: 90,
-  rera_compliance: 95,
-  possession_timeline: 70,
-  amenities_lifestyle: 85,
-  floor_plan_design: 78,
-  appreciation_potential: 72,
-  rental_yield: 65,
-  neighbourhood_safety: 80,
-  water_supply: 88,
-  power_backup: 92,
-  natural_light_ventilation: 76,
-  parking_ratio: 68,
-  green_building: 55,
-  school_proximity: 84,
-  hospital_proximity: 79,
-  shopping_proximity: 86,
-  public_transport: 91,
-};
-
-const MOCK_PROJECT: Project = {
-  id: 1,
-  title: 'Lodha Palava City',
-  slug: 'lodha-palava-city',
-  permalink: '/navi-mumbai/kharghar/lodha-palava-city',
-  thumbnail: MOCK_IMAGES[0],
-  developer: 'Lodha Group',
-  location: 'Kharghar',
-  construction_stage: 'Under Construction',
-  expected_possession: 'Dec 2026',
-  rera_number: 'P52100025432',
-  configurations: [
-    {
-      config_type: '1 BHK',
-      carpet_area_sqft: 450,
-      base_price: 4500000,
-      total_price: 5200000,
-      inventory_total: 120,
-      inventory_available: 35,
+async function getProject(locationSlug: string, projectSlug: string) {
+  const dbProject = await prisma.project.findFirst({
+    where: {
+      slug: projectSlug,
+      location: { slug: locationSlug },
+      published: true,
     },
-    {
-      config_type: '2 BHK',
-      carpet_area_sqft: 720,
-      base_price: 7500000,
-      total_price: 8500000,
-      inventory_total: 200,
-      inventory_available: 68,
+    include: {
+      location: true,
+      configurations: { orderBy: { basePrice: 'asc' } },
+      gallery: { orderBy: { sortOrder: 'asc' } },
     },
-    {
-      config_type: '3 BHK',
-      carpet_area_sqft: 1050,
-      base_price: 11000000,
-      total_price: 12500000,
-      inventory_total: 80,
-      inventory_available: 22,
+  });
+
+  if (!dbProject) return null;
+
+  const locationName = dbProject.location?.name || locationSlug;
+  const locationSlugSafe = dbProject.location?.slug || locationSlug;
+
+  // Map DB model → frontend Project type
+  const project: Project = {
+    id: dbProject.id,
+    title: dbProject.title,
+    slug: dbProject.slug,
+    permalink: `/navi-mumbai/${locationSlugSafe}/${dbProject.slug}`,
+    thumbnail: dbProject.thumbnail || '',
+    developer: dbProject.developer,
+    location: locationName,
+    construction_stage: dbProject.constructionStage || 'Under Construction',
+    expected_possession: dbProject.expectedPossession || 'TBA',
+    rera_number: dbProject.reraNumber || '',
+    configurations: dbProject.configurations.map((c) => ({
+      config_type: c.configType,
+      carpet_area_sqft: c.carpetAreaSqft,
+      base_price: c.basePrice,
+      total_price: c.totalPrice,
+      inventory_total: c.inventoryTotal,
+      inventory_available: c.inventoryAvailable,
+    })),
+    price_min: dbProject.priceMin,
+    price_max: dbProject.priceMax,
+    fit_score: dbProject.fitScore ?? undefined,
+    description: dbProject.description ?? undefined,
+    highlights: dbProject.highlights ?? undefined,
+    amenities: dbProject.amenities,
+    pros: dbProject.pros,
+    cons: dbProject.cons,
+    land_parcel: dbProject.landParcel ?? undefined,
+    floors: dbProject.floors ?? undefined,
+  };
+
+  const images = dbProject.gallery.length > 0
+    ? dbProject.gallery.map((img) => img.url)
+    : dbProject.thumbnail
+      ? [dbProject.thumbnail]
+      : [];
+
+  return { project, images };
+}
+
+async function getSimilarProjects(locationSlug: string, excludeSlug: string) {
+  const similar = await prisma.project.findMany({
+    where: {
+      published: true,
+      slug: { not: excludeSlug },
+      location: { slug: locationSlug },
     },
-  ],
-  price_min: 5200000,
-  price_max: 12500000,
-  railway_distance_km: 2.5,
-  latitude: 19.0469,
-  longitude: 73.0713,
-  fit_score: 84,
-  scores: MOCK_SCORES,
-  strengths: [
-    { category: 'rera_compliance', label: 'RERA Compliance', score: 95 },
-    { category: 'public_transport', label: 'Public Transport', score: 91 },
-    { category: 'developer_reputation', label: 'Developer Reputation', score: 90 },
-  ],
-  tradeoffs: [
-    { category: 'green_building', label: 'Green Building', score: 55 },
-    { category: 'rental_yield', label: 'Rental Yield', score: 65 },
-    { category: 'parking_ratio', label: 'Parking Ratio', score: 68 },
-  ],
-};
+    include: {
+      location: true,
+      configurations: true,
+    },
+    take: 4,
+    orderBy: { fitScore: 'desc' },
+  });
 
-const MOCK_PROS = [
-  'Excellent connectivity to Kharghar railway station (2.5 km) and upcoming metro line',
-  'Reputed developer with strong track record of timely deliveries',
-  'RERA registered with full compliance — verified documentation',
-  'Well-designed floor plans with good natural light and cross-ventilation',
-  'Premium amenities including Olympic-size swimming pool and landscaped gardens',
-  'Strong appreciation potential due to upcoming Navi Mumbai International Airport',
-];
+  return similar.map((p) => ({
+    title: p.title,
+    developer: p.developer,
+    location: `${p.location?.name || ''}, Navi Mumbai`,
+    priceMin: p.priceMin,
+    priceMax: p.priceMax,
+    configs: p.configurations.map((c) => c.configType).join(', '),
+    fitScore: p.fitScore ?? 0,
+    image: p.thumbnail || '',
+    slug: `/navi-mumbai/${p.location?.slug || locationSlug}/${p.slug}`,
+  }));
+}
 
-const MOCK_CONS = [
-  'Green building certification not yet obtained',
-  'Parking ratio is below average for projects in this price segment',
-  'Rental yield currently lower compared to established locations like Vashi or Nerul',
-  'Possession timeline has been revised once; monitor for further delays',
-];
+function generateFaqs(project: Project) {
+  const faqs = [];
 
-const MOCK_AMENITIES = [
-  'Swimming Pool',
-  'Gym',
-  'Parking',
-  'Garden',
-  'Clubhouse',
-  'Playground',
-  'Security',
-  'Power Backup',
-  'Lift',
-  'Jogging Track',
-  'Indoor Games',
-  'Landscaped Garden',
-];
+  if (project.price_min > 0 && project.price_max > 0) {
+    faqs.push({
+      question: `What is the price range of ${project.title}?`,
+      answer: `${project.title} offers configurations ranging from ${formatPriceRange(project.price_min, project.price_max)}.${project.configurations.length > 0 ? ` Available types include ${project.configurations.map((c) => `${c.config_type} at ${formatPrice(c.total_price)}`).join(', ')}.` : ''}`,
+    });
+  }
 
-const MOCK_FAQS = [
-  {
-    question: 'What is the price range of Lodha Palava City?',
-    answer: `Lodha Palava City offers configurations ranging from ${formatPriceRange(MOCK_PROJECT.price_min, MOCK_PROJECT.price_max)}. The 1 BHK starts at ${formatPrice(5200000)}, 2 BHK at ${formatPrice(8500000)}, and 3 BHK at ${formatPrice(12500000)}.`,
-  },
-  {
-    question: 'Is Lodha Palava City RERA registered?',
-    answer: `Yes, Lodha Palava City is RERA registered with registration number ${MOCK_PROJECT.rera_number}. The developer maintains a 95% RERA compliance rate across all projects.`,
-  },
-  {
-    question: 'What is the possession date of Lodha Palava City?',
-    answer: `The expected possession date for Lodha Palava City is ${MOCK_PROJECT.expected_possession}. The project is currently ${MOCK_PROJECT.construction_stage.toLowerCase()}.`,
-  },
-  {
-    question: 'What amenities are available at Lodha Palava City?',
-    answer: `Lodha Palava City offers premium amenities including swimming pool, gymnasium, clubhouse, landscaped gardens, jogging track, indoor games, children's playground, 24/7 security, power backup, and high-speed lifts.`,
-  },
-  {
-    question: 'How is the connectivity of Lodha Palava City?',
-    answer: `Lodha Palava City is located ${MOCK_PROJECT.railway_distance_km} km from Kharghar railway station. It has excellent connectivity via the Sion-Panvel Expressway and the upcoming Navi Mumbai Metro. The Navi Mumbai International Airport is also being developed nearby.`,
-  },
-];
+  if (project.rera_number) {
+    faqs.push({
+      question: `Is ${project.title} RERA registered?`,
+      answer: `Yes, ${project.title} is RERA registered with registration number ${project.rera_number}.`,
+    });
+  }
+
+  if (project.expected_possession) {
+    faqs.push({
+      question: `What is the possession date of ${project.title}?`,
+      answer: `The expected possession date for ${project.title} is ${project.expected_possession}. The project is currently ${project.construction_stage.toLowerCase()}.`,
+    });
+  }
+
+  if (project.amenities && project.amenities.length > 0) {
+    faqs.push({
+      question: `What amenities are available at ${project.title}?`,
+      answer: `${project.title} offers amenities including ${project.amenities.join(', ')}.`,
+    });
+  }
+
+  faqs.push({
+    question: `Where is ${project.title} located?`,
+    answer: `${project.title} is located in ${project.location}, Navi Mumbai. It is a project by ${project.developer}.`,
+  });
+
+  return faqs;
+}
 
 const PROJECT_TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'price', label: 'Price' },
   { id: 'pros-cons', label: 'Pros & Cons' },
   { id: 'amenities', label: 'Amenities' },
+  { id: 'floor-plans', label: 'Floor Plans' },
   { id: 'location', label: 'Location' },
   { id: 'developer', label: 'Developer' },
   { id: 'faq', label: 'FAQ' },
@@ -186,20 +176,44 @@ type PageProps = {
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { location, project } = await params;
-  return projectMetadata(MOCK_PROJECT);
+  const { location, project: projectSlug } = await params;
+  const result = await getProject(location, projectSlug);
+  if (!result) return { title: 'Project Not Found' };
+  return projectMetadata(result.project);
 }
 
 export async function generateStaticParams(): Promise<
   Array<{ location: string; project: string }>
 > {
-  return [];
+  const projects = await prisma.project.findMany({
+    where: { published: true },
+    select: { slug: true, location: { select: { slug: true } } },
+  });
+
+  return projects
+    .filter((p) => p.location)
+    .map((p) => ({
+      location: p.location!.slug,
+      project: p.slug,
+    }));
 }
 
 export default async function ProjectDetailPage({ params }: PageProps) {
   const { location, project: projectSlug } = await params;
-  const project = MOCK_PROJECT;
+  const result = await getProject(location, projectSlug);
+
+  if (!result) {
+    notFound();
+  }
+
+  const { project, images } = result;
   const fullUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://10projects.com'}${project.permalink}`;
+  const faqs = generateFaqs(project);
+  const similarProjects = await getSimilarProjects(location, projectSlug);
+
+  const pros = project.pros || [];
+  const cons = project.cons || [];
+  const amenities = project.amenities || [];
 
   const breadcrumbItems = [
     { label: 'Navi Mumbai', href: '/navi-mumbai' },
@@ -214,33 +228,50 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     { name: project.title, url: project.permalink },
   ];
 
+  const devInitials = project.developer
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
-    <>
+    <LeadFormWrapper projectTitle={project.title}>
       {/* Structured data */}
       <JsonLd data={realEstateListingJsonLd(project)} />
       <JsonLd data={breadcrumbJsonLd(breadcrumbLdItems)} />
-      <JsonLd data={faqJsonLd(MOCK_FAQS)} />
+      <JsonLd data={faqJsonLd(faqs)} />
 
       {/* Tab navigation */}
       <ProjectTabs tabs={PROJECT_TABS} />
 
+      {/* Full-width gallery — outside the content+sidebar flex */}
       <Container>
-        {/* Breadcrumbs */}
-        <Breadcrumbs items={breadcrumbItems} className="mt-lg" />
+        <Breadcrumbs items={breadcrumbItems} className="mt-xl" />
+        {images.length > 0 && (
+          <div className="mt-xl">
+            <ProjectGallery images={images} badge={project.construction_stage} />
+          </div>
+        )}
+      </Container>
 
-        {/* Main layout: content + sidebar */}
-        <div className="flex gap-3xl pb-4xl">
+      {/* Content + sidebar layout starts below gallery */}
+      <Container>
+        {/* Mobile sidebar — price, advisor, trust (visible below lg) */}
+        <ProjectSidebar
+          project={project}
+          className="mt-xl lg:hidden"
+        />
+
+        <div className="mt-2xl flex items-start gap-3xl pb-5xl">
           {/* Main content column */}
           <div className="min-w-0 flex-1">
-            {/* Gallery */}
-            <ProjectGallery images={MOCK_IMAGES} />
-
             {/* Title and badges */}
-            <div className="mt-xl">
-              <div className="flex items-start gap-lg">
+            <div>
+              <div className="flex items-start gap-xl">
                 <div className="flex-1">
                   <h1 className="text-h1 text-gray-900">{project.title}</h1>
-                  <p className="mt-xs text-base text-gray-500">
+                  <p className="mt-sm text-base text-gray-500">
                     by {project.developer} in {project.location}
                   </p>
                 </div>
@@ -250,7 +281,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               </div>
 
               {/* Status badges */}
-              <div className="mt-md flex flex-wrap items-center gap-sm">
+              <div className="mt-lg flex flex-wrap items-center gap-sm">
                 <Badge variant="accent" size="md">
                   {project.construction_stage}
                 </Badge>
@@ -267,7 +298,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               </div>
 
               {/* Action buttons */}
-              <div className="mt-lg">
+              <div className="mt-xl">
                 <ProjectActionsWrapper
                   projectId={project.id}
                   projectTitle={project.title}
@@ -277,44 +308,78 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             </div>
 
             {/* Section: Overview */}
-            <section id="overview" className="mt-3xl">
-              <h2 className="text-h2 text-gray-900">Overview</h2>
-              <p className="mt-lg text-base leading-relaxed text-gray-600">
-                {project.title} is a premium residential project by {project.developer}{' '}
-                located in the heart of {project.location}, Navi Mumbai. Spread across
-                well-planned towers, the project offers 1 BHK, 2 BHK, and 3 BHK
-                configurations designed for modern living. With a strong focus on
-                connectivity, lifestyle amenities, and quality construction, this project
-                has earned a Fit Score of {project.fit_score} on 10Projects.
-              </p>
+            <section id="overview" className="mt-3xl border-t border-gray-100 pt-3xl">
+              {/* Overview card */}
+              <div className="rounded-md border border-gray-200 bg-white">
+                <div className="p-xl">
+                  <h2 className="text-h2 text-gray-900">Overview</h2>
+                  <p className="mt-lg text-sm leading-relaxed text-gray-600">
+                    {project.description || (
+                      <>
+                        {project.title} is a residential project by {project.developer}{' '}
+                        located in {project.location}, Navi Mumbai.
+                        {project.configurations.length > 0 && (
+                          <> The project offers {project.configurations.map((c) => c.config_type).join(', ')} configurations.</>
+                        )}
+                      </>
+                    )}
+                  </p>
+                </div>
 
-              {/* Configuration summary */}
-              <div className="mt-xl grid grid-cols-2 gap-md sm:grid-cols-4">
-                <div className="rounded-sm border border-gray-100 bg-gray-50 p-lg text-center">
-                  <p className="text-caption uppercase tracking-wider text-gray-500">Configurations</p>
-                  <p className="mt-xs text-h4 text-gray-900">
-                    {project.configurations.map((c) => c.config_type).join(', ')}
-                  </p>
-                </div>
-                <div className="rounded-sm border border-gray-100 bg-gray-50 p-lg text-center">
-                  <p className="text-caption uppercase tracking-wider text-gray-500">Price Range</p>
-                  <p className="mt-xs text-h4 text-gray-900">
-                    {formatPriceRange(project.price_min, project.price_max)}
-                  </p>
-                </div>
-                <div className="rounded-sm border border-gray-100 bg-gray-50 p-lg text-center">
-                  <p className="text-caption uppercase tracking-wider text-gray-500">Possession</p>
-                  <p className="mt-xs text-h4 text-gray-900">{project.expected_possession}</p>
-                </div>
-                <div className="rounded-sm border border-gray-100 bg-gray-50 p-lg text-center">
-                  <p className="text-caption uppercase tracking-wider text-gray-500">Status</p>
-                  <p className="mt-xs text-h4 text-gray-900">{project.construction_stage}</p>
+                {/* Stats row */}
+                <div className="grid grid-cols-2 border-t border-gray-100 sm:grid-cols-4">
+                  <div className="border-r border-gray-100 p-lg">
+                    <p className="text-caption text-gray-500">Configuration</p>
+                    <p className="mt-xs text-sm font-semibold text-gray-900">
+                      {project.configurations.length > 0
+                        ? project.configurations.map((c) => c.config_type).join(', ')
+                        : 'N/A'}
+                    </p>
+                  </div>
+                  <div className="border-r border-gray-100 p-lg sm:border-r">
+                    <p className="text-caption text-gray-500">Status / Possession</p>
+                    <p className="mt-xs text-sm font-semibold text-gray-900">
+                      {project.construction_stage} — {project.expected_possession}
+                    </p>
+                  </div>
+                  <div className="border-r border-gray-100 border-t border-t-gray-100 p-lg sm:border-t-0">
+                    <p className="text-caption text-gray-500">Avg. Price</p>
+                    <p className="mt-xs text-sm font-semibold text-gray-900">
+                      {project.price_min > 0 && project.price_max > 0
+                        ? formatPriceRange(project.price_min, project.price_max)
+                        : 'On Request'}
+                    </p>
+                  </div>
+                  <div className="border-t border-gray-100 p-lg sm:border-t-0">
+                    <p className="text-caption text-gray-500">RERA Number</p>
+                    <p className="mt-xs text-sm font-semibold text-gray-900">
+                      {project.rera_number || 'N/A'}
+                    </p>
+                  </div>
                 </div>
               </div>
 
+              {/* Why consider card — only show if we have pros */}
+              {pros.length > 0 && (
+                <div className="mt-xl rounded-md border border-accent/20 bg-accent/5 p-xl">
+                  <h3 className="text-base font-semibold text-gray-900">
+                    Why consider buying at{' '}
+                    <span className="text-accent-dark">{project.title}</span>?
+                  </h3>
+                  <div className="mt-md grid grid-cols-1 gap-sm sm:grid-cols-2">
+                    {pros.slice(0, 6).map((item, i) => (
+                      <div key={i} className="flex items-start gap-md">
+                        <span className="mt-[6px] block h-[8px] w-[8px] shrink-0 rounded-[2px] bg-accent" />
+                        <span className="text-sm leading-relaxed text-gray-700">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Fit Score Breakdown */}
               {project.scores && (
-                <div className="mt-3xl">
+                <div className="mt-xl">
                   <h3 className="text-h3 text-gray-900">Fit Score Breakdown</h3>
                   <p className="mt-sm text-sm text-gray-500">
                     AI-powered analysis across 20 scoring categories
@@ -326,130 +391,147 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               )}
             </section>
 
-            {/* Section: Price */}
-            <section id="price" className="mt-3xl">
-              <h2 className="text-h2 text-gray-900">Price & Configuration</h2>
+            {/* Section: Price — only if configurations exist */}
+            {project.configurations.length > 0 && (
+              <section id="price" className="mt-3xl border-t border-gray-100 pt-3xl">
+                <h2 className="text-h2 text-gray-900">Price & Configuration</h2>
 
-              {/* Price table */}
-              <div className="mt-xl overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="pb-md pr-xl font-semibold text-gray-700">Type</th>
-                      <th className="pb-md pr-xl font-semibold text-gray-700">Carpet Area</th>
-                      <th className="pb-md pr-xl font-semibold text-gray-700">Base Price</th>
-                      <th className="pb-md pr-xl font-semibold text-gray-700">Total Price</th>
-                      <th className="pb-md font-semibold text-gray-700">Availability</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {project.configurations.map((config, index) => (
-                      <tr
-                        key={config.config_type}
-                        className="border-b border-gray-100 last:border-0"
-                      >
-                        <td className="py-md pr-xl font-medium text-gray-900">
-                          {config.config_type}
-                        </td>
-                        <td className="py-md pr-xl text-gray-600">
-                          {config.carpet_area_sqft} sq ft
-                        </td>
-                        <td className="py-md pr-xl text-gray-600 tabular-nums">
-                          {formatPrice(config.base_price)}
-                        </td>
-                        <td className="py-md pr-xl font-semibold text-gray-900 tabular-nums">
-                          {formatPrice(config.total_price)}
-                        </td>
-                        <td className="py-md text-gray-600">
-                          {config.inventory_available} / {config.inventory_total} units
-                        </td>
+                {/* Price table */}
+                <div className="mt-xl overflow-x-auto rounded-md border border-gray-200">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-200 bg-gray-50">
+                        <th className="px-xl py-lg font-semibold text-gray-700">Type</th>
+                        <th className="px-xl py-lg font-semibold text-gray-700">Carpet Area</th>
+                        <th className="px-xl py-lg font-semibold text-gray-700">Base Price</th>
+                        <th className="px-xl py-lg font-semibold text-gray-700">Total Price</th>
+                        <th className="px-xl py-lg font-semibold text-gray-700">Availability</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* EMI Calculator */}
-              <div className="mt-3xl">
-                <EmiCalculator defaultPrice={project.price_min} />
-              </div>
-            </section>
-
-            {/* Section: Pros & Cons */}
-            <section id="pros-cons" className="mt-3xl">
-              <h2 className="text-h2 text-gray-900">Pros & Cons</h2>
-              <p className="mt-sm text-sm text-gray-500">
-                Based on our AI-powered 20-category analysis
-              </p>
-              <div className="mt-xl">
-                <ProsConsList pros={MOCK_PROS} cons={MOCK_CONS} />
-              </div>
-            </section>
-
-            {/* Section: Amenities */}
-            <section id="amenities" className="mt-3xl">
-              <h2 className="text-h2 text-gray-900">Amenities</h2>
-              <p className="mt-sm text-sm text-gray-500">
-                {MOCK_AMENITIES.length} amenities available
-              </p>
-              <div className="mt-xl">
-                <AmenityGrid amenities={MOCK_AMENITIES} />
-              </div>
-            </section>
-
-            {/* Section: Location */}
-            <section id="location" className="mt-3xl">
-              <h2 className="text-h2 text-gray-900">Location</h2>
-              <div className="mt-xl">
-                <div className="grid grid-cols-1 gap-lg sm:grid-cols-2">
-                  <div className="rounded-sm border border-gray-100 bg-gray-50 p-lg">
-                    <p className="text-caption uppercase tracking-wider text-gray-500">
-                      Nearest Railway Station
-                    </p>
-                    <p className="mt-xs text-base font-medium text-gray-900">
-                      Kharghar Station
-                    </p>
-                    <p className="mt-xs text-sm text-gray-500">
-                      {project.railway_distance_km} km away
-                    </p>
-                  </div>
-                  <div className="rounded-sm border border-gray-100 bg-gray-50 p-lg">
-                    <p className="text-caption uppercase tracking-wider text-gray-500">
-                      Location Connectivity Score
-                    </p>
-                    <p className="mt-xs text-base font-medium text-gray-900">
-                      {project.scores?.location_connectivity ?? 'N/A'} / 100
-                    </p>
-                    <p className="mt-xs text-sm text-gray-500">
-                      Above average for Navi Mumbai
-                    </p>
-                  </div>
-                  <div className="rounded-sm border border-gray-100 bg-gray-50 p-lg">
-                    <p className="text-caption uppercase tracking-wider text-gray-500">
-                      Public Transport Score
-                    </p>
-                    <p className="mt-xs text-base font-medium text-gray-900">
-                      {project.scores?.public_transport ?? 'N/A'} / 100
-                    </p>
-                    <p className="mt-xs text-sm text-gray-500">
-                      Excellent metro and bus connectivity
-                    </p>
-                  </div>
-                  <div className="rounded-sm border border-gray-100 bg-gray-50 p-lg">
-                    <p className="text-caption uppercase tracking-wider text-gray-500">
-                      Neighbourhood Safety
-                    </p>
-                    <p className="mt-xs text-base font-medium text-gray-900">
-                      {project.scores?.neighbourhood_safety ?? 'N/A'} / 100
-                    </p>
-                    <p className="mt-xs text-sm text-gray-500">
-                      Well-developed residential area
-                    </p>
-                  </div>
+                    </thead>
+                    <tbody>
+                      {project.configurations.map((config) => (
+                        <tr
+                          key={config.config_type}
+                          className="border-b border-gray-100 last:border-0"
+                        >
+                          <td className="px-xl py-lg font-medium text-gray-900">
+                            {config.config_type}
+                          </td>
+                          <td className="px-xl py-lg text-gray-600">
+                            {config.carpet_area_sqft} sq ft
+                          </td>
+                          <td className="px-xl py-lg text-gray-600 tabular-nums">
+                            {formatPrice(config.base_price)}
+                          </td>
+                          <td className="px-xl py-lg font-semibold text-gray-900 tabular-nums">
+                            {formatPrice(config.total_price)}
+                          </td>
+                          <td className="px-xl py-lg text-gray-600">
+                            {config.inventory_available} / {config.inventory_total} units
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
 
+                {/* EMI Calculator */}
+                {project.price_min > 0 && (
+                  <div className="mt-3xl">
+                    <EmiCalculator defaultPrice={project.price_min} />
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Section: Pros & Cons — only if data exists */}
+            {(pros.length > 0 || cons.length > 0) && (
+              <section id="pros-cons" className="mt-3xl border-t border-gray-100 pt-3xl">
+                <h2 className="text-h2 text-gray-900">Pros & Cons</h2>
+
+                <div className="mt-xl grid grid-cols-1 gap-md sm:grid-cols-2">
+                  {/* Pros */}
+                  {pros.length > 0 && (
+                    <div className="rounded-md border border-gray-200 bg-white p-lg">
+                      <div className="flex items-center gap-xs">
+                        <span className="flex h-[20px] w-[20px] items-center justify-center rounded-full bg-success/10">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-success" aria-hidden="true">
+                            <path d="M20 6 9 17l-5-5" />
+                          </svg>
+                        </span>
+                        <h3 className="text-sm font-semibold text-gray-900">Pros</h3>
+                      </div>
+                      <ul className="mt-md flex flex-col gap-sm">
+                        {pros.map((item, i) => (
+                          <li key={i} className="flex items-start gap-sm">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mt-[2px] shrink-0 text-success" aria-hidden="true">
+                              <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                            <span className="text-caption leading-snug text-gray-700">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Cons */}
+                  {cons.length > 0 && (
+                    <div className="rounded-md border border-gray-200 bg-white p-lg">
+                      <div className="flex items-center gap-xs">
+                        <span className="flex h-[20px] w-[20px] items-center justify-center rounded-full bg-red-50">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-red-500" aria-hidden="true">
+                            <path d="M18 6 6 18" />
+                            <path d="m6 6 12 12" />
+                          </svg>
+                        </span>
+                        <h3 className="text-sm font-semibold text-gray-900">Cons</h3>
+                      </div>
+                      <ul className="mt-md flex flex-col gap-sm">
+                        {cons.map((item, i) => (
+                          <li key={i} className="flex items-start gap-sm">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mt-[2px] shrink-0 text-red-500" aria-hidden="true">
+                              <path d="M18 6 6 18" />
+                              <path d="m6 6 12 12" />
+                            </svg>
+                            <span className="text-caption leading-snug text-gray-700">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* Section: Amenities — only if data exists */}
+            {amenities.length > 0 && (
+              <section id="amenities" className="mt-3xl border-t border-gray-100 pt-3xl">
+                <h2 className="text-h2 text-gray-900">Amenities</h2>
+                <div className="mt-xl">
+                  <AmenityGrid amenities={amenities} initialCount={8} />
+                </div>
+              </section>
+            )}
+
+            {/* Section: Floor Plans */}
+            {project.configurations.length > 0 && (
+              <FloorPlanSection
+                configurations={project.configurations}
+                projectTitle={project.title}
+              />
+            )}
+
+            {/* Inline CTA — after floor plans */}
+            <div className="mt-3xl">
+              <InlineLeadCTA projectTitle={project.title} />
+            </div>
+
+            {/* Section: Location */}
+            <section id="location" className="mt-3xl border-t border-gray-100 pt-3xl">
+              <h2 className="text-h2 text-gray-900">Location</h2>
+              <div className="mt-xl">
                 {/* Map placeholder */}
-                <div className="mt-xl flex h-[300px] items-center justify-center rounded-md border border-gray-200 bg-gray-100">
+                <div className="flex h-[300px] items-center justify-center rounded-md border border-gray-200 bg-gray-100">
                   <div className="text-center">
                     <svg
                       width="40"
@@ -469,101 +551,181 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                     <p className="mt-sm text-sm text-gray-500">
                       {project.location}, Navi Mumbai
                     </p>
-                    <p className="mt-xs text-caption text-gray-400">
-                      {project.latitude.toFixed(4)}, {project.longitude.toFixed(4)}
-                    </p>
                   </div>
                 </div>
               </div>
             </section>
 
             {/* Section: Developer */}
-            <section id="developer" className="mt-3xl">
+            <section id="developer" className="mt-3xl border-t border-gray-100 pt-3xl">
               <h2 className="text-h2 text-gray-900">About the Developer</h2>
               <div className="mt-xl rounded-md border border-gray-200 p-xl">
-                <div className="flex items-center gap-lg">
+                <div className="flex items-center gap-xl">
                   <div className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-md bg-brand-primary-pale text-h4 font-bold text-brand-primary">
-                    LG
+                    {devInitials}
                   </div>
                   <div>
                     <h3 className="text-h4 text-gray-900">{project.developer}</h3>
-                    <p className="mt-xs text-sm text-gray-500">
-                      Tier 1 Developer — Established 1995
-                    </p>
-                  </div>
-                </div>
-                <p className="mt-lg text-sm leading-relaxed text-gray-600">
-                  Lodha Group is one of India&apos;s largest real estate developers with
-                  a strong presence in the Mumbai Metropolitan Region. Known for
-                  world-class construction quality, timely delivery, and premium
-                  amenities, Lodha has delivered over 50 million sq ft of residential and
-                  commercial spaces across India and London.
-                </p>
-                <div className="mt-lg grid grid-cols-2 gap-md sm:grid-cols-4">
-                  <div className="text-center">
-                    <p className="text-h3 font-bold text-gray-900">150+</p>
-                    <p className="mt-xs text-caption text-gray-500">Projects Completed</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-h3 font-bold text-gray-900">4.5/5</p>
-                    <p className="mt-xs text-caption text-gray-500">Customer Rating</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-h3 font-bold text-gray-900">98%</p>
-                    <p className="mt-xs text-caption text-gray-500">RERA Compliance</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-h3 font-bold text-gray-900">Strong</p>
-                    <p className="mt-xs text-caption text-gray-500">Financial Stability</p>
                   </div>
                 </div>
               </div>
             </section>
 
             {/* Section: FAQ */}
-            <section id="faq" className="mt-3xl">
-              <h2 className="text-h2 text-gray-900">Frequently Asked Questions</h2>
-              <div className="mt-xl flex flex-col gap-lg">
-                {MOCK_FAQS.map((faq, index) => (
-                  <details
-                    key={index}
-                    className="group rounded-sm border border-gray-200 bg-white"
-                  >
-                    <summary className="flex cursor-pointer items-center justify-between px-xl py-lg text-base font-medium text-gray-900 [&::-webkit-details-marker]:hidden">
-                      {faq.question}
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="shrink-0 text-gray-400 transition-transform group-open:rotate-180"
-                        aria-hidden="true"
-                      >
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
-                    </summary>
-                    <div className="border-t border-gray-100 px-xl py-lg">
-                      <p className="text-sm leading-relaxed text-gray-600">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  </details>
-                ))}
+            {faqs.length > 0 && (
+              <section id="faq" className="mt-3xl border-t border-gray-100 pt-3xl">
+                <h2 className="text-h2 text-gray-900">Frequently Asked Questions</h2>
+                <div className="mt-xl flex flex-col gap-lg">
+                  {faqs.map((faq, index) => (
+                    <details
+                      key={index}
+                      className="group rounded-md border border-gray-200 bg-white"
+                    >
+                      <summary className="flex cursor-pointer items-center justify-between px-xl py-lg text-base font-medium text-gray-900 [&::-webkit-details-marker]:hidden">
+                        {faq.question}
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="ml-lg shrink-0 text-gray-400 transition-transform group-open:rotate-180"
+                          aria-hidden="true"
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </summary>
+                      <div className="border-t border-gray-100 px-xl py-lg">
+                        <p className="text-sm leading-relaxed text-gray-600">
+                          {faq.answer}
+                        </p>
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Section: Why Buy from 10Projects */}
+            <section className="mt-3xl border-t border-gray-100 pt-3xl">
+              <h2 className="text-h2 text-gray-900">Why Buy from 10Projects?</h2>
+              <div className="mt-xl grid grid-cols-2 gap-md sm:grid-cols-4">
+                <div className="flex flex-col items-center gap-sm rounded-lg border border-gray-200 bg-white p-lg text-center">
+                  <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-success/10">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-success" aria-hidden="true">
+                      <path d="M12 2v20" />
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                  </div>
+                  <p className="text-sm font-semibold text-gray-900">Lowest Price</p>
+                  <p className="text-caption text-gray-500">Guaranteed best deal</p>
+                </div>
+                <div className="flex flex-col items-center gap-sm rounded-lg border border-gray-200 bg-white p-lg text-center">
+                  <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-brand-primary/10">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-primary" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="m4.9 4.9 14.2 14.2" />
+                      <path d="M12 7v5" />
+                      <path d="M9.5 15h5a2.5 2.5 0 0 0 0-5" />
+                    </svg>
+                  </div>
+                  <p className="text-sm font-semibold text-gray-900">No Brokerage</p>
+                  <p className="text-caption text-gray-500">Zero commission</p>
+                </div>
+                <div className="flex flex-col items-center gap-sm rounded-lg border border-gray-200 bg-white p-lg text-center">
+                  <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-accent/10">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-dark" aria-hidden="true">
+                      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10l-2-4H7L5 10l-2.5 1.1C1.7 11.3 1 12.1 1 13v3c0 .6.4 1 1 1h2" />
+                      <circle cx="7" cy="17" r="2" />
+                      <circle cx="17" cy="17" r="2" />
+                    </svg>
+                  </div>
+                  <p className="text-sm font-semibold text-gray-900">Free Site Visit</p>
+                  <p className="text-caption text-gray-500">With cab pickup</p>
+                </div>
+                <div className="flex flex-col items-center gap-sm rounded-lg border border-gray-200 bg-white p-lg text-center">
+                  <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-brand-primary/10">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-primary" aria-hidden="true">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="16" x2="8" y1="13" y2="13" />
+                      <line x1="16" x2="8" y1="17" y2="17" />
+                      <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                  </div>
+                  <p className="text-sm font-semibold text-gray-900">Unbiased Reports</p>
+                  <p className="text-caption text-gray-500">AI-powered analysis</p>
+                </div>
               </div>
             </section>
+
+            {/* Section: Similar Projects — only if we have data */}
+            {similarProjects.length > 0 && (
+              <section className="mt-3xl border-t border-gray-100 pt-3xl">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-h2 text-gray-900">Similar Projects Nearby</h2>
+                  <a
+                    href={`/navi-mumbai/${location}`}
+                    className="text-sm font-medium text-brand-primary hover:text-brand-primary-dark"
+                  >
+                    View All
+                  </a>
+                </div>
+
+                <div className="mt-xl grid grid-cols-1 gap-md sm:grid-cols-2 lg:grid-cols-4">
+                  {similarProjects.map((p) => (
+                    <a
+                      key={p.slug}
+                      href={p.slug}
+                      className="group overflow-hidden rounded-lg border border-gray-200 bg-white no-underline transition-shadow hover:shadow-md hover:no-underline"
+                    >
+                      {/* Image */}
+                      <div className="relative h-[140px] bg-gray-100">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                        <div className="absolute left-sm top-sm rounded-full bg-white/90 px-sm py-[2px] text-[10px] font-semibold text-gray-700 backdrop-blur-sm">
+                          {p.developer}
+                        </div>
+                        {p.fitScore > 0 && (
+                          <div className="absolute right-sm top-sm flex h-[28px] w-[28px] items-center justify-center rounded-full bg-white/90 backdrop-blur-sm">
+                            <span className="text-caption font-bold text-brand-primary">{p.fitScore}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-md">
+                        <h3 className="text-sm font-semibold text-gray-900 group-hover:text-brand-primary">
+                          {p.title}
+                        </h3>
+                        <p className="mt-[2px] text-caption text-gray-500">{p.location}</p>
+                        <div className="mt-sm flex items-center justify-between">
+                          <p className="text-sm font-semibold text-gray-900">
+                            {formatPrice(p.priceMin)} - {formatPrice(p.priceMax)}
+                          </p>
+                        </div>
+                        <p className="mt-[2px] text-caption text-gray-500">{p.configs}</p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
+
           </div>
 
-          {/* Sidebar */}
-          <ProjectSidebar project={project} />
+          {/* Desktop sidebar — sticky, hidden on mobile */}
+          <ProjectSidebar
+            project={project}
+            className="sticky top-[100px] hidden w-[340px] shrink-0 self-start lg:flex"
+          />
         </div>
       </Container>
 
       {/* Mobile sticky CTA bar */}
       <MobileStickyBar projectTitle={project.title} projectUrl={fullUrl} />
-    </>
+    </LeadFormWrapper>
   );
 }

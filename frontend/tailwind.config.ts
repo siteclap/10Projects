@@ -66,11 +66,11 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          primary: '#1A56DB',
-          'primary-dark': '#1E40AF',
-          'primary-light': '#3B82F6',
-          'primary-pale': '#DBEAFE',
-          'primary-bg': '#EFF6FF',
+          primary: '#4B1CB0',
+          'primary-dark': '#3B1490',
+          'primary-light': '#7C3AED',
+          'primary-pale': '#EDE9FE',
+          'primary-bg': '#F5F3FF',
         },
         accent: {
           DEFAULT: '#F59E0B',
@@ -91,7 +91,7 @@ const config: Config = {
           DEFAULT: '#EF4444',
           light: '#FEE2E2',
         },
-        info: '#3B82F6',
+        info: '#7C3AED',
         gray: {
           50: '#F9FAFB',
           100: '#F3F4F6',

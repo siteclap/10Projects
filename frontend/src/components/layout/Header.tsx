@@ -8,9 +8,12 @@ import { ROUTES } from '@/lib/constants/routes';
 import { MobileNav } from './MobileNav';
 
 const navLinks = [
+  { label: 'Projects', href: ROUTES.PROJECTS },
   { label: 'Locations', href: ROUTES.CITY },
+  { label: 'Developers', href: ROUTES.DEVELOPERS },
+  { label: 'Guides', href: ROUTES.GUIDES },
   { label: 'How It Works', href: ROUTES.METHODOLOGY },
-  { label: 'About', href: '/about' },
+  { label: 'EMI Calculator', href: '/emi-calculator' },
 ] as const;
 
 export function Header() {
@@ -38,13 +41,19 @@ export function Header() {
           {/* Logo */}
           <Link
             href={ROUTES.HOME}
-            className="flex items-center gap-xs no-underline hover:no-underline"
+            className="flex items-center gap-sm no-underline hover:no-underline"
             aria-label="10Projects home"
           >
-            <span className="flex h-[32px] w-[32px] items-center justify-center rounded-sm bg-brand-primary text-base font-bold text-white">
-              10
+            <img
+              src="/logo.svg"
+              alt=""
+              width={32}
+              height={32}
+              className="h-[32px] w-[32px]"
+            />
+            <span className="text-h4 text-gray-900">
+              Projects
             </span>
-            <span className="text-h4 text-gray-900">Projects</span>
           </Link>
 
           {/* Center: City selector + Nav (hidden on mobile) */}

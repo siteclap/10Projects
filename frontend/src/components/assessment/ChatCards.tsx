@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/Button';
 interface ChatCardsProps {
   question: Question;
   onAnswer: (key: string, value: unknown, displayText: string) => void;
+  variant?: 'light' | 'dark';
 }
 
-export function ChatCards({ question, onAnswer }: ChatCardsProps) {
+export function ChatCards({ question, onAnswer, variant = 'light' }: ChatCardsProps) {
+  const isDark = variant === 'dark';
   const [selected, setSelected] = useState<string[]>([]);
   const [rankings, setRankings] = useState<Record<string, number>>({});
 
@@ -129,10 +131,15 @@ export function ChatCards({ question, onAnswer }: ChatCardsProps) {
               className={cn(
                 'relative flex flex-col items-center gap-xs rounded-md border p-md text-center',
                 'transition-all duration-150 cursor-pointer',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary',
+                isDark ? 'focus-visible:ring-offset-gray-900' : 'focus-visible:ring-offset-2',
                 isSelected
-                  ? 'border-brand-primary bg-brand-primary-bg shadow-card'
-                  : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-card'
+                  ? isDark
+                    ? 'border-brand-primary bg-brand-primary/10 shadow-card'
+                    : 'border-brand-primary bg-brand-primary-bg shadow-card'
+                  : isDark
+                    ? 'border-gray-700 bg-gray-800/60 hover:border-gray-600'
+                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-card'
               )}
             >
               {/* Rank badge */}
@@ -151,14 +158,16 @@ export function ChatCards({ question, onAnswer }: ChatCardsProps) {
               <span
                 className={cn(
                   'text-sm font-medium',
-                  isSelected ? 'text-brand-primary' : 'text-gray-800'
+                  isSelected
+                    ? 'text-brand-primary'
+                    : isDark ? 'text-gray-200' : 'text-gray-800'
                 )}
               >
                 {option.label}
               </span>
 
               {option.description && (
-                <span className="text-caption text-gray-500">
+                <span className={cn('text-caption', isDark ? 'text-gray-400' : 'text-gray-500')}>
                   {option.description}
                 </span>
               )}

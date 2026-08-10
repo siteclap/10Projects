@@ -2,17 +2,21 @@
 
 import { useState, useCallback, useEffect } from 'react';
 
+type ProjectId = string | number;
+
 const STORAGE_KEY = 'tp_compare_ids';
 const MAX_COMPARE = 4;
 
-function getStoredIds(): number[] {
+function getStoredIds(): ProjectId[] {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
-      return parsed.filter((v): v is number => typeof v === 'number').slice(0, MAX_COMPARE);
+      return parsed
+        .filter((v): v is ProjectId => typeof v === 'number' || typeof v === 'string')
+        .slice(0, MAX_COMPARE);
     }
     return [];
   } catch {
@@ -20,7 +24,7 @@ function getStoredIds(): number[] {
   }
 }
 
-function persistIds(ids: number[]): void {
+function persistIds(ids: ProjectId[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
   } catch {
@@ -29,16 +33,16 @@ function persistIds(ids: number[]): void {
 }
 
 interface UseCompareReturn {
-  ids: number[];
-  add: (id: number) => void;
-  remove: (id: number) => void;
-  toggle: (id: number) => void;
+  ids: ProjectId[];
+  add: (id: ProjectId) => void;
+  remove: (id: ProjectId) => void;
+  toggle: (id: ProjectId) => void;
   clear: () => void;
-  has: (id: number) => boolean;
+  has: (id: ProjectId) => boolean;
 }
 
 export function useCompare(): UseCompareReturn {
-  const [ids, setIds] = useState<number[]>([]);
+  const [ids, setIds] = useState<ProjectId[]>([]);
 
   // Hydrate from localStorage on mount
   useEffect(() => {
@@ -56,7 +60,7 @@ export function useCompare(): UseCompareReturn {
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-  const add = useCallback((id: number) => {
+  const add = useCallback((id: ProjectId) => {
     setIds((prev) => {
       if (prev.includes(id)) return prev;
       if (prev.length >= MAX_COMPARE) return prev;
@@ -66,7 +70,7 @@ export function useCompare(): UseCompareReturn {
     });
   }, []);
 
-  const remove = useCallback((id: number) => {
+  const remove = useCallback((id: ProjectId) => {
     setIds((prev) => {
       const next = prev.filter((v) => v !== id);
       persistIds(next);
@@ -74,9 +78,9 @@ export function useCompare(): UseCompareReturn {
     });
   }, []);
 
-  const toggle = useCallback((id: number) => {
+  const toggle = useCallback((id: ProjectId) => {
     setIds((prev) => {
-      let next: number[];
+      let next: ProjectId[];
       if (prev.includes(id)) {
         next = prev.filter((v) => v !== id);
       } else {
@@ -93,7 +97,7 @@ export function useCompare(): UseCompareReturn {
     persistIds([]);
   }, []);
 
-  const has = useCallback((id: number) => ids.includes(id), [ids]);
+  const has = useCallback((id: ProjectId) => ids.includes(id), [ids]);
 
   return { ids, add, remove, toggle, clear, has };
 }

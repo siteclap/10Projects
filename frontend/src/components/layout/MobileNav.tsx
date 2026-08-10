@@ -7,11 +7,13 @@ import { Button } from '@/components/ui/Button';
 import { ROUTES } from '@/lib/constants/routes';
 
 const navLinks = [
+  { label: 'Projects', href: ROUTES.PROJECTS },
   { label: 'Locations', href: ROUTES.CITY },
+  { label: 'Developers', href: ROUTES.DEVELOPERS },
+  { label: 'Guides', href: ROUTES.GUIDES },
   { label: 'How It Works', href: ROUTES.METHODOLOGY },
+  { label: 'EMI Calculator', href: '/emi-calculator' },
   { label: 'About', href: '/about' },
-  { label: 'Scoring Methodology', href: ROUTES.METHODOLOGY },
-  { label: 'Buyer Guides', href: ROUTES.GUIDES },
 ] as const;
 
 interface MobileNavProps {
@@ -72,13 +74,17 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
         <div className="flex h-[64px] items-center justify-between border-b border-gray-200 px-lg">
           <Link
             href={ROUTES.HOME}
-            className="flex items-center gap-xs no-underline hover:no-underline"
+            className="flex items-center gap-sm no-underline hover:no-underline"
             onClick={onClose}
             aria-label="10Projects home"
           >
-            <span className="flex h-[32px] w-[32px] items-center justify-center rounded-sm bg-brand-primary text-base font-bold text-white">
-              10
-            </span>
+            <img
+              src="/logo.svg"
+              alt=""
+              width={32}
+              height={32}
+              className="h-[32px] w-[32px]"
+            />
             <span className="text-h4 text-gray-900">Projects</span>
           </Link>
 

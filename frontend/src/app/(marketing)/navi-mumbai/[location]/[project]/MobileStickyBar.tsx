@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils/cn';
+import { useLeadForm } from '@/components/lead/LeadFormContext';
 
 interface MobileStickyBarProps {
   projectTitle: string;
@@ -8,6 +9,8 @@ interface MobileStickyBarProps {
 }
 
 export function MobileStickyBar({ projectTitle, projectUrl }: MobileStickyBarProps) {
+  const { openForm } = useLeadForm();
+
   const whatsappMessage = encodeURIComponent(
     `Hi, I'm interested in ${projectTitle}. ${projectUrl}`
   );
@@ -34,6 +37,7 @@ export function MobileStickyBar({ projectTitle, projectUrl }: MobileStickyBarPro
         {/* Get Best Price */}
         <button
           type="button"
+          onClick={() => openForm('best_price')}
           className="flex h-[44px] flex-1 items-center justify-center rounded-sm bg-brand-primary font-medium text-white transition-colors hover:bg-brand-primary-dark"
         >
           Best Price
@@ -42,6 +46,7 @@ export function MobileStickyBar({ projectTitle, projectUrl }: MobileStickyBarPro
         {/* Book Site Visit */}
         <button
           type="button"
+          onClick={() => openForm('site_visit')}
           className="flex h-[44px] flex-1 items-center justify-center rounded-sm border border-gray-300 bg-white font-medium text-gray-700 transition-colors hover:bg-gray-50"
         >
           Site Visit

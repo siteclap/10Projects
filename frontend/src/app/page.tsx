@@ -3,6 +3,8 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Hero } from '@/components/homepage/Hero';
 import { HowItWorks } from '@/components/homepage/HowItWorks';
+import { WhyUs } from '@/components/homepage/WhyUs';
+import { BlogSection } from '@/components/homepage/BlogSection';
 import { TrustBar } from '@/components/homepage/TrustBar';
 import { FinalCta } from '@/components/homepage/FinalCta';
 import { ProjectCard } from '@/components/project/ProjectCard';
@@ -336,7 +338,10 @@ export default function HomePage() {
         {/* 4. How It Works */}
         <HowItWorks />
 
-        {/* 5. Popular Locations */}
+        {/* 5. Why 10Projects */}
+        <WhyUs />
+
+        {/* 6. Popular Locations */}
         <LocationGrid
           locations={popularLocations}
           title="Popular Locations in Navi Mumbai"
@@ -345,13 +350,16 @@ export default function HomePage() {
           className="bg-section-alt"
         />
 
-        {/* 6. Developer Partners */}
+        {/* 7. Developer Partners */}
         <DeveloperLogos developers={developerPartners} />
 
-        {/* 7. Trust Bar */}
+        {/* 8. Blog */}
+        <BlogSection />
+
+        {/* 9. Trust Bar */}
         <TrustBar />
 
-        {/* 8. Final CTA */}
+        {/* 10. Final CTA */}
         <FinalCta />
       </main>
 

@@ -6,7 +6,7 @@ import { ToastContainer } from '@/components/ui/Toast';
 import { CompareFloatingBar } from '@/components/compare/CompareFloatingBar';
 
 interface ProjectActionsWrapperProps {
-  projectId: number;
+  projectId: number | string;
   projectTitle: string;
   projectUrl: string;
 }

@@ -26,7 +26,7 @@ export async function listProjects(params: ListProjectsParams = {}) {
 /**
  * GET /projects/:id — full project detail.
  */
-export async function getProject(id: number) {
+export async function getProject(id: number | string) {
   return apiClient<Project>(`projects/${id}`, {
     next: { revalidate: 1800 },
   });

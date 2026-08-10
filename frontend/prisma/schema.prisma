@@ -1,0 +1,254 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Tenant ──────────────────────────────────────────
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  domain    String?  @unique
+  themeId   String   @default("developer-starter")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branding  TenantBranding?
+  contact   TenantContact?
+  social    TenantSocial?
+  seo       TenantSeo?
+  users     User[]
+  projects  Project[]
+  leads     Lead[]
+  pages     Page[]
+  locations Location[]
+  tags      Tag[]
+  media     Media[]
+}
+
+model TenantBranding {
+  id             String  @id @default(cuid())
+  tenantId       String  @unique
+  tenant         Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  logoUrl        String?
+  faviconUrl     String?
+  tagline        String?
+  primaryColor   String  @default("#4B1CB0")
+  primaryDark    String  @default("#3B1490")
+  primaryLight   String  @default("#7C3AED")
+  accentColor    String  @default("#F59E0B")
+  heroHeading    String?
+  heroSubheading String?
+  ctaText        String  @default("Find My 10")
+  footerText     String?
+}
+
+model TenantContact {
+  id       String  @id @default(cuid())
+  tenantId String  @unique
+  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  phone    String?
+  whatsapp String?
+  email    String?
+  address  String?
+  city     String?
+  state    String?
+}
+
+model TenantSocial {
+  id        String  @id @default(cuid())
+  tenantId  String  @unique
+  tenant    Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  facebook  String?
+  instagram String?
+  linkedin  String?
+  youtube   String?
+  twitter   String?
+}
+
+model TenantSeo {
+  id              String  @id @default(cuid())
+  tenantId        String  @unique
+  tenant          Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  siteTitle       String?
+  metaDescription String?
+  ogImageUrl      String?
+  gaTrackingId    String?
+}
+
+// ─── Auth ────────────────────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  CP_ADMIN
+  CP_EDITOR
+}
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  password   String
+  name       String
+  role       Role     @default(CP_ADMIN)
+  tenantId   String?
+  tenant     Tenant?  @relation(fields: [tenantId], references: [id])
+  superAdmin Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+// ─── Taxonomy ────────────────────────────────────────
+
+model Location {
+  id       String    @id @default(cuid())
+  tenantId String
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name     String
+  slug     String
+  projects Project[]
+
+  @@unique([tenantId, slug])
+}
+
+model Tag {
+  id       String       @id @default(cuid())
+  tenantId String
+  tenant   Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name     String
+  slug     String
+  projects ProjectTag[]
+
+  @@unique([tenantId, slug])
+}
+
+// ─── Project ─────────────────────────────────────────
+
+model Project {
+  id                 String    @id @default(cuid())
+  tenantId           String
+  tenant             Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  title              String
+  slug               String
+  developer          String
+  locationId         String?
+  location           Location? @relation(fields: [locationId], references: [id])
+  constructionStage  String?
+  expectedPossession String?
+  reraNumber         String?
+  landParcel         String?
+  floors             String?
+  description        String?   @db.Text
+  highlights         String?   @db.Text
+  thumbnail          String?
+  qrCodeUrl          String?
+  priceMin           Int       @default(0)
+  priceMax           Int       @default(0)
+  fitScore           Int?
+  amenities          String[]
+  pros               String[]
+  cons               String[]
+  published          Boolean   @default(false)
+  featured           Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  configurations Configuration[]
+  leads          Lead[]
+  tags           ProjectTag[]
+  gallery        ProjectImage[]
+
+  @@unique([tenantId, slug])
+}
+
+model ProjectTag {
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tagId     String
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, tagId])
+}
+
+model ProjectImage {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String?
+  sortOrder Int     @default(0)
+}
+
+model Configuration {
+  id                 String  @id @default(cuid())
+  projectId          String
+  project            Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  configType         String
+  carpetAreaSqft     Int
+  basePrice          Int
+  totalPrice         Int
+  inventoryTotal     Int     @default(0)
+  inventoryAvailable Int     @default(0)
+}
+
+// ─── Lead ────────────────────────────────────────────
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  SITE_VISIT
+  CONVERTED
+  LOST
+}
+
+model Lead {
+  id        String     @id @default(cuid())
+  tenantId  String
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project?   @relation(fields: [projectId], references: [id])
+  name      String
+  phone     String
+  email     String?
+  intent    String
+  status    LeadStatus @default(NEW)
+  notes     String?    @db.Text
+  source    String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+// ─── Page ────────────────────────────────────────────
+
+model Page {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  title     String
+  slug      String
+  content   Json?
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, slug])
+}
+
+// ─── Media ───────────────────────────────────────────
+
+model Media {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  filename  String
+  url       String
+  mimeType  String
+  size      Int
+  alt       String?
+  createdAt DateTime @default(now())
+}

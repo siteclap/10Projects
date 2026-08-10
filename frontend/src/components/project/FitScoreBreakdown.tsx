@@ -1,8 +1,12 @@
+'use client';
+
+import { useState } from 'react';
 import { cn } from '@/lib/utils/cn';
 
 interface FitScoreBreakdownProps {
   scores: Record<string, number>;
   weights?: Record<string, number>;
+  initialCount?: number;
 }
 
 const categoryLabelMap: Record<string, string> = {
@@ -42,7 +46,9 @@ function getTextColor(score: number): string {
   return 'text-danger';
 }
 
-export function FitScoreBreakdown({ scores, weights }: FitScoreBreakdownProps) {
+export function FitScoreBreakdown({ scores, weights, initialCount = 4 }: FitScoreBreakdownProps) {
+  const [expanded, setExpanded] = useState(false);
+
   // Sort entries by score descending
   const sortedEntries = Object.entries(scores)
     .filter(([key]) => key in categoryLabelMap)
@@ -50,15 +56,18 @@ export function FitScoreBreakdown({ scores, weights }: FitScoreBreakdownProps) {
 
   if (sortedEntries.length === 0) return null;
 
+  const visibleEntries = expanded ? sortedEntries : sortedEntries.slice(0, initialCount);
+  const hasMore = sortedEntries.length > initialCount;
+
   return (
-    <div className="flex flex-col gap-md">
-      {sortedEntries.map(([key, score]) => {
+    <div className="flex flex-col gap-lg">
+      {visibleEntries.map(([key, score]) => {
         const label = categoryLabelMap[key] ?? key;
         const clampedScore = Math.min(100, Math.max(0, Math.round(score)));
         const weight = weights?.[key];
 
         return (
-          <div key={key} className="flex flex-col gap-xs">
+          <div key={key} className="flex flex-col gap-sm">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-700">
                 {label}
@@ -94,6 +103,30 @@ export function FitScoreBreakdown({ scores, weights }: FitScoreBreakdownProps) {
           </div>
         );
       })}
+
+      {hasMore && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="mt-sm flex items-center gap-sm self-start text-sm font-medium text-brand-primary transition-colors hover:text-brand-primary-dark"
+        >
+          {expanded ? 'Show Less' : `See All ${sortedEntries.length} Categories`}
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={cn('transition-transform', expanded && 'rotate-180')}
+            aria-hidden="true"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }

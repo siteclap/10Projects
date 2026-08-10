@@ -43,7 +43,7 @@ export interface ScoreHighlight {
 }
 
 export interface Project {
-  id: number;
+  id: number | string;
   title: string;
   slug: string;
   permalink: string;
@@ -56,20 +56,27 @@ export interface Project {
   configurations: ProjectConfiguration[];
   price_min: number;
   price_max: number;
-  railway_distance_km: number;
-  latitude: number;
-  longitude: number;
+  railway_distance_km?: number;
+  latitude?: number;
+  longitude?: number;
   fit_score?: number;
   scores?: ProjectScore;
   strengths?: ScoreHighlight[];
   tradeoffs?: ScoreHighlight[];
+  description?: string;
+  highlights?: string;
+  amenities?: string[];
+  pros?: string[];
+  cons?: string[];
+  land_parcel?: string;
+  floors?: string;
 }
 
 /**
  * Subset of Project used in list/card views for lighter payloads.
  */
 export interface ProjectCard {
-  id: number;
+  id: number | string;
   title: string;
   slug: string;
   permalink: string;

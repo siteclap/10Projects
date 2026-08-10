@@ -43,21 +43,14 @@ export function ProjectCard({
   const emiText = getEMIDisplay(project.price_min);
   const projectHref = `/navi-mumbai/${project.location.toLowerCase().replace(/\s+/g, '-')}/${project.slug}`;
 
-  const tags: Array<{ label: string; variant: 'success' | 'primary' | 'accent' }> = [];
-
-  if (project.construction_stage) {
-    tags.push({
-      label: project.construction_stage,
-      variant: project.construction_stage === 'Ready to Move' ? 'success' : 'accent',
-    });
-  }
+  const tags: Array<{ label: string; variant: 'default' | 'success' | 'outline' }> = [];
 
   if (project.rera_number) {
     tags.push({ label: 'RERA Verified', variant: 'success' });
   }
 
   if (project.expected_possession) {
-    tags.push({ label: `Possession: ${project.expected_possession}`, variant: 'primary' });
+    tags.push({ label: `Possession: ${project.expected_possession}`, variant: 'outline' });
   }
 
   // Advisor initials from developer name
