@@ -3,7 +3,7 @@
  * Plugin Name: 10Projects AI Matcher
  * Plugin URI: https://10projects.com
  * Description: AI-powered real estate matching engine — scoring, recommendations, lead routing, and assessment chat.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Requires at least: 6.4
  * Requires PHP: 8.0
  * Author: 10Projects
@@ -18,7 +18,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Plugin constants.
-define( 'TP_PLUGIN_VERSION', '1.0.0' );
+define( 'TP_PLUGIN_VERSION', '1.1.' . time() );
 define( 'TP_PLUGIN_FILE', __FILE__ );
 define( 'TP_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TP_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -53,7 +53,8 @@ spl_autoload_register( function ( $class ) {
     $filename = array_pop( $parts );
 
     // Convert CamelCase class name to kebab-case filename.
-    $filename = strtolower( preg_replace( '/([a-z])([A-Z])/', '$1-$2', $filename ) );
+    $filename = preg_replace( '/([a-z])([A-Z])/', '$1-$2', $filename );
+    $filename = strtolower( str_replace( '_', '-', $filename ) );
     $filename = 'class-' . $filename . '.php';
 
     // Convert namespace parts to lowercase directories.

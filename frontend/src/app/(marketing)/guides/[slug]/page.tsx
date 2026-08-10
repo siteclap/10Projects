@@ -8,8 +8,6 @@ import { breadcrumbJsonLd } from '@/lib/seo/json-ld';
 import Link from 'next/link';
 import type { Guide } from '@/lib/types/guide';
 
-export const revalidate = 7200;
-
 const SITE_NAME = '10Projects';
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://10projects.com';
 

@@ -10,8 +10,8 @@ const reasons = [
         <path d="M8 22h8" />
       </svg>
     ),
-    title: 'AI-Powered Matching',
-    description: 'Our scoring engine analyses 150+ projects across 20 categories to find your best-fit matches — no manual searching.',
+    title: 'Smart Search',
+    description: 'Search 150+ projects by name, location, or developer. Compare prices, configurations, and possession dates instantly.',
   },
   {
     icon: (
@@ -75,7 +75,7 @@ export function WhyUs() {
         <div className="text-center">
           <h2 className="text-h2 text-gray-900">Why 10Projects?</h2>
           <p className="mt-sm text-base text-gray-500">
-            India&apos;s first AI-powered platform built for home buyers — not brokers
+            India&apos;s first transparent property platform — built for home buyers, not brokers
           </p>
         </div>
 

@@ -80,22 +80,38 @@ export function LeadFormModal({ projectTitle }: LeadFormModalProps) {
     }
   }, [isOpen]);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !phone.trim()) return;
 
     setSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setSubmitting(false);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_WP_API_URL || '/wp-json/tenprojects/v1';
+      await fetch(`${apiUrl}/public/leads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          phone: phone.trim(),
+          email: email.trim() || undefined,
+          lead_type: intent,
+          source_page: typeof window !== 'undefined' ? window.location.href : '',
+          honeypot: '',
+        }),
+      });
+
       setSubmitted(true);
-      // Reset fields
       setName('');
       setPhone('');
       setEmail('');
       setAgreed(false);
-    }, 1000);
+    } catch {
+      // Silently fail — still show success to not block user
+      setSubmitted(true);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (!isOpen) return null;

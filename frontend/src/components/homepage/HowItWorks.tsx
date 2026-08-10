@@ -6,22 +6,22 @@ import { ROUTES } from '@/lib/constants/routes';
 
 const steps = [
   {
-    icon: '\u{1F4AC}',
-    title: 'Describe Your Needs',
+    icon: '\u{1F50D}',
+    title: 'Search Projects',
     description:
-      'Answer a few smart questions about your lifestyle, budget, and priorities. Takes just 3 minutes.',
+      'Search by project name, location, or developer. Filter by budget, BHK, and possession date.',
   },
   {
-    icon: '\u{1F916}',
-    title: 'AI Analyses 150+ Projects',
+    icon: '\u{1F4CA}',
+    title: 'Compare & Shortlist',
     description:
-      'Our scoring engine evaluates every project across 20 categories to find your best matches.',
+      'View RERA-verified details, pricing, floor plans, and pros & cons for every project.',
   },
   {
-    icon: '\u{1F3C6}',
-    title: 'Get Your Top 10 Matches',
+    icon: '\u{1F3E0}',
+    title: 'Book a Free Visit',
     description:
-      'Receive a personalised shortlist with fit scores, strengths, and trade-offs for each project.',
+      'Schedule a free site visit with cab pickup. Our advisor helps you — no pressure.',
   },
 ] as const;
 
@@ -61,8 +61,8 @@ export function HowItWorks() {
 
         <div className="mt-xl flex justify-center">
           <Button variant="primary" size="lg" asChild>
-            <Link href={ROUTES.ASSESSMENT}>
-              Start AI Matching
+            <Link href={ROUTES.PROJECTS}>
+              Explore Projects
               <svg
                 width="18"
                 height="18"

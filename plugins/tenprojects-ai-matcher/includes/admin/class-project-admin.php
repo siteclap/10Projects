@@ -3,7 +3,7 @@
  * Enhanced Project admin — custom columns, sortable columns,
  * quick edit, and bulk actions for the tp_project list table.
  *
- * Supplements the CPT meta boxes defined in Project_CPT.
+ * Styled to match NewPropertyz admin layout.
  *
  * @package TenProjects\Admin
  * @since   1.0.0
@@ -46,6 +46,7 @@ class Project_Admin {
 
 	/**
 	 * Define custom columns for the project list table.
+	 * Matches NewPropertyz layout: Title, Date, Slug, Phone, Taxonomy, Featured Image, Tags.
 	 *
 	 * @param array $columns Existing columns.
 	 * @return array Modified columns.
@@ -53,16 +54,14 @@ class Project_Admin {
 	public function set_columns( array $columns ): array {
 		$new = array();
 
-		$new['cb']                  = $columns['cb'];
-		$new['thumbnail']           = __( 'Image', 'tenprojects-ai-matcher' );
-		$new['title']               = $columns['title'];
-		$new['tp_developer']        = __( 'Developer', 'tenprojects-ai-matcher' );
-		$new['tp_location']         = __( 'Location', 'tenprojects-ai-matcher' );
-		$new['tp_price_range']      = __( 'Price Range', 'tenprojects-ai-matcher' );
-		$new['tp_status']           = __( 'Status', 'tenprojects-ai-matcher' );
-		$new['tp_fit_score']        = __( 'Fit Score', 'tenprojects-ai-matcher' );
-		$new['tp_construction']     = __( 'Construction', 'tenprojects-ai-matcher' );
-		$new['date']                = $columns['date'];
+		$new['cb']            = $columns['cb'];
+		$new['title']         = $columns['title'];
+		$new['tp_slug']       = __( 'Slug', 'tenprojects-ai-matcher' );
+		$new['tp_phone']      = __( 'Phone', 'tenprojects-ai-matcher' );
+		$new['tp_taxonomy']   = __( 'Location', 'tenprojects-ai-matcher' );
+		$new['thumbnail']     = __( 'Featured Image', 'tenprojects-ai-matcher' );
+		$new['tp_tags']       = __( 'Project Tags', 'tenprojects-ai-matcher' );
+		$new['date']          = $columns['date'];
 
 		return $new;
 	}
@@ -76,39 +75,39 @@ class Project_Admin {
 	public function render_column( string $column, int $post_id ): void {
 		switch ( $column ) {
 			case 'thumbnail':
-				$thumb = get_the_post_thumbnail( $post_id, array( 50, 50 ) );
-				echo $thumb ?: '<span class="dashicons dashicons-format-image" style="color:#ccc;font-size:32px;"></span>';
-				break;
-
-			case 'tp_developer':
-				$dev_id = get_post_meta( $post_id, self::META_PREFIX . 'developer_id', true );
-				if ( $dev_id ) {
-					$dev_title = get_the_title( (int) $dev_id );
-					echo $dev_title ? esc_html( $dev_title ) : '—';
+				$thumb = get_the_post_thumbnail( $post_id, array( 60, 60 ) );
+				if ( $thumb ) {
+					echo '<div style="width:60px;height:60px;border-radius:4px;overflow:hidden;">' . $thumb . '</div>';
 				} else {
-					echo '—';
+					echo '<span class="dashicons dashicons-format-image" style="color:#ccc;font-size:40px;width:60px;height:60px;line-height:60px;text-align:center;"></span>';
 				}
 				break;
 
-			case 'tp_location':
+			case 'tp_slug':
+				$post = get_post( $post_id );
+				echo '<code style="font-size:12px;color:#6B7280;">' . esc_html( $post->post_name ) . '</code>';
+				break;
+
+			case 'tp_phone':
+				$phone = get_post_meta( $post_id, self::META_PREFIX . 'phone', true );
+				echo $phone ? esc_html( $phone ) : '<span style="color:#ccc;">—</span>';
+				break;
+
+			case 'tp_taxonomy':
 				$terms = wp_get_object_terms( $post_id, 'tp_location_area', array( 'fields' => 'names' ) );
-				echo ! is_wp_error( $terms ) && ! empty( $terms )
-					? esc_html( implode( ', ', $terms ) )
-					: '—';
-				break;
-
-			case 'tp_price_range':
-				$min = get_post_meta( $post_id, self::META_PREFIX . 'price_display_min', true );
-				$max = get_post_meta( $post_id, self::META_PREFIX . 'price_display_max', true );
-				if ( $min || $max ) {
-					echo esc_html( $this->format_price( $min ) . ' – ' . $this->format_price( $max ) );
+				if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+					foreach ( $terms as $term_name ) {
+						echo '<span class="tp-badge tp-badge--active" style="margin-right:4px;">' . esc_html( $term_name ) . '</span>';
+					}
 				} else {
-					echo '—';
+					echo '<span style="color:#ccc;">—</span>';
 				}
 				break;
 
-			case 'tp_status':
+			case 'tp_tags':
 				$status = get_post_meta( $post_id, self::META_PREFIX . 'status', true );
+				$stage  = get_post_meta( $post_id, self::META_PREFIX . 'construction_stage', true );
+
 				if ( $status ) {
 					$badge_map = array(
 						'active'   => 'active',
@@ -117,36 +116,18 @@ class Project_Admin {
 						'delisted' => 'sold-out',
 					);
 					$badge = $badge_map[ $status ] ?? 'paused';
-					echo '<span class="tp-badge tp-badge--' . esc_attr( $badge ) . '">'
+					echo '<span class="tp-badge tp-badge--' . esc_attr( $badge ) . '" style="margin-right:4px;">'
 						. esc_html( ucfirst( str_replace( '_', ' ', $status ) ) ) . '</span>';
-				} else {
-					echo '—';
 				}
-				break;
 
-			case 'tp_fit_score':
-				global $wpdb;
-				$table = $wpdb->prefix . 'tp_project_scores';
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-				$avg = $wpdb->get_var(
-					$wpdb->prepare(
-						"SELECT ROUND(AVG(fit_score)) FROM {$table} WHERE project_id = %d",
-						$post_id
-					)
-				);
-				echo $avg ? esc_html( $avg . '/100' ) : '—';
-				break;
-
-			case 'tp_construction':
-				$stage    = get_post_meta( $post_id, self::META_PREFIX . 'construction_stage', true );
-				$progress = get_post_meta( $post_id, self::META_PREFIX . 'construction_progress', true );
 				if ( $stage ) {
-					echo esc_html( ucfirst( str_replace( '_', ' ', $stage ) ) );
-					if ( $progress ) {
-						echo '<br><small style="color:#6B7280;">' . esc_html( $progress . '%' ) . '</small>';
-					}
-				} else {
-					echo '—';
+					echo '<span class="tp-badge" style="background:#EFF6FF;color:#1E40AF;margin-right:4px;">'
+						. esc_html( ucfirst( str_replace( '_', ' ', $stage ) ) ) . '</span>';
+				}
+
+				$verified = get_post_meta( $post_id, self::META_PREFIX . 'verified', true );
+				if ( $verified ) {
+					echo '<span class="tp-badge" style="background:#D1FAE5;color:#065F46;">Verified</span>';
 				}
 				break;
 		}
@@ -159,9 +140,8 @@ class Project_Admin {
 	 * @return array Modified sortable columns.
 	 */
 	public function set_sortable_columns( array $columns ): array {
-		$columns['tp_price_range']  = 'tp_price_min';
-		$columns['tp_status']       = 'tp_status';
-		$columns['tp_construction'] = 'tp_construction_progress';
+		$columns['tp_slug'] = 'name';
+		$columns['date']    = 'date';
 
 		return $columns;
 	}
@@ -180,25 +160,6 @@ class Project_Admin {
 		if ( ! $screen || self::POST_TYPE !== $screen->post_type ) {
 			return;
 		}
-
-		$orderby = $query->get( 'orderby' );
-
-		switch ( $orderby ) {
-			case 'tp_price_min':
-				$query->set( 'meta_key', self::META_PREFIX . 'price_display_min' );
-				$query->set( 'orderby', 'meta_value_num' );
-				break;
-
-			case 'tp_status':
-				$query->set( 'meta_key', self::META_PREFIX . 'status' );
-				$query->set( 'orderby', 'meta_value' );
-				break;
-
-			case 'tp_construction_progress':
-				$query->set( 'meta_key', self::META_PREFIX . 'construction_progress' );
-				$query->set( 'orderby', 'meta_value_num' );
-				break;
-		}
 	}
 
 	/**
@@ -211,7 +172,6 @@ class Project_Admin {
 		$actions['tp_change_active']   = __( 'Change Status: Active', 'tenprojects-ai-matcher' );
 		$actions['tp_change_paused']   = __( 'Change Status: Paused', 'tenprojects-ai-matcher' );
 		$actions['tp_change_sold_out'] = __( 'Change Status: Sold Out', 'tenprojects-ai-matcher' );
-		$actions['tp_refresh_scores']  = __( 'Refresh Scores', 'tenprojects-ai-matcher' );
 
 		return $actions;
 	}
@@ -240,16 +200,6 @@ class Project_Admin {
 			$redirect_to = add_query_arg( 'tp_bulk_status_updated', $count, $redirect_to );
 		}
 
-		if ( 'tp_refresh_scores' === $doaction ) {
-			// Trigger a score recalculation for selected projects.
-			// The actual scoring runs asynchronously via the Scoring_Engine service.
-			$count = count( $post_ids );
-			foreach ( $post_ids as $post_id ) {
-				do_action( 'tp_refresh_project_scores', $post_id );
-			}
-			$redirect_to = add_query_arg( 'tp_bulk_scores_refreshed', $count, $redirect_to );
-		}
-
 		return $redirect_to;
 	}
 
@@ -270,20 +220,6 @@ class Project_Admin {
 				)
 			);
 		}
-
-		if ( ! empty( $_REQUEST['tp_bulk_scores_refreshed'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			$count = intval( $_REQUEST['tp_bulk_scores_refreshed'] ); // phpcs:ignore WordPress.Security.NonceVerification
-			printf(
-				'<div class="notice notice-success is-dismissible"><p>%s</p></div>',
-				esc_html(
-					sprintf(
-						/* translators: %d: number of projects queued */
-						_n( '%d project queued for score refresh.', '%d projects queued for score refresh.', $count, 'tenprojects-ai-matcher' ),
-						$count
-					)
-				)
-			);
-		}
 	}
 
 	/**
@@ -293,7 +229,7 @@ class Project_Admin {
 	 * @param string $post_type   Current post type.
 	 */
 	public function quick_edit_fields( string $column_name, string $post_type ): void {
-		if ( self::POST_TYPE !== $post_type || 'tp_status' !== $column_name ) {
+		if ( self::POST_TYPE !== $post_type || 'tp_tags' !== $column_name ) {
 			return;
 		}
 
@@ -353,29 +289,5 @@ class Project_Admin {
 				update_post_meta( $post_id, $status_key, $value );
 			}
 		}
-	}
-
-	/**
-	 * Format price in Indian numbering (lakhs / crores).
-	 *
-	 * @param int|string $price Price in rupees.
-	 * @return string Formatted price string.
-	 */
-	private function format_price( $price ): string {
-		$price = (int) $price;
-
-		if ( $price <= 0 ) {
-			return '—';
-		}
-
-		if ( $price >= 10000000 ) {
-			return number_format( $price / 10000000, 2 ) . ' Cr';
-		}
-
-		if ( $price >= 100000 ) {
-			return number_format( $price / 100000, 2 ) . ' L';
-		}
-
-		return number_format( $price );
 	}
 }

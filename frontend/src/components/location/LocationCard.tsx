@@ -28,8 +28,11 @@ export function LocationCard({ location, className }: LocationCardProps) {
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
-            {location.title}
+          <div className="flex h-full w-full items-center justify-center bg-gray-100 text-gray-300">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { prisma } from '@/lib/db';
+import { wpFetchProject, wpFetchProjects, wpFetchAllProjectSlugs } from '@/lib/wp-api';
 import { Container } from '@/components/layout/Container';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { Badge } from '@/components/ui/Badge';
@@ -24,99 +24,134 @@ import {
   faqJsonLd,
 } from '@/lib/seo/json-ld';
 import { formatPrice, formatPriceRange } from '@/lib/utils/format-price';
-import type { Project } from '@/lib/types/project';
+import type { Project, ProjectCard as ProjectCardType } from '@/lib/types/project';
 
-// --- ISR: revalidate every 30 minutes ---
-export const revalidate = 1800;
+// --- Mock data (used when WordPress API is unavailable during local build) ---
 
-// --- Data fetching ---
+const MOCK_PROJECTS: Record<string, Project> = {
+  'lodha-palava-crown': { id: 1, title: 'Lodha Palava Crown', slug: 'lodha-palava-crown', permalink: '/navi-mumbai/kharghar/lodha-palava-crown/', thumbnail: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80', developer: 'Lodha Group', location: 'Kharghar', construction_stage: 'Under Construction', expected_possession: 'Dec 2026', rera_number: 'P52000046631', configurations: [{ config_type: '2 BHK', carpet_area_sqft: 650, base_price: 8500000, total_price: 9200000, inventory_total: 120, inventory_available: 45 }, { config_type: '3 BHK', carpet_area_sqft: 950, base_price: 12500000, total_price: 13800000, inventory_total: 80, inventory_available: 22 }], price_min: 9200000, price_max: 13800000, fit_score: 94, description: 'Lodha Palava Crown is a premium residential project in Kharghar by Lodha Group.', amenities: ['Swimming Pool', 'Gymnasium', 'Clubhouse', 'Children\'s Play Area', 'Landscaped Garden'], pros: ['Tier-1 developer with strong delivery track record', 'Near Kharghar railway station'], cons: ['Premium pricing compared to nearby projects'] },
+  'paradise-sai-world-empire': { id: 2, title: 'Paradise Sai World Empire', slug: 'paradise-sai-world-empire', permalink: '/navi-mumbai/kharghar/paradise-sai-world-empire/', thumbnail: 'https://images.unsplash.com/photo-1460317442991-0ec209397118?w=800&q=80', developer: 'Paradise Group', location: 'Kharghar', construction_stage: 'Ready to Move', expected_possession: '', rera_number: 'P52000029541', configurations: [{ config_type: '2 BHK', carpet_area_sqft: 720, base_price: 9800000, total_price: 10500000, inventory_total: 200, inventory_available: 15 }], price_min: 10500000, price_max: 10500000, fit_score: 91, description: 'Paradise Sai World Empire is a ready-to-move-in township in Kharghar.', amenities: ['Swimming Pool', 'Clubhouse', 'Garden', 'Gymnasium'], pros: ['Ready to move in', 'Established township'], cons: ['Limited inventory'] },
+  'balaji-symphony': { id: 3, title: 'Balaji Symphony', slug: 'balaji-symphony', permalink: '/navi-mumbai/panvel/balaji-symphony/', thumbnail: 'https://images.unsplash.com/photo-1515263487990-61b07816b324?w=800&q=80', developer: 'Balaji Group', location: 'Panvel', construction_stage: 'Under Construction', expected_possession: 'Mar 2027', rera_number: 'P52000048892', configurations: [{ config_type: '1 BHK', carpet_area_sqft: 420, base_price: 4200000, total_price: 4800000, inventory_total: 150, inventory_available: 88 }, { config_type: '2 BHK', carpet_area_sqft: 630, base_price: 6800000, total_price: 7500000, inventory_total: 100, inventory_available: 52 }], price_min: 4800000, price_max: 7500000, fit_score: 88, description: 'Balaji Symphony offers affordable apartments in Panvel near the upcoming airport.', amenities: ['Garden', 'Children\'s Play Area', 'Gymnasium'], pros: ['Affordable pricing', 'Close to NMIA airport'], cons: ['Social infrastructure still developing'] },
+  'arihant-aspire': { id: 4, title: 'Arihant Aspire', slug: 'arihant-aspire', permalink: '/navi-mumbai/panvel/arihant-aspire/', thumbnail: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80', developer: 'Arihant Superstructures', location: 'Panvel', construction_stage: 'Under Construction', expected_possession: 'Jun 2027', rera_number: 'P52000051203', configurations: [{ config_type: '1 BHK', carpet_area_sqft: 390, base_price: 3800000, total_price: 4200000, inventory_total: 180, inventory_available: 95 }, { config_type: '2 BHK', carpet_area_sqft: 580, base_price: 5600000, total_price: 6200000, inventory_total: 120, inventory_available: 67 }], price_min: 4200000, price_max: 6200000, fit_score: 85, description: 'Arihant Aspire is a value-for-money project in Panvel.', amenities: ['Gymnasium', 'Garden', 'Community Hall'], pros: ['Most affordable in Panvel', 'Listed developer'], cons: ['Moderate delivery track record'] },
+  'jerai-elysium': { id: 5, title: 'JERAI Elysium', slug: 'jerai-elysium', permalink: '/navi-mumbai/ulwe/jerai-elysium/', thumbnail: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80', developer: 'JERAI Group', location: 'Ulwe', construction_stage: 'Under Construction', expected_possession: 'Sep 2026', rera_number: 'P52000047123', configurations: [{ config_type: '2 BHK', carpet_area_sqft: 680, base_price: 7200000, total_price: 7900000, inventory_total: 90, inventory_available: 8 }], price_min: 7900000, price_max: 7900000, fit_score: 82, description: 'JERAI Elysium is a residential project in Ulwe near the upcoming airport.', amenities: ['Clubhouse', 'Swimming Pool', 'Garden'], pros: ['Closest to NMIA airport', 'MTHL access'], cons: ['Very limited inventory'] },
+  'lt-seawoods-residences': { id: 6, title: 'L&T Seawoods Residences', slug: 'lt-seawoods-residences', permalink: '/navi-mumbai/vashi/lt-seawoods-residences/', thumbnail: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80', developer: 'L&T Realty', location: 'Vashi', construction_stage: 'Ready to Move', expected_possession: '', rera_number: 'P52000032876', configurations: [{ config_type: '2 BHK', carpet_area_sqft: 780, base_price: 14500000, total_price: 15800000, inventory_total: 60, inventory_available: 5 }, { config_type: '3 BHK', carpet_area_sqft: 1100, base_price: 21000000, total_price: 23500000, inventory_total: 40, inventory_available: 3 }], price_min: 15800000, price_max: 23500000, fit_score: 90, description: 'L&T Seawoods Residences is a premium ready-to-move project in Vashi.', amenities: ['Swimming Pool', 'Gymnasium', 'Clubhouse', 'Tennis Court', 'Jogging Track'], pros: ['L&T construction quality', 'Ready to move', 'Premium location'], cons: ['Premium pricing', 'Very limited units'] },
+  'godrej-vihaa': { id: 7, title: 'Godrej Vihaa', slug: 'godrej-vihaa', permalink: '/navi-mumbai/airoli/godrej-vihaa/', thumbnail: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80', developer: 'Godrej Properties', location: 'Airoli', construction_stage: 'Under Construction', expected_possession: 'Dec 2027', rera_number: 'P52000053447', configurations: [{ config_type: '2 BHK', carpet_area_sqft: 700, base_price: 11200000, total_price: 12500000, inventory_total: 110, inventory_available: 12 }], price_min: 12500000, price_max: 12500000, fit_score: 87, description: 'Godrej Vihaa is a residential project in Airoli by Godrej Properties.', amenities: ['Swimming Pool', 'Gymnasium', 'Clubhouse', 'Garden'], pros: ['Godrej brand quality', 'Airoli IT hub proximity'], cons: ['Limited to 2 BHK', 'Low inventory'] },
+};
 
-async function getProject(locationSlug: string, projectSlug: string) {
-  const dbProject = await prisma.project.findFirst({
-    where: {
-      slug: projectSlug,
-      location: { slug: locationSlug },
-      published: true,
-    },
-    include: {
-      location: true,
-      configurations: { orderBy: { basePrice: 'asc' } },
-      gallery: { orderBy: { sortOrder: 'asc' } },
-    },
-  });
+const MOCK_SIMILAR: Record<string, ProjectCardType[]> = {
+  kharghar: [
+    { id: 1, title: 'Lodha Palava Crown', slug: 'lodha-palava-crown', permalink: '/navi-mumbai/kharghar/lodha-palava-crown/', thumbnail: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80', developer: 'Lodha Group', location: 'Kharghar', construction_stage: 'Under Construction', expected_possession: 'Dec 2026', rera_number: 'P52000046631', configurations: [{ config_type: '2 BHK', carpet_area_sqft: 650, base_price: 8500000, total_price: 9200000, inventory_total: 120, inventory_available: 45 }], price_min: 9200000, price_max: 13800000, fit_score: 94 },
+    { id: 2, title: 'Paradise Sai World Empire', slug: 'paradise-sai-world-empire', permalink: '/navi-mumbai/kharghar/paradise-sai-world-empire/', thumbnail: 'https://images.unsplash.com/photo-1460317442991-0ec209397118?w=800&q=80', developer: 'Paradise Group', location: 'Kharghar', construction_stage: 'Ready to Move', expected_possession: '', rera_number: 'P52000029541', configurations: [{ config_type: '2 BHK', carpet_area_sqft: 720, base_price: 9800000, total_price: 10500000, inventory_total: 200, inventory_available: 15 }], price_min: 10500000, price_max: 10500000, fit_score: 91 },
+  ],
+  panvel: [
+    { id: 3, title: 'Balaji Symphony', slug: 'balaji-symphony', permalink: '/navi-mumbai/panvel/balaji-symphony/', thumbnail: 'https://images.unsplash.com/photo-1515263487990-61b07816b324?w=800&q=80', developer: 'Balaji Group', location: 'Panvel', construction_stage: 'Under Construction', expected_possession: 'Mar 2027', rera_number: 'P52000048892', configurations: [{ config_type: '1 BHK', carpet_area_sqft: 420, base_price: 4200000, total_price: 4800000, inventory_total: 150, inventory_available: 88 }], price_min: 4800000, price_max: 7500000, fit_score: 88 },
+    { id: 4, title: 'Arihant Aspire', slug: 'arihant-aspire', permalink: '/navi-mumbai/panvel/arihant-aspire/', thumbnail: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80', developer: 'Arihant Superstructures', location: 'Panvel', construction_stage: 'Under Construction', expected_possession: 'Jun 2027', rera_number: 'P52000051203', configurations: [{ config_type: '1 BHK', carpet_area_sqft: 390, base_price: 3800000, total_price: 4200000, inventory_total: 180, inventory_available: 95 }], price_min: 4200000, price_max: 6200000, fit_score: 85 },
+  ],
+  ulwe: [
+    { id: 5, title: 'JERAI Elysium', slug: 'jerai-elysium', permalink: '/navi-mumbai/ulwe/jerai-elysium/', thumbnail: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80', developer: 'JERAI Group', location: 'Ulwe', construction_stage: 'Under Construction', expected_possession: 'Sep 2026', rera_number: 'P52000047123', configurations: [{ config_type: '2 BHK', carpet_area_sqft: 680, base_price: 7200000, total_price: 7900000, inventory_total: 90, inventory_available: 8 }], price_min: 7900000, price_max: 7900000, fit_score: 82 },
+  ],
+  vashi: [
+    { id: 6, title: 'L&T Seawoods Residences', slug: 'lt-seawoods-residences', permalink: '/navi-mumbai/vashi/lt-seawoods-residences/', thumbnail: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80', developer: 'L&T Realty', location: 'Vashi', construction_stage: 'Ready to Move', expected_possession: '', rera_number: 'P52000032876', configurations: [{ config_type: '2 BHK', carpet_area_sqft: 780, base_price: 14500000, total_price: 15800000, inventory_total: 60, inventory_available: 5 }], price_min: 15800000, price_max: 23500000, fit_score: 90 },
+  ],
+  airoli: [
+    { id: 7, title: 'Godrej Vihaa', slug: 'godrej-vihaa', permalink: '/navi-mumbai/airoli/godrej-vihaa/', thumbnail: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80', developer: 'Godrej Properties', location: 'Airoli', construction_stage: 'Under Construction', expected_possession: 'Dec 2027', rera_number: 'P52000053447', configurations: [{ config_type: '2 BHK', carpet_area_sqft: 700, base_price: 11200000, total_price: 12500000, inventory_total: 110, inventory_available: 12 }], price_min: 12500000, price_max: 12500000, fit_score: 87 },
+  ],
+};
 
-  if (!dbProject) return null;
+// --- Demo gallery images per project ---
 
-  const locationName = dbProject.location?.name || locationSlug;
-  const locationSlugSafe = dbProject.location?.slug || locationSlug;
+const MOCK_GALLERY: Record<string, string[]> = {
+  'lodha-palava-crown': [
+    'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=1200&q=80',
+  ],
+  'paradise-sai-world-empire': [
+    'https://images.unsplash.com/photo-1460317442991-0ec209397118?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1200&q=80',
+  ],
+  'balaji-symphony': [
+    'https://images.unsplash.com/photo-1515263487990-61b07816b324?w=1200&q=80',
+    'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=80',
+  ],
+  'arihant-aspire': [
+    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=1200&q=80',
+  ],
+  'jerai-elysium': [
+    'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=80',
+  ],
+  'lt-seawoods-residences': [
+    'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=1200&q=80',
+  ],
+  'godrej-vihaa': [
+    'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=80',
+  ],
+};
 
-  // Map DB model → frontend Project type
-  const project: Project = {
-    id: dbProject.id,
-    title: dbProject.title,
-    slug: dbProject.slug,
-    permalink: `/navi-mumbai/${locationSlugSafe}/${dbProject.slug}`,
-    thumbnail: dbProject.thumbnail || '',
-    developer: dbProject.developer,
-    location: locationName,
-    construction_stage: dbProject.constructionStage || 'Under Construction',
-    expected_possession: dbProject.expectedPossession || 'TBA',
-    rera_number: dbProject.reraNumber || '',
-    configurations: dbProject.configurations.map((c) => ({
-      config_type: c.configType,
-      carpet_area_sqft: c.carpetAreaSqft,
-      base_price: c.basePrice,
-      total_price: c.totalPrice,
-      inventory_total: c.inventoryTotal,
-      inventory_available: c.inventoryAvailable,
-    })),
-    price_min: dbProject.priceMin,
-    price_max: dbProject.priceMax,
-    fit_score: dbProject.fitScore ?? undefined,
-    description: dbProject.description ?? undefined,
-    highlights: dbProject.highlights ?? undefined,
-    amenities: dbProject.amenities,
-    pros: dbProject.pros,
-    cons: dbProject.cons,
-    land_parcel: dbProject.landParcel ?? undefined,
-    floors: dbProject.floors ?? undefined,
-  };
+// --- Data fetching with mock fallback ---
 
-  const images = dbProject.gallery.length > 0
-    ? dbProject.gallery.map((img) => img.url)
-    : dbProject.thumbnail
-      ? [dbProject.thumbnail]
-      : [];
-
-  return { project, images };
+async function getProject(_locationSlug: string, projectSlug: string) {
+  const project = await wpFetchProject(projectSlug);
+  if (project) {
+    // Use banner images first, then gallery, then thumbnail as fallback.
+    const images = [
+      ...(project.banner_desktop_images || []),
+      ...(project.gallery_images || []),
+    ];
+    if (images.length === 0 && project.thumbnail) {
+      images.push(project.thumbnail);
+    }
+    return { project, images };
+  }
+  const mock = MOCK_PROJECTS[projectSlug];
+  if (!mock) return null;
+  const images = MOCK_GALLERY[projectSlug] ?? (mock.thumbnail ? [mock.thumbnail] : []);
+  return { project: mock, images };
 }
 
 async function getSimilarProjects(locationSlug: string, excludeSlug: string) {
-  const similar = await prisma.project.findMany({
-    where: {
-      published: true,
-      slug: { not: excludeSlug },
-      location: { slug: locationSlug },
-    },
-    include: {
-      location: true,
-      configurations: true,
-    },
-    take: 4,
-    orderBy: { fitScore: 'desc' },
-  });
-
-  return similar.map((p) => ({
-    title: p.title,
-    developer: p.developer,
-    location: `${p.location?.name || ''}, Navi Mumbai`,
-    priceMin: p.priceMin,
-    priceMax: p.priceMax,
-    configs: p.configurations.map((c) => c.configType).join(', '),
-    fitScore: p.fitScore ?? 0,
-    image: p.thumbnail || '',
-    slug: `/navi-mumbai/${p.location?.slug || locationSlug}/${p.slug}`,
-  }));
+  let allProjects = await wpFetchProjects(locationSlug);
+  if (allProjects.length === 0) {
+    allProjects = MOCK_SIMILAR[locationSlug] ?? [];
+  }
+  return allProjects
+    .filter((p) => p.slug !== excludeSlug)
+    .slice(0, 4)
+    .map((p) => ({
+      title: p.title,
+      developer: p.developer,
+      location: `${p.location}, Navi Mumbai`,
+      priceMin: p.price_min,
+      priceMax: p.price_max,
+      configs: p.configurations.map((c) => c.config_type).join(', '),
+      fitScore: p.fit_score ?? 0,
+      image: p.thumbnail || '',
+      slug: p.permalink,
+    }));
 }
 
 function generateFaqs(project: Project) {
@@ -185,17 +220,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export async function generateStaticParams(): Promise<
   Array<{ location: string; project: string }>
 > {
-  const projects = await prisma.project.findMany({
-    where: { published: true },
-    select: { slug: true, location: { select: { slug: true } } },
-  });
-
-  return projects
-    .filter((p) => p.location)
-    .map((p) => ({
-      location: p.location!.slug,
-      project: p.slug,
-    }));
+  const slugs = await wpFetchAllProjectSlugs();
+  if (slugs.length > 0) {
+    return slugs
+      .filter((p) => p.location_slug)
+      .map((p) => ({
+        location: p.location_slug,
+        project: p.slug,
+      }));
+  }
+  // Fallback to mock slugs when WP API is unavailable
+  return Object.values(MOCK_PROJECTS).map((p) => ({
+    location: p.location.toLowerCase(),
+    project: p.slug,
+  }));
 }
 
 export default async function ProjectDetailPage({ params }: PageProps) {
@@ -529,46 +567,170 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             {/* Section: Location */}
             <section id="location" className="mt-3xl border-t border-gray-100 pt-3xl">
               <h2 className="text-h2 text-gray-900">Location</h2>
-              <div className="mt-xl">
-                {/* Map placeholder */}
-                <div className="flex h-[300px] items-center justify-center rounded-md border border-gray-200 bg-gray-100">
-                  <div className="text-center">
-                    <svg
-                      width="40"
-                      height="40"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="mx-auto text-gray-400"
-                      aria-hidden="true"
-                    >
-                      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                      <circle cx="12" cy="10" r="3" />
-                    </svg>
-                    <p className="mt-sm text-sm text-gray-500">
-                      {project.location}, Navi Mumbai
-                    </p>
-                  </div>
-                </div>
+
+              {/* Google Maps embed — uses address_pin or fallback to location name */}
+              <div className="mt-xl overflow-hidden rounded-md border border-gray-200">
+                <iframe
+                  title={`${project.title} location on Google Maps`}
+                  width="100%"
+                  height="350"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(project.address_pin || `${project.title}, ${project.location}, Navi Mumbai`)}&output=embed`}
+                  allowFullScreen
+                />
               </div>
+
+              {/* Location Advantages — side by side */}
+              {(project.location_advantage_1 || project.location_advantage_2) && (
+                <div className="mt-xl grid grid-cols-1 gap-md sm:grid-cols-2">
+                  {project.location_advantage_1 && (
+                    <div className="rounded-md border border-gray-200 p-xl">
+                      <h3 className="text-base font-semibold text-gray-900">Location Advantages</h3>
+                      <div
+                        className="mt-md text-sm leading-relaxed text-gray-600 [&_li]:mb-1 [&_ul]:list-disc [&_ul]:pl-5"
+                        dangerouslySetInnerHTML={{ __html: project.location_advantage_1 }}
+                      />
+                    </div>
+                  )}
+                  {project.location_advantage_2 && (
+                    <div className="rounded-md border border-gray-200 p-xl">
+                      <h3 className="text-base font-semibold text-gray-900">Nearby Connectivity</h3>
+                      <div
+                        className="mt-md text-sm leading-relaxed text-gray-600 [&_li]:mb-1 [&_ul]:list-disc [&_ul]:pl-5"
+                        dangerouslySetInnerHTML={{ __html: project.location_advantage_2 }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Location Brief */}
+              {project.location_brief && (
+                <div className="mt-lg rounded-md border border-gray-200 p-xl">
+                  <h3 className="text-base font-semibold text-gray-900">About the Location</h3>
+                  <div
+                    className="mt-md text-sm leading-relaxed text-gray-600"
+                    dangerouslySetInnerHTML={{ __html: project.location_brief }}
+                  />
+                </div>
+              )}
             </section>
 
             {/* Section: Developer */}
             <section id="developer" className="mt-3xl border-t border-gray-100 pt-3xl">
               <h2 className="text-h2 text-gray-900">About the Developer</h2>
+
+              {/* Developer header */}
               <div className="mt-xl rounded-md border border-gray-200 p-xl">
                 <div className="flex items-center gap-xl">
-                  <div className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-md bg-brand-primary-pale text-h4 font-bold text-brand-primary">
-                    {devInitials}
-                  </div>
+                  {project.developer_logo ? (
+                    <img
+                      src={project.developer_logo}
+                      alt={project.developer}
+                      className="h-[56px] w-[56px] shrink-0 rounded-md object-contain"
+                    />
+                  ) : (
+                    <div className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-md bg-brand-primary-pale text-h4 font-bold text-brand-primary">
+                      {devInitials}
+                    </div>
+                  )}
                   <div>
-                    <h3 className="text-h4 text-gray-900">{project.developer}</h3>
+                    <h3 className="text-h4 text-gray-900">{project.developer_name || project.developer}</h3>
+                    {project.google_review_rating && (
+                      <p className="mt-xs text-sm text-gray-500">Google Rating: {project.google_review_rating}</p>
+                    )}
                   </div>
                 </div>
               </div>
+
+              {/* Project details — horizontal grid */}
+              <div className="mt-lg grid grid-cols-2 gap-0 rounded-md border border-gray-200 sm:grid-cols-3 lg:grid-cols-4">
+                {project.project_location && (
+                  <div className="border-b border-r border-gray-100 p-lg">
+                    <p className="text-caption text-gray-500">Project Location</p>
+                    <p className="mt-xs text-sm font-semibold text-gray-900">{project.project_location}</p>
+                  </div>
+                )}
+                {project.land_parcel && (
+                  <div className="border-b border-r border-gray-100 p-lg">
+                    <p className="text-caption text-gray-500">Land Parcel</p>
+                    <p className="mt-xs text-sm font-semibold text-gray-900">{project.land_parcel}</p>
+                  </div>
+                )}
+                {project.floors_display && (
+                  <div className="border-b border-r border-gray-100 p-lg">
+                    <p className="text-caption text-gray-500">Floors</p>
+                    <p className="mt-xs text-sm font-semibold text-gray-900">{project.floors_display}</p>
+                  </div>
+                )}
+                <div className="border-b border-r border-gray-100 p-lg">
+                  <p className="text-caption text-gray-500">Possession</p>
+                  <p className="mt-xs text-sm font-semibold text-gray-900">{project.expected_possession || 'N/A'}</p>
+                </div>
+                <div className="border-b border-r border-gray-100 p-lg">
+                  <p className="text-caption text-gray-500">RERA Number</p>
+                  <p className="mt-xs text-sm font-semibold text-gray-900">{project.rera_number || 'N/A'}</p>
+                </div>
+                {project.available_configs_text && (
+                  <div className="border-b border-r border-gray-100 p-lg">
+                    <p className="text-caption text-gray-500">Available Configurations</p>
+                    <p className="mt-xs text-sm font-semibold text-gray-900">{project.available_configs_text}</p>
+                  </div>
+                )}
+                <div className="border-b border-r border-gray-100 p-lg">
+                  <p className="text-caption text-gray-500">Construction Status</p>
+                  <p className="mt-xs text-sm font-semibold text-gray-900">{project.construction_stage}</p>
+                </div>
+                <div className="border-b border-r border-gray-100 p-lg">
+                  <p className="text-caption text-gray-500">Price Range</p>
+                  <p className="mt-xs text-sm font-semibold text-gray-900">
+                    {project.price_min > 0 && project.price_max > 0
+                      ? formatPriceRange(project.price_min, project.price_max)
+                      : 'On Request'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Short Overview */}
+              {project.short_overview && (
+                <div className="mt-lg rounded-md border border-gray-200 p-xl">
+                  <h3 className="text-base font-semibold text-gray-900">Project Overview</h3>
+                  <p className="mt-md text-sm leading-relaxed text-gray-600">{project.short_overview}</p>
+                </div>
+              )}
+
+              {/* QR Code */}
+              {project.qr_code && project.qr_code.length > 0 && (
+                <div className="mt-lg flex items-center gap-lg rounded-md border border-gray-200 p-xl">
+                  <div>
+                    <p className="text-caption text-gray-500">RERA QR Code</p>
+                    <div className="mt-sm flex gap-md">
+                      {project.qr_code.map((qr, i) => (
+                        <img key={i} src={qr} alt="RERA QR Code" className="h-[80px] w-[80px] rounded border border-gray-200" />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Offers — horizontal */}
+              {project.offers && project.offers.length > 0 && (
+                <div className="mt-lg rounded-md border border-accent/20 bg-accent/5 p-xl">
+                  <h3 className="text-base font-semibold text-gray-900">Current Offers</h3>
+                  <div className="mt-md grid grid-cols-1 gap-sm sm:grid-cols-2 lg:grid-cols-3">
+                    {project.offers.map((offer, i) => (
+                      <div key={i} className="flex items-start gap-md rounded-md border border-accent/20 bg-white p-md">
+                        <span className="mt-[2px] text-accent">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                        </span>
+                        <span className="text-sm text-gray-700">{offer}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </section>
 
             {/* Section: FAQ */}

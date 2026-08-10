@@ -7,8 +7,6 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { breadcrumbJsonLd } from '@/lib/seo/json-ld';
 import type { GuideCard } from '@/lib/types/guide';
 
-export const revalidate = 7200;
-
 const SITE_NAME = '10Projects';
 
 export function generateMetadata(): Metadata {

@@ -6,8 +6,6 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { breadcrumbJsonLd } from '@/lib/seo/json-ld';
 import type { DeveloperCard as DeveloperCardType } from '@/lib/types/developer';
 
-export const revalidate = 7200;
-
 const SITE_NAME = '10Projects';
 
 export function generateMetadata(): Metadata {

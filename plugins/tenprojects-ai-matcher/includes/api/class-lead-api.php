@@ -24,6 +24,7 @@ use TenProjects\Helpers\Rate_Limiter;
  *
  * Routes:
  *  POST   /leads                  — Create a new lead (customer).
+ *  POST   /public/leads           — Create a lead from static frontend (no auth).
  *  GET    /leads                  — List leads with filters (admin).
  *  PUT    /leads/<id>/status      — Update lead status (admin or partner).
  *  GET    /leads/<id>             — Get full lead detail (admin or partner).
@@ -106,6 +107,59 @@ class Lead_API extends API_Base {
 						'source_page'    => array(
 							'type'              => 'string',
 							'sanitize_callback' => 'esc_url_raw',
+						),
+					),
+				),
+			)
+		);
+
+		// POST /public/leads — create lead from static frontend (no auth).
+		register_rest_route(
+			$this->namespace,
+			'/public/leads',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_public_lead' ),
+					'permission_callback' => array( $this, 'public_permissions' ),
+					'args'                => array(
+						'name'        => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'phone'       => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+							'validate_callback' => function ( $value ) {
+								$digits = preg_replace( '/\D/', '', $value );
+								return strlen( $digits ) === 10 && preg_match( '/^[6-9]/', $digits );
+							},
+						),
+						'email'       => array(
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_email',
+						),
+						'lead_type'   => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+							'validate_callback' => function ( $value ) {
+								return in_array( $value, array( 'site_visit', 'best_price', 'advisor', 'callback', 'whatsapp', 'brochure', 'floor_plan' ), true );
+							},
+						),
+						'project_id'  => array(
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						),
+						'source_page' => array(
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+						'honeypot'    => array(
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
 						),
 					),
 				),
@@ -354,6 +408,78 @@ class Lead_API extends API_Base {
 		}
 
 		return $this->success( $response_data, 201 );
+	}
+
+	/**
+	 * POST /public/leads
+	 *
+	 * Create a lead from the static frontend without customer authentication.
+	 * Uses honeypot anti-spam and phone-based rate limiting.
+	 *
+	 * @param \WP_REST_Request $request Request object.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function create_public_lead( $request ) {
+		// Honeypot check — if filled, it's a bot.
+		$honeypot = $request->get_param( 'honeypot' );
+		if ( ! empty( $honeypot ) ) {
+			// Return fake success to not tip off the bot.
+			return $this->success( array( 'lead_id' => 0 ), 201 );
+		}
+
+		$name  = sanitize_text_field( $request->get_param( 'name' ) );
+		$phone = preg_replace( '/\D/', '', sanitize_text_field( $request->get_param( 'phone' ) ) );
+
+		if ( empty( $name ) || strlen( $phone ) !== 10 ) {
+			return $this->error( 'invalid_input', 'Name and valid 10-digit phone are required.', 400 );
+		}
+
+		// Rate limit: 3 submissions per phone per hour.
+		if ( Rate_Limiter::throttle_lead( $phone ) ) {
+			$retry_after = Rate_Limiter::retry_after( 'lead_' . $phone, 3600 );
+			return $this->error(
+				'rate_limited',
+				'Too many submissions. Please try again later.',
+				429,
+				array( 'retry_after' => $retry_after )
+			);
+		}
+
+		$lead_type = sanitize_text_field( $request->get_param( 'lead_type' ) );
+		$email     = $request->get_param( 'email' ) ? sanitize_email( $request->get_param( 'email' ) ) : null;
+
+		$lead_data = array(
+			'customer_id'    => 0,
+			'lead_type'      => $lead_type,
+			'customer_name'  => $name,
+			'customer_phone' => $phone,
+			'customer_email' => $email,
+			'source_page'    => $request->get_param( 'source_page' ) ? esc_url_raw( $request->get_param( 'source_page' ) ) : null,
+		);
+
+		$project_id = $request->get_param( 'project_id' );
+		if ( $project_id ) {
+			$lead_data['project_id'] = absint( $project_id );
+		}
+
+		// Create lead via service.
+		$lead = $this->lead_service->create( $lead_data );
+		if ( ! $lead ) {
+			return $this->error( 'creation_failed', 'Failed to submit. Please try again.', 500 );
+		}
+
+		$lead_id = is_object( $lead ) ? $lead->id : $lead;
+
+		// Qualify the lead.
+		$this->lead_qualifier->qualify( $lead_id );
+
+		// Attempt auto-routing.
+		$routed = $this->lead_router->route( $lead_id );
+		if ( $routed && ! empty( $routed['partner_id'] ) ) {
+			$this->notification_service->notify_partner_new_lead( $routed['partner_id'], $lead_id );
+		}
+
+		return $this->success( array( 'lead_id' => (int) $lead_id ), 201 );
 	}
 
 	/**

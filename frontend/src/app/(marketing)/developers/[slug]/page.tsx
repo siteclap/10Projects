@@ -11,8 +11,6 @@ import { breadcrumbJsonLd } from '@/lib/seo/json-ld';
 import type { Developer } from '@/lib/types/developer';
 import type { ProjectCard as ProjectCardType } from '@/lib/types/project';
 
-export const revalidate = 7200;
-
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://10projects.com';
 
 /* ---------- Mock developer data ---------- */

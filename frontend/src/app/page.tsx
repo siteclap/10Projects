@@ -12,6 +12,7 @@ import { ProjectCarousel } from '@/components/project/ProjectCarousel';
 import { LocationGrid } from '@/components/location/LocationGrid';
 import { DeveloperLogos } from '@/components/developer/DeveloperLogos';
 import { ROUTES } from '@/lib/constants/routes';
+import { wpFetchSearchConfig } from '@/lib/wp-api';
 import type { ProjectCard as ProjectCardType } from '@/lib/types/project';
 import type { LocationCard as LocationCardType } from '@/lib/types/location';
 import type { DeveloperCard } from '@/lib/types/developer';
@@ -19,7 +20,7 @@ import type { DeveloperCard } from '@/lib/types/developer';
 export const metadata: Metadata = {
   title: '10Projects — Find the 10 Best-Fit Projects for You',
   description:
-    "India's first AI-powered real estate platform. Answer a few questions and our scoring engine analyses 150+ projects across 20 categories to find the 10 best matches for your lifestyle, budget, and priorities in Navi Mumbai.",
+    "Search 150+ verified projects in Navi Mumbai by name, location, or developer. Compare RERA-verified prices, floor plans, and book free site visits. Zero brokerage, no spam.",
   alternates: {
     canonical: '/',
   },
@@ -27,13 +28,13 @@ export const metadata: Metadata = {
 
 /* ---------- Mock Data ---------- */
 
-const aiPickedProjects: ProjectCardType[] = [
+const featuredProjects: ProjectCardType[] = [
   {
     id: 1,
     title: 'Lodha Palava Crown',
     slug: 'lodha-palava-crown',
     permalink: '/navi-mumbai/kharghar/lodha-palava-crown',
-    thumbnail: '',
+    thumbnail: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80',
     developer: 'Lodha Group',
     location: 'Kharghar',
     construction_stage: 'Under Construction',
@@ -66,7 +67,7 @@ const aiPickedProjects: ProjectCardType[] = [
     title: 'Paradise Sai World Empire',
     slug: 'paradise-sai-world-empire',
     permalink: '/navi-mumbai/kharghar/paradise-sai-world-empire',
-    thumbnail: '',
+    thumbnail: 'https://images.unsplash.com/photo-1460317442991-0ec209397118?w=800&q=80',
     developer: 'Paradise Group',
     location: 'Kharghar',
     construction_stage: 'Ready to Move',
@@ -91,7 +92,7 @@ const aiPickedProjects: ProjectCardType[] = [
     title: 'Balaji Symphony',
     slug: 'balaji-symphony',
     permalink: '/navi-mumbai/panvel/balaji-symphony',
-    thumbnail: '',
+    thumbnail: 'https://images.unsplash.com/photo-1515263487990-61b07816b324?w=800&q=80',
     developer: 'Balaji Group',
     location: 'Panvel',
     construction_stage: 'Under Construction',
@@ -124,7 +125,7 @@ const aiPickedProjects: ProjectCardType[] = [
     title: 'Arihant Aspire',
     slug: 'arihant-aspire',
     permalink: '/navi-mumbai/panvel/arihant-aspire',
-    thumbnail: '',
+    thumbnail: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80',
     developer: 'Arihant Superstructures',
     location: 'Panvel',
     construction_stage: 'Under Construction',
@@ -160,7 +161,7 @@ const fastSellingProjects: ProjectCardType[] = [
     title: 'JERAI Elysium',
     slug: 'jerai-elysium',
     permalink: '/navi-mumbai/ulwe/jerai-elysium',
-    thumbnail: '',
+    thumbnail: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80',
     developer: 'JERAI Group',
     location: 'Ulwe',
     construction_stage: 'Under Construction',
@@ -185,7 +186,7 @@ const fastSellingProjects: ProjectCardType[] = [
     title: 'L&T Seawoods Residences',
     slug: 'lt-seawoods-residences',
     permalink: '/navi-mumbai/vashi/lt-seawoods-residences',
-    thumbnail: '',
+    thumbnail: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80',
     developer: 'L&T Realty',
     location: 'Seawoods',
     construction_stage: 'Ready to Move',
@@ -218,7 +219,7 @@ const fastSellingProjects: ProjectCardType[] = [
     title: 'Godrej Vihaa',
     slug: 'godrej-vihaa',
     permalink: '/navi-mumbai/airoli/godrej-vihaa',
-    thumbnail: '',
+    thumbnail: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80',
     developer: 'Godrej Properties',
     location: 'Airoli',
     construction_stage: 'Under Construction',
@@ -245,7 +246,7 @@ const popularLocations: LocationCardType[] = [
     id: 1,
     title: 'Kharghar',
     slug: 'kharghar',
-    thumbnail: null,
+    thumbnail: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&q=80',
     city_slug: 'navi-mumbai',
     project_count: 42,
     avg_price_psf: 8500,
@@ -255,7 +256,7 @@ const popularLocations: LocationCardType[] = [
     id: 2,
     title: 'Panvel',
     slug: 'panvel',
-    thumbnail: null,
+    thumbnail: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&q=80',
     city_slug: 'navi-mumbai',
     project_count: 38,
     avg_price_psf: 5800,
@@ -265,7 +266,7 @@ const popularLocations: LocationCardType[] = [
     id: 3,
     title: 'Ulwe',
     slug: 'ulwe',
-    thumbnail: null,
+    thumbnail: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&q=80',
     city_slug: 'navi-mumbai',
     project_count: 35,
     avg_price_psf: 6200,
@@ -275,7 +276,7 @@ const popularLocations: LocationCardType[] = [
     id: 4,
     title: 'Vashi',
     slug: 'vashi',
-    thumbnail: null,
+    thumbnail: 'https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=800&q=80',
     city_slug: 'navi-mumbai',
     project_count: 18,
     avg_price_psf: 14200,
@@ -296,28 +297,28 @@ const developerPartners: DeveloperCard[] = [
 
 /* ---------- Page Component ---------- */
 
-export default function HomePage() {
+export default async function HomePage() {
+  const activeCategories = await wpFetchSearchConfig();
+
   return (
     <>
       <Header />
 
       <main className="flex-1">
         {/* 1. Hero */}
-        <Hero />
+        <Hero activeCategories={activeCategories} />
 
-        {/* 2. AI-Picked Properties carousel */}
+        {/* 2. Featured Projects carousel */}
         <ProjectCarousel
-          title="AI-Picked for You"
-          subtitle="Top projects selected by our AI based on buyer preferences"
+          title="Featured Projects"
+          subtitle="Top-rated projects in Navi Mumbai"
           seeAllHref={ROUTES.PROJECTS}
           seeAllLabel="View All Projects"
         >
-          {aiPickedProjects.map((project) => (
+          {featuredProjects.map((project) => (
             <ProjectCard
               key={project.id}
               project={project}
-              showFitScore
-              fitScore={project.fit_score}
             />
           ))}
         </ProjectCarousel>

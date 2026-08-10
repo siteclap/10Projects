@@ -37,6 +37,9 @@ class Settings_Admin {
 	 */
 	private function get_tabs(): array {
 		return array(
+			'brand'        => __( 'Brand Identity', 'tenprojects-ai-matcher' ),
+			'search'       => __( 'Search Categories', 'tenprojects-ai-matcher' ),
+			'lead'         => __( 'Lead Integration', 'tenprojects-ai-matcher' ),
 			'ai'           => __( 'AI Configuration', 'tenprojects-ai-matcher' ),
 			'otp'          => __( 'OTP Configuration', 'tenprojects-ai-matcher' ),
 			'scoring'      => __( 'Scoring Weights', 'tenprojects-ai-matcher' ),
@@ -51,15 +54,18 @@ class Settings_Admin {
 	 * @return string
 	 */
 	private function get_current_tab(): string {
-		$tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'ai'; // phpcs:ignore WordPress.Security.NonceVerification
+		$tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'brand'; // phpcs:ignore WordPress.Security.NonceVerification
 		$tabs = $this->get_tabs();
-		return array_key_exists( $tab, $tabs ) ? $tab : 'ai';
+		return array_key_exists( $tab, $tabs ) ? $tab : 'brand';
 	}
 
 	/**
 	 * Register all settings (called on admin_init).
 	 */
 	public function register_settings(): void {
+		$this->register_brand_settings();
+		$this->register_search_settings();
+		$this->register_lead_integration_settings();
 		$this->register_ai_settings();
 		$this->register_otp_settings();
 		$this->register_scoring_settings();
@@ -96,6 +102,21 @@ class Settings_Admin {
 		echo '<form method="post" action="options.php">';
 
 		switch ( $current_tab ) {
+			case 'brand':
+				settings_fields( 'tp_brand_settings' );
+				do_settings_sections( 'tp_brand_settings' );
+				break;
+
+			case 'search':
+				settings_fields( 'tp_search_settings' );
+				do_settings_sections( 'tp_search_settings' );
+				break;
+
+			case 'lead':
+				settings_fields( 'tp_lead_integration_settings' );
+				do_settings_sections( 'tp_lead_integration_settings' );
+				break;
+
 			case 'ai':
 				settings_fields( 'tp_ai_settings' );
 				do_settings_sections( 'tp_ai_settings' );
@@ -129,6 +150,113 @@ class Settings_Admin {
 
 		echo '</form>';
 		echo '</div>';
+	}
+
+	// ------------------------------------------------------------------
+	// Brand Identity.
+	// ------------------------------------------------------------------
+
+	/**
+	 * Register brand identity settings.
+	 */
+	private function register_brand_settings(): void {
+		$group   = 'tp_brand_settings';
+		$section = 'tp_brand_section';
+
+		add_settings_section(
+			$section,
+			__( 'Brand Identity', 'tenprojects-ai-matcher' ),
+			function () {
+				echo '<p>' . esc_html__( 'Configure your brand details. These appear in the header, footer, and lead communications.', 'tenprojects-ai-matcher' ) . '</p>';
+			},
+			$group
+		);
+
+		$this->add_text_field( $group, $section, 'brand_name', __( 'Brand Name', 'tenprojects-ai-matcher' ), '10Projects' );
+		$this->add_text_field( $group, $section, 'brand_rera_agent', __( 'RERA Agent Number', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'brand_logo_url', __( 'Logo URL', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'brand_address', __( 'Office Address', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'brand_email', __( 'Contact Email', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'brand_phone', __( 'Contact Phone', 'tenprojects-ai-matcher' ) );
+	}
+
+	// ------------------------------------------------------------------
+	// Search Categories.
+	// ------------------------------------------------------------------
+
+	/**
+	 * Register search category settings.
+	 */
+	private function register_search_settings(): void {
+		$group   = 'tp_search_settings';
+		$section = 'tp_search_section';
+
+		add_settings_section(
+			$section,
+			__( 'Search Categories', 'tenprojects-ai-matcher' ),
+			function () {
+				echo '<p>' . esc_html__( 'Toggle which property categories are available in the frontend search bar. Inactive categories will show "Coming Soon".', 'tenprojects-ai-matcher' ) . '</p>';
+			},
+			$group
+		);
+
+		$categories = array(
+			'buy'        => __( 'Buy', 'tenprojects-ai-matcher' ),
+			'rent'       => __( 'Rent', 'tenprojects-ai-matcher' ),
+			'commercial' => __( 'Commercial', 'tenprojects-ai-matcher' ),
+			'pg'         => __( 'PG / Co-living', 'tenprojects-ai-matcher' ),
+			'plots'      => __( 'Plots / Land', 'tenprojects-ai-matcher' ),
+		);
+
+		foreach ( $categories as $key => $label ) {
+			$opt_key = 'search_cat_' . $key;
+			register_setting( $group, self::OPT_PREFIX . $opt_key, array(
+				'type'              => 'string',
+				'sanitize_callback' => function ( $val ) {
+					return $val ? '1' : '0';
+				},
+				'default'           => $key === 'buy' ? '1' : '0',
+			) );
+
+			add_settings_field(
+				$opt_key,
+				$label,
+				function () use ( $opt_key, $key ) {
+					$value = get_option( self::OPT_PREFIX . $opt_key, $key === 'buy' ? '1' : '0' );
+					echo '<label>';
+					echo '<input type="checkbox" name="' . esc_attr( self::OPT_PREFIX . $opt_key ) . '" value="1"'
+						. checked( $value, '1', false ) . ' />';
+					echo ' ' . esc_html__( 'Active on frontend', 'tenprojects-ai-matcher' );
+					echo '</label>';
+				},
+				$group,
+				$section
+			);
+		}
+	}
+
+	// ------------------------------------------------------------------
+	// Lead Integration.
+	// ------------------------------------------------------------------
+
+	/**
+	 * Register lead integration settings.
+	 */
+	private function register_lead_integration_settings(): void {
+		$group   = 'tp_lead_integration_settings';
+		$section = 'tp_lead_integration_section';
+
+		add_settings_section(
+			$section,
+			__( 'Lead Integration', 'tenprojects-ai-matcher' ),
+			function () {
+				echo '<p>' . esc_html__( 'Configure webhook URLs and notification emails for new leads.', 'tenprojects-ai-matcher' ) . '</p>';
+			},
+			$group
+		);
+
+		$this->add_text_field( $group, $section, 'lead_webhook_url', __( 'Lead Webhook URL', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'lead_notification_email', __( 'Notification Email', 'tenprojects-ai-matcher' ) );
 	}
 
 	// ------------------------------------------------------------------

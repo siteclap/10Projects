@@ -1,6 +1,6 @@
 /* ============================================================
    10Projects Admin Styles
-   Tabbed meta boxes, list tables, dashboard
+   NewPropertyz-style vertical tabs, clean fields, dashboard
    ============================================================ */
 
 /* --- Admin Variables --- */
@@ -17,82 +17,124 @@
     --tp-gray-500: #6B7280;
     --tp-gray-700: #374151;
     --tp-gray-900: #111827;
-    --tp-radius: 8px;
+    --tp-radius: 6px;
 }
 
-/* --- Tabbed Meta Box --- */
+/* --- Remove default WP meta box padding for our box --- */
+#tp_project_details .inside {
+    padding: 0;
+    margin: 0;
+}
+
+/* --- Tabbed Meta Box — Vertical Left Sidebar (NewPropertyz-style) --- */
+.tp-meta-box {
+    display: flex;
+    min-height: 420px;
+    border: 1px solid #ddd;
+    background: #fff;
+}
+
 .tp-meta-tabs {
     display: flex;
-    border-bottom: 1px solid var(--tp-gray-200);
-    margin: -6px -12px 16px;
-    padding: 0 12px;
-    background: var(--tp-gray-50);
-    flex-wrap: wrap;
+    flex-direction: column;
+    width: 200px;
+    flex-shrink: 0;
+    border-right: 1px solid #ddd;
+    background: #fff;
+    margin: 0;
+    padding: 0;
 }
+
 .tp-meta-tab {
-    padding: 12px 20px;
+    display: block;
+    padding: 13px 18px;
     font-size: 13px;
     font-weight: 500;
-    color: var(--tp-gray-500);
+    color: #444;
     cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all 0.15s;
-    white-space: nowrap;
-    text-decoration: none;
+    border: none;
+    border-left: 3px solid transparent;
+    border-bottom: 1px solid #f0f0f1;
+    text-align: right;
     background: none;
-    border-top: none;
-    border-left: none;
-    border-right: none;
+    transition: all 0.15s;
+    white-space: normal;
+    text-decoration: none;
+    line-height: 1.4;
 }
+
 .tp-meta-tab:hover {
-    color: var(--tp-gray-900);
+    color: var(--tp-primary);
+    background: #f8f9ff;
 }
+
+.tp-meta-tab:focus {
+    outline: none;
+    box-shadow: none;
+}
+
 .tp-meta-tab.active {
     color: var(--tp-primary);
-    border-bottom-color: var(--tp-primary);
+    border-left-color: var(--tp-primary);
     font-weight: 600;
+    background: #f8f9ff;
+}
+
+/* Panels wrapper (flex right side) */
+.tp-meta-panels {
+    flex: 1;
+    min-width: 0;
 }
 
 .tp-meta-panel {
     display: none;
-    padding: 8px 0;
+    padding: 20px 24px;
 }
+
 .tp-meta-panel.active {
     display: block;
 }
 
 /* --- Meta Field Groups --- */
 .tp-field-group {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
+
 .tp-field-group__title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--tp-gray-900);
-    margin-bottom: 12px;
+    color: var(--tp-gray-700);
+    margin-bottom: 14px;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--tp-gray-100);
-}
-
-.tp-field-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-    margin-bottom: 12px;
-}
-
-.tp-field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-.tp-field label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--tp-gray-500);
     text-transform: uppercase;
     letter-spacing: 0.3px;
 }
+
+/* --- Field Rows (grid of fields) --- */
+.tp-field-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-bottom: 14px;
+}
+
+/* --- Individual Field (label on top, input below) --- */
+.tp-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 4px;
+}
+
+.tp-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
 .tp-field input[type="text"],
 .tp-field input[type="number"],
 .tp-field input[type="date"],
@@ -101,29 +143,40 @@
 .tp-field textarea,
 .tp-field select {
     padding: 8px 12px;
-    border: 1px solid var(--tp-gray-300);
-    border-radius: var(--tp-radius);
+    border: 1px solid #ddd;
+    border-radius: 4px;
     font-size: 14px;
     color: var(--tp-gray-900);
     background: #fff;
     transition: border-color 0.15s;
     width: 100%;
+    box-sizing: border-box;
 }
+
 .tp-field input:focus,
 .tp-field textarea:focus,
 .tp-field select:focus {
     outline: none;
     border-color: var(--tp-primary);
-    box-shadow: 0 0 0 2px rgba(26, 86, 219, 0.1);
+    box-shadow: 0 0 0 2px rgba(26, 86, 219, 0.08);
 }
+
 .tp-field textarea {
     min-height: 80px;
     resize: vertical;
 }
+
 .tp-field .description {
-    font-size: 11px;
-    color: var(--tp-gray-500);
+    font-size: 12px;
+    color: #999;
     margin-top: 2px;
+    font-style: italic;
+}
+
+/* Checkbox field — inline */
+.tp-field input[type="checkbox"] {
+    width: auto;
+    margin-right: 6px;
 }
 
 /* --- Color Picker Field --- */
@@ -140,7 +193,7 @@
     flex-shrink: 0;
 }
 
-/* --- Media Upload --- */
+/* --- Media Upload (single image) --- */
 .tp-media-upload {
     display: flex;
     align-items: center;
@@ -161,6 +214,115 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/* --- Gallery Field (NewPropertyz-style "Choose Media") --- */
+.tp-gallery-field {
+    margin-bottom: 16px;
+}
+
+.tp-gallery-field > label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.tp-gallery-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.tp-gallery-item {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #f9f9f9;
+    cursor: move;
+}
+
+.tp-gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.tp-gallery-remove {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(220, 38, 38, 0.9);
+    color: #fff;
+    border: none;
+    font-size: 13px;
+    line-height: 20px;
+    text-align: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+    padding: 0;
+}
+
+.tp-gallery-item:hover .tp-gallery-remove {
+    opacity: 1;
+}
+
+.tp-gallery-add {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px !important;
+    font-size: 13px !important;
+}
+
+.tp-gallery-add .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--tp-primary);
+}
+
+/* --- JSON Field Items (pros, cons, offers, etc.) --- */
+.tp-json-field > label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.tp-json-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.tp-json-item input[type="text"] {
+    flex: 1;
+    padding: 7px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.tp-json-remove {
+    flex-shrink: 0;
+    color: var(--tp-danger);
+}
+
+.tp-json-add {
+    margin-top: 6px;
 }
 
 /* --- Configurations Table --- */

@@ -70,6 +70,30 @@ export interface Project {
   cons?: string[];
   land_parcel?: string;
   floors?: string;
+  // Gallery & media.
+  gallery_images?: string[];
+  banner_desktop_images?: string[];
+  banner_mobile_images?: string[];
+  developer_logo?: string;
+  // Contact & extras.
+  phone?: string;
+  email?: string;
+  verified?: boolean;
+  status?: string;
+  offers?: string[];
+  // About Developer / Project Overview.
+  developer_name?: string;
+  project_location?: string;
+  floors_display?: string;
+  qr_code?: string[];
+  short_overview?: string;
+  google_review_rating?: string;
+  available_configs_text?: string;
+  // Location details.
+  address_pin?: string;
+  location_advantage_1?: string;
+  location_advantage_2?: string;
+  location_brief?: string;
 }
 
 /**

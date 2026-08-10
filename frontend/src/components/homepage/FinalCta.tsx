@@ -46,8 +46,8 @@ export function FinalCta() {
                   Ready to find your best-fit projects?
                 </h2>
                 <p className="mx-auto mt-lg max-w-[560px] text-body-lg text-white/80">
-                  Share your details and our AI will match you with the 10 best
-                  projects in Navi Mumbai.
+                  Share your details and our property advisor will help you find
+                  the best projects in Navi Mumbai.
                 </p>
               </div>
 

@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 use TenProjects\Helpers\Rate_Limiter;
 use TenProjects\Helpers\Sanitizer;
 
-abstract class API_Base extends \WP_REST_Controller {
+class API_Base extends \WP_REST_Controller {
 
     /**
      * API namespace.
@@ -24,9 +24,11 @@ abstract class API_Base extends \WP_REST_Controller {
     protected $namespace = 'tenprojects/v1';
 
     /**
-     * Register routes (must be implemented by child classes).
+     * Register routes — child classes must override this.
      */
-    abstract public function register_routes();
+    public function register_routes() {
+        // Override in child class.
+    }
 
     /**
      * Check if rate limited and return error if so.

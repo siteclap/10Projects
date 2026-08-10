@@ -56,6 +56,39 @@ class Project_API extends API_Base {
 			)
 		);
 
+		// GET /projects/by-slug/<slug> — project detail by slug.
+		register_rest_route(
+			$this->namespace,
+			'/projects/by-slug/(?P<slug>[a-z0-9\-]+)',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_project_by_slug' ),
+					'permission_callback' => array( $this, 'public_permissions' ),
+					'args'                => array(
+						'slug' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_title',
+						),
+					),
+				),
+			)
+		);
+
+		// GET /search/config — public search category configuration.
+		register_rest_route(
+			$this->namespace,
+			'/search/config',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_search_config' ),
+					'permission_callback' => array( $this, 'public_permissions' ),
+				),
+			)
+		);
+
 		// GET /projects/<id>/scores/<requirement_id> — fit score breakdown.
 		register_rest_route(
 			$this->namespace,
@@ -322,6 +355,12 @@ class Project_API extends API_Base {
 			'amenities'          => $this->get_taxonomy_terms( $post_id, 'tp_amenity' ),
 		);
 
+		// Resolve gallery/banner image IDs to URLs.
+		$gallery_images         = $this->resolve_image_ids( get_post_meta( $post_id, '_tp_gallery_ids', true ) );
+		$banner_desktop_images  = $this->resolve_image_ids( get_post_meta( $post_id, '_tp_banner_desktop_ids', true ) );
+		$banner_mobile_images   = $this->resolve_image_ids( get_post_meta( $post_id, '_tp_banner_mobile_ids', true ) );
+		$developer_logo_url     = $this->resolve_image_ids( get_post_meta( $post_id, '_tp_developer_logo_id', true ) );
+
 		// Build full detail response.
 		$data = array(
 			'id'                     => $post_id,
@@ -332,6 +371,27 @@ class Project_API extends API_Base {
 			'thumbnail'              => get_the_post_thumbnail_url( $post_id, 'large' ) ?: null,
 			'permalink'              => get_permalink( $post_id ),
 			'published_at'           => $post->post_date,
+
+			// Images & galleries.
+			'gallery_images'         => $gallery_images,
+			'banner_desktop_images'  => $banner_desktop_images,
+			'banner_mobile_images'   => $banner_mobile_images,
+			'developer_logo'         => ! empty( $developer_logo_url ) ? $developer_logo_url[0] : null,
+
+			// Contact details.
+			'phone'                  => get_post_meta( $post_id, '_tp_phone', true ) ?: null,
+			'email'                  => get_post_meta( $post_id, '_tp_email', true ) ?: null,
+			'sales_office_address'   => get_post_meta( $post_id, '_tp_sales_office_address', true ) ?: null,
+
+			// About Developer / Project Overview.
+			'developer_name'         => get_post_meta( $post_id, '_tp_developer_name', true ) ?: null,
+			'project_location'       => get_post_meta( $post_id, '_tp_project_location', true ) ?: null,
+			'land_parcel'            => get_post_meta( $post_id, '_tp_land_parcel', true ) ?: null,
+			'floors_display'         => get_post_meta( $post_id, '_tp_floors_display', true ) ?: null,
+			'qr_code'                => $this->resolve_image_ids( get_post_meta( $post_id, '_tp_qr_code_id', true ), 'thumbnail' ),
+			'short_overview'         => get_post_meta( $post_id, '_tp_short_overview', true ) ?: null,
+			'google_review_rating'   => get_post_meta( $post_id, '_tp_google_review_rating', true ) ?: null,
+			'available_configs_text' => get_post_meta( $post_id, '_tp_available_configs_text', true ) ?: null,
 
 			// Basic info.
 			'rera_number'            => get_post_meta( $post_id, '_tp_rera_number', true ) ?: null,
@@ -359,6 +419,10 @@ class Project_API extends API_Base {
 
 			// Location.
 			'address'                => get_post_meta( $post_id, '_tp_address', true ) ?: null,
+			'address_pin'            => get_post_meta( $post_id, '_tp_address_pin', true ) ?: null,
+			'location_advantage_1'   => get_post_meta( $post_id, '_tp_location_advantage_1', true ) ?: null,
+			'location_advantage_2'   => get_post_meta( $post_id, '_tp_location_advantage_2', true ) ?: null,
+			'location_brief'         => get_post_meta( $post_id, '_tp_location_brief', true ) ?: null,
 			'latitude'               => (float) get_post_meta( $post_id, '_tp_latitude', true ) ?: null,
 			'longitude'              => (float) get_post_meta( $post_id, '_tp_longitude', true ) ?: null,
 			'railway_distance_km'    => (float) get_post_meta( $post_id, '_tp_railway_distance_km', true ) ?: null,
@@ -381,6 +445,9 @@ class Project_API extends API_Base {
 			'vacancy_risk'           => get_post_meta( $post_id, '_tp_vacancy_risk', true ) ?: null,
 			'appreciation_score'     => (int) get_post_meta( $post_id, '_tp_appreciation_score', true ) ?: null,
 			'rental_yield_pct'       => (float) get_post_meta( $post_id, '_tp_rental_yield_pct', true ) ?: null,
+
+			// Offers (JSON-encoded list).
+			'offers'                 => json_decode( get_post_meta( $post_id, '_tp_offers', true ) ?: '[]', true ),
 
 			// Editorial (JSON-encoded lists).
 			'highlights'             => json_decode( get_post_meta( $post_id, '_tp_highlights', true ) ?: '[]', true ),
@@ -409,6 +476,33 @@ class Project_API extends API_Base {
 		);
 
 		return $this->success( $data );
+	}
+
+	/**
+	 * GET /projects/by-slug/<slug>
+	 *
+	 * Full project detail looked up by post slug.
+	 *
+	 * @param \WP_REST_Request $request Request object.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_project_by_slug( $request ) {
+		$slug = sanitize_title( $request->get_param( 'slug' ) );
+
+		$posts = get_posts( array(
+			'name'        => $slug,
+			'post_type'   => 'tp_project',
+			'post_status' => 'publish',
+			'numberposts' => 1,
+		) );
+
+		if ( empty( $posts ) ) {
+			return $this->error( 'not_found', 'Project not found.', 404 );
+		}
+
+		// Reuse the existing get_project logic by faking the request param.
+		$request->set_param( 'id', $posts[0]->ID );
+		return $this->get_project( $request );
 	}
 
 	/**
@@ -500,6 +594,29 @@ class Project_API extends API_Base {
 	}
 
 	/**
+	 * GET /search/config
+	 *
+	 * Returns active search categories based on admin settings.
+	 *
+	 * @param \WP_REST_Request $request Request object.
+	 * @return \WP_REST_Response
+	 */
+	public function get_search_config( $request ) {
+		$category_keys = array( 'buy', 'rent', 'commercial', 'pg', 'plots' );
+		$active        = array();
+
+		foreach ( $category_keys as $key ) {
+			if ( get_option( 'tp_search_cat_' . $key, $key === 'buy' ? '1' : '0' ) === '1' ) {
+				$active[] = $key;
+			}
+		}
+
+		return $this->success( array(
+			'active_categories' => $active,
+		) );
+	}
+
+	/**
 	 * Format a project post into card-level data for list responses.
 	 *
 	 * @param int $post_id Post ID.
@@ -553,6 +670,31 @@ class Project_API extends API_Base {
 			'verified'            => (bool) get_post_meta( $post_id, '_tp_verified', true ),
 			'sponsored'           => (bool) get_post_meta( $post_id, '_tp_sponsored', true ),
 		);
+	}
+
+	/**
+	 * Resolve comma-separated attachment IDs to an array of image URLs.
+	 *
+	 * @param string $ids_string Comma-separated attachment IDs.
+	 * @param string $size       WordPress image size (default 'large').
+	 * @return array Array of image URL strings.
+	 */
+	private function resolve_image_ids( $ids_string, $size = 'large' ) {
+		if ( empty( $ids_string ) ) {
+			return array();
+		}
+
+		$ids  = array_filter( array_map( 'intval', explode( ',', $ids_string ) ) );
+		$urls = array();
+
+		foreach ( $ids as $att_id ) {
+			$url = wp_get_attachment_image_url( $att_id, $size );
+			if ( $url ) {
+				$urls[] = $url;
+			}
+		}
+
+		return $urls;
 	}
 
 	/**

@@ -1,7 +1,7 @@
 /**
  * 10Projects Admin Scripts
  *
- * Handles tabbed meta boxes, media uploads, repeater fields.
+ * Handles tabbed meta boxes, media uploads, gallery fields, repeater fields.
  *
  * @package TenProjects
  * @since 1.0.0
@@ -48,7 +48,7 @@
   }
 
   /**
-   * Media Upload Button
+   * Media Upload Button (single image)
    */
   function initMediaUploads() {
     $(document).on('click', '.tp-media-upload-btn', function (e) {
@@ -82,6 +82,86 @@
   }
 
   /**
+   * Gallery Field (multiple images) — NewPropertyz-style
+   */
+  function initGalleryFields() {
+    // Open media frame to choose multiple images
+    $(document).on('click', '.tp-gallery-add', function (e) {
+      e.preventDefault();
+      const $field = $(this).closest('.tp-gallery-field');
+      const $input = $field.find('.tp-gallery-ids');
+      const $grid = $field.find('.tp-gallery-grid');
+
+      const frame = wp.media({
+        title: 'Choose Media',
+        button: { text: 'Add to Gallery' },
+        multiple: true,
+        library: { type: 'image' },
+      });
+
+      frame.on('select', function () {
+        const selection = frame.state().get('selection');
+        const existingIds = $input.val() ? $input.val().split(',').filter(Boolean) : [];
+
+        selection.forEach(function (attachment) {
+          const att = attachment.toJSON();
+          // Don't add duplicates
+          if (existingIds.indexOf(String(att.id)) === -1) {
+            existingIds.push(String(att.id));
+            const thumbUrl = att.sizes && att.sizes.thumbnail ? att.sizes.thumbnail.url : att.url;
+            $grid.append(
+              '<div class="tp-gallery-item" data-id="' + att.id + '">' +
+              '<img src="' + thumbUrl + '" alt="" />' +
+              '<button type="button" class="tp-gallery-remove" title="Remove">&times;</button>' +
+              '</div>'
+            );
+          }
+        });
+
+        $input.val(existingIds.join(','));
+      });
+
+      frame.open();
+    });
+
+    // Remove single image from gallery
+    $(document).on('click', '.tp-gallery-remove', function (e) {
+      e.preventDefault();
+      const $item = $(this).closest('.tp-gallery-item');
+      const $field = $item.closest('.tp-gallery-field');
+      const $input = $field.find('.tp-gallery-ids');
+      const removeId = String($item.data('id'));
+
+      $item.remove();
+
+      // Update hidden input
+      const ids = $input.val().split(',').filter(function (id) {
+        return id && id !== removeId;
+      });
+      $input.val(ids.join(','));
+    });
+
+    // Make gallery sortable (if jQuery UI available)
+    if ($.fn.sortable) {
+      $('.tp-gallery-grid').sortable({
+        items: '.tp-gallery-item',
+        cursor: 'move',
+        tolerance: 'pointer',
+        update: function () {
+          const $grid = $(this);
+          const $field = $grid.closest('.tp-gallery-field');
+          const $input = $field.find('.tp-gallery-ids');
+          const ids = [];
+          $grid.find('.tp-gallery-item').each(function () {
+            ids.push($(this).data('id'));
+          });
+          $input.val(ids.join(','));
+        },
+      });
+    }
+  }
+
+  /**
    * Repeater / Configuration Rows
    */
   function initConfigTable() {
@@ -103,7 +183,7 @@
   }
 
   /**
-   * JSON Field Editor (for pros, cons, highlights, etc.)
+   * JSON Field Editor (for pros, cons, highlights, offers, etc.)
    */
   function initJsonFields() {
     $(document).on('click', '.tp-json-add', function (e) {
@@ -137,6 +217,7 @@
   $(document).ready(function () {
     initMetaTabs();
     initMediaUploads();
+    initGalleryFields();
     initConfigTable();
     initJsonFields();
   });

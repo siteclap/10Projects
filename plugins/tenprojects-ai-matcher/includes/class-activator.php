@@ -173,6 +173,25 @@ class Activator {
             'tp_default_city'          => 'navi-mumbai',
             'tp_consent_required'      => true,
             'tp_whatsapp_enabled'      => true,
+
+            // Brand settings.
+            'tp_brand_name'            => '10Projects',
+            'tp_brand_rera_agent'      => '',
+            'tp_brand_address'         => '',
+            'tp_brand_email'           => '',
+            'tp_brand_phone'           => '',
+            'tp_brand_logo_url'        => '',
+
+            // Search categories (1 = active, 0 = inactive).
+            'tp_search_cat_buy'        => '1',
+            'tp_search_cat_rent'       => '0',
+            'tp_search_cat_commercial' => '0',
+            'tp_search_cat_pg'         => '0',
+            'tp_search_cat_plots'      => '0',
+
+            // Lead integration.
+            'tp_lead_webhook_url'      => '',
+            'tp_lead_notification_email' => '',
         );
 
         foreach ( $defaults as $key => $value ) {

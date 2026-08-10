@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { prisma } from '@/lib/db';
+import { wpFetchProjects } from '@/lib/wp-api';
 import { Container } from '@/components/layout/Container';
 import { Section } from '@/components/layout/Section';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
@@ -13,8 +13,6 @@ import { formatPrice } from '@/lib/utils/format-price';
 import type { Location } from '@/lib/types/location';
 import type { ProjectCard as ProjectCardType } from '@/lib/types/project';
 
-export const revalidate = 3600;
-
 /* ---------- Mock location data ---------- */
 
 const MOCK_LOCATIONS: Record<string, Location> = {
@@ -24,7 +22,7 @@ const MOCK_LOCATIONS: Record<string, Location> = {
     slug: 'kharghar',
     description:
       'Kharghar is one of the most sought-after residential destinations in Navi Mumbai, known for its well-planned infrastructure, excellent connectivity, and lush green surroundings. The node features Central Park, a golf course, and proximity to the upcoming Navi Mumbai International Airport.',
-    thumbnail: null,
+    thumbnail: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&q=80',
     city: 'Navi Mumbai',
     city_slug: 'navi-mumbai',
     avg_price_psf: 8500,
@@ -54,7 +52,7 @@ const MOCK_LOCATIONS: Record<string, Location> = {
     slug: 'panvel',
     description:
       'Panvel is rapidly emerging as a major residential hub in Navi Mumbai, driven by the upcoming Navi Mumbai International Airport and improved connectivity. With affordable pricing and large-scale township developments, Panvel offers excellent value for first-time buyers and investors.',
-    thumbnail: null,
+    thumbnail: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&q=80',
     city: 'Navi Mumbai',
     city_slug: 'navi-mumbai',
     avg_price_psf: 5800,
@@ -84,7 +82,7 @@ const MOCK_LOCATIONS: Record<string, Location> = {
     slug: 'ulwe',
     description:
       'Ulwe is the fastest-growing node in Navi Mumbai, positioned closest to the upcoming Navi Mumbai International Airport. With CIDCO-planned infrastructure, creek-facing views, and competitive pricing, Ulwe is a hotspot for both end-users and investors seeking high appreciation potential.',
-    thumbnail: null,
+    thumbnail: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&q=80',
     city: 'Navi Mumbai',
     city_slug: 'navi-mumbai',
     avg_price_psf: 6200,
@@ -114,7 +112,7 @@ const MOCK_LOCATIONS: Record<string, Location> = {
     slug: 'vashi',
     description:
       'Vashi is one of the oldest and most established nodes in Navi Mumbai, serving as the commercial and retail hub of the city. With premium infrastructure, Inorbit Mall, APMC Market, and excellent railway connectivity, Vashi commands premium pricing and offers a mature urban lifestyle.',
-    thumbnail: null,
+    thumbnail: 'https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=800&q=80',
     city: 'Navi Mumbai',
     city_slug: 'navi-mumbai',
     avg_price_psf: 14200,
@@ -148,7 +146,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'Lodha Palava Crown',
       slug: 'lodha-palava-crown',
       permalink: '/navi-mumbai/kharghar/lodha-palava-crown',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80',
       developer: 'Lodha Group',
       location: 'Kharghar',
       construction_stage: 'Under Construction',
@@ -167,7 +165,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'Paradise Sai World Empire',
       slug: 'paradise-sai-world-empire',
       permalink: '/navi-mumbai/kharghar/paradise-sai-world-empire',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1460317442991-0ec209397118?w=800&q=80',
       developer: 'Paradise Group',
       location: 'Kharghar',
       construction_stage: 'Ready to Move',
@@ -185,7 +183,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'Adhiraj Capital City',
       slug: 'adhiraj-capital-city',
       permalink: '/navi-mumbai/kharghar/adhiraj-capital-city',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=800&q=80',
       developer: 'Adhiraj Constructions',
       location: 'Kharghar',
       construction_stage: 'Under Construction',
@@ -204,7 +202,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'Dosti Eastern Bay',
       slug: 'dosti-eastern-bay',
       permalink: '/navi-mumbai/kharghar/dosti-eastern-bay',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800&q=80',
       developer: 'Dosti Realty',
       location: 'Kharghar',
       construction_stage: 'Under Construction',
@@ -225,7 +223,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'Balaji Symphony',
       slug: 'balaji-symphony',
       permalink: '/navi-mumbai/panvel/balaji-symphony',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1515263487990-61b07816b324?w=800&q=80',
       developer: 'Balaji Group',
       location: 'Panvel',
       construction_stage: 'Under Construction',
@@ -244,7 +242,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'Arihant Aspire',
       slug: 'arihant-aspire',
       permalink: '/navi-mumbai/panvel/arihant-aspire',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80',
       developer: 'Arihant Superstructures',
       location: 'Panvel',
       construction_stage: 'Under Construction',
@@ -263,7 +261,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'Haware Citi',
       slug: 'haware-citi',
       permalink: '/navi-mumbai/panvel/haware-citi',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80',
       developer: 'Haware Group',
       location: 'Panvel',
       construction_stage: 'Ready to Move',
@@ -281,7 +279,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'Godrej Nirvaan',
       slug: 'godrej-nirvaan',
       permalink: '/navi-mumbai/panvel/godrej-nirvaan',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80',
       developer: 'Godrej Properties',
       location: 'Panvel',
       construction_stage: 'Under Construction',
@@ -302,7 +300,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'JERAI Elysium',
       slug: 'jerai-elysium',
       permalink: '/navi-mumbai/ulwe/jerai-elysium',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80',
       developer: 'JERAI Group',
       location: 'Ulwe',
       construction_stage: 'Under Construction',
@@ -320,7 +318,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'Bhoomi Lawns',
       slug: 'bhoomi-lawns',
       permalink: '/navi-mumbai/ulwe/bhoomi-lawns',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=800&q=80',
       developer: 'Bhoomi Group',
       location: 'Ulwe',
       construction_stage: 'Under Construction',
@@ -339,7 +337,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'Sunteck City Avenue 2',
       slug: 'sunteck-city-avenue-2',
       permalink: '/navi-mumbai/ulwe/sunteck-city-avenue-2',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1567496898669-ee935f5f647a?w=800&q=80',
       developer: 'Sunteck Realty',
       location: 'Ulwe',
       construction_stage: 'Under Construction',
@@ -357,7 +355,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'Akshar Elementa',
       slug: 'akshar-elementa',
       permalink: '/navi-mumbai/ulwe/akshar-elementa',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&q=80',
       developer: 'Akshar Developers',
       location: 'Ulwe',
       construction_stage: 'Ready to Move',
@@ -377,7 +375,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'L&T Seawoods Residences',
       slug: 'lt-seawoods-residences',
       permalink: '/navi-mumbai/vashi/lt-seawoods-residences',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80',
       developer: 'L&T Realty',
       location: 'Vashi',
       construction_stage: 'Ready to Move',
@@ -396,7 +394,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'Ekta Tripolis',
       slug: 'ekta-tripolis',
       permalink: '/navi-mumbai/vashi/ekta-tripolis',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1560184897-ae75f418493e?w=800&q=80',
       developer: 'Ekta World',
       location: 'Vashi',
       construction_stage: 'Under Construction',
@@ -415,7 +413,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'Ariisto Sommet',
       slug: 'ariisto-sommet',
       permalink: '/navi-mumbai/vashi/ariisto-sommet',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
       developer: 'Ariisto Realtors',
       location: 'Vashi',
       construction_stage: 'Under Construction',
@@ -434,7 +432,7 @@ const MOCK_PROJECTS: Record<string, ProjectCardType[]> = {
       title: 'Sai Mannat',
       slug: 'sai-mannat',
       permalink: '/navi-mumbai/vashi/sai-mannat',
-      thumbnail: '',
+      thumbnail: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80',
       developer: 'Sai Developers',
       location: 'Vashi',
       construction_stage: 'Ready to Move',
@@ -545,44 +543,10 @@ const ALL_LOCATIONS = [
   { title: 'Taloja', slug: 'taloja', projectCount: 28, avgPrice: 4200 },
 ];
 
-/* ---------- Fetch projects from DB ---------- */
+/* ---------- Fetch projects from WordPress API ---------- */
 
 async function getDbProjects(locationSlug: string): Promise<ProjectCardType[]> {
-  const dbProjects = await prisma.project.findMany({
-    where: {
-      published: true,
-      location: { slug: locationSlug },
-    },
-    include: {
-      location: true,
-      configurations: { orderBy: { basePrice: 'asc' } },
-    },
-    orderBy: { fitScore: 'desc' },
-  });
-
-  return dbProjects.map((p) => ({
-    id: p.id,
-    title: p.title,
-    slug: p.slug,
-    permalink: `/navi-mumbai/${p.location?.slug || locationSlug}/${p.slug}`,
-    thumbnail: p.thumbnail || '',
-    developer: p.developer,
-    location: p.location?.name || locationSlug,
-    construction_stage: p.constructionStage || 'Under Construction',
-    expected_possession: p.expectedPossession || '',
-    rera_number: p.reraNumber || '',
-    configurations: p.configurations.map((c) => ({
-      config_type: c.configType,
-      carpet_area_sqft: c.carpetAreaSqft,
-      base_price: c.basePrice,
-      total_price: c.totalPrice,
-      inventory_total: c.inventoryTotal,
-      inventory_available: c.inventoryAvailable,
-    })),
-    price_min: p.priceMin,
-    price_max: p.priceMax,
-    fit_score: p.fitScore ?? undefined,
-  }));
+  return wpFetchProjects(locationSlug);
 }
 
 /* ---------- Static params ---------- */
