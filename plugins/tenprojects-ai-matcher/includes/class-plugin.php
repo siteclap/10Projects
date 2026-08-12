@@ -168,6 +168,22 @@ class Plugin {
             }
         } );
 
+        // Register settings on admin_init so options.php whitelists them.
+        add_action( 'admin_init', function () {
+            $settings = new Admin\Settings_Admin();
+            $settings->register_settings();
+        } );
+
+        // Purge all caches when any tp_ brand/social option is updated.
+        add_action( 'updated_option', function ( $option ) {
+            if ( strpos( $option, 'tp_brand_' ) === 0 || strpos( $option, 'tp_social_' ) === 0 ) {
+                if ( class_exists( 'LiteSpeed\\Purge' ) ) {
+                    \LiteSpeed\Purge::purge_all();
+                }
+                wp_cache_flush();
+            }
+        } );
+
         // Category menu items (Buy, Rent, Commercial, Resale, Plot).
         ( new Admin\Category_Menu() )->register();
     }
@@ -232,7 +248,11 @@ class Plugin {
      * @param string $hook_suffix Current admin page.
      */
     public function enqueue_admin_assets( $hook_suffix ) {
-        // Load on all admin pages for now; can be scoped later.
+        // Load WP media library on Brand Settings page (needed for logo/banner uploads).
+        if ( 'toplevel_page_tenprojects-brand' === $hook_suffix || strpos( $hook_suffix, 'tenprojects' ) !== false ) {
+            wp_enqueue_media();
+        }
+
         wp_enqueue_style(
             'tp-admin',
             TP_PLUGIN_URL . 'admin/css/admin.css',

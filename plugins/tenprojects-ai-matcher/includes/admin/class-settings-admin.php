@@ -219,8 +219,7 @@ class Settings_Admin {
 			$group
 		);
 
-		$this->add_media_field( $group, $section, 'brand_logo_light', __( 'Logo (Light Background)', 'tenprojects-ai-matcher' ), __( 'Used in the header on white backgrounds. Recommended: PNG with transparent background.', 'tenprojects-ai-matcher' ) );
-		$this->add_media_field( $group, $section, 'brand_logo_dark', __( 'Logo (Dark Background)', 'tenprojects-ai-matcher' ), __( 'Used in the footer on dark backgrounds. If empty, the light logo will be used with invert filter.', 'tenprojects-ai-matcher' ) );
+		$this->add_media_field( $group, $section, 'brand_logo_light', __( 'Site Logo', 'tenprojects-ai-matcher' ), __( 'Used in both header and footer. Recommended: PNG with transparent background.', 'tenprojects-ai-matcher' ) );
 		$this->add_media_field( $group, $section, 'brand_favicon', __( 'Favicon', 'tenprojects-ai-matcher' ), __( 'Site icon shown in browser tabs. Recommended: 32x32 or 180x180 PNG.', 'tenprojects-ai-matcher' ) );
 		$this->add_media_field( $group, $section, 'brand_hero_desktop', __( 'Homepage Banner (Desktop)', 'tenprojects-ai-matcher' ), __( 'Hero background image for desktop. Recommended: 1920x800 or wider.', 'tenprojects-ai-matcher' ) );
 		$this->add_media_field( $group, $section, 'brand_hero_mobile', __( 'Homepage Banner (Mobile)', 'tenprojects-ai-matcher' ), __( 'Hero background image for mobile. Recommended: 800x600 or taller.', 'tenprojects-ai-matcher' ) );
@@ -383,11 +382,13 @@ class Settings_Admin {
 	private function render_brand_admin_js(): void {
 		?>
 		<script>
-		(function($){
-			if (typeof wp === 'undefined' || typeof wp.media === 'undefined') return;
-
+		jQuery(function($){
 			// Media upload buttons.
 			$(document).on('click', '.tp-media-upload', function(e) {
+				if (typeof wp === 'undefined' || typeof wp.media === 'undefined') {
+					alert('Media library not loaded. Please refresh the page.');
+					return;
+				}
 				e.preventDefault();
 				var $wrap = $(this).closest('.tp-media-field');
 				var $input = $wrap.find('.tp-media-url');
@@ -432,7 +433,7 @@ class Settings_Admin {
 				$input.val(defaultVal);
 				$(this).siblings('.tp-color-hex').text(defaultVal);
 			});
-		})(jQuery);
+		});
 		</script>
 		<?php
 	}

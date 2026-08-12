@@ -1,11 +1,15 @@
 <?php
 /**
- * Site Header
+ * Site Header — Dynamic brand settings from WP Admin.
  *
  * @package TenProjects
  */
 
 defined( 'ABSPATH' ) || exit;
+
+$site_name  = get_option( 'tp_brand_name', 'LeadMAAXX' );
+$logo_light = get_option( 'tp_brand_logo_light', '' );
+$logo       = $logo_light ?: get_template_directory_uri() . '/assets/images/logo.png';
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -19,8 +23,8 @@ defined( 'ABSPATH' ) || exit;
 
 <header class="tp-header">
 	<div class="tp-header-inner">
-		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="tp-logo" aria-label="LeadMAAXX home">
-			<img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/logo.png' ); ?>" alt="LeadMAAXX" height="48">
+		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="tp-logo" aria-label="<?php echo esc_attr( $site_name ); ?> home">
+			<img src="<?php echo esc_url( $logo ); ?>" alt="<?php echo esc_attr( $site_name ); ?>" height="48">
 		</a>
 
 		<nav class="tp-nav">
