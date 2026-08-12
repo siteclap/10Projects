@@ -5141,6 +5141,7 @@ h1, h2, h3, h4, h5, h6, p, li, td, th, span, a, label {
 	width: 80px; height: 80px;
 	background: rgba(255,255,255,0.06);
 	border-radius: 50%;
+	pointer-events: none;
 }
 
 .tp-cb-header__avatar {
@@ -5199,6 +5200,8 @@ h1, h2, h3, h4, h5, h6, p, li, td, th, span, a, label {
 	align-items: center;
 	border-radius: 50%;
 	transition: all 0.15s;
+	position: relative;
+	z-index: 2;
 }
 
 .tp-cb-header__close:hover {
