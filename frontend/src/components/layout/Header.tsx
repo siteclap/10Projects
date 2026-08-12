@@ -16,7 +16,11 @@ const navLinks = [
   { label: 'EMI Calculator', href: '/emi-calculator' },
 ] as const;
 
-export function Header() {
+interface HeaderProps {
+  logoUrl?: string;
+}
+
+export function Header({ logoUrl }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -42,18 +46,14 @@ export function Header() {
           <Link
             href={ROUTES.HOME}
             className="flex items-center gap-sm no-underline hover:no-underline"
-            aria-label="10Projects home"
+            aria-label="LeadMAAXX home"
           >
             <img
-              src="/logo.svg"
-              alt=""
-              width={32}
-              height={32}
-              className="h-[32px] w-[32px]"
+              src={logoUrl || '/logo.png'}
+              alt="LeadMAAXX"
+              height={40}
+              className="h-[40px] w-auto"
             />
-            <span className="text-h4 text-gray-900">
-              Projects
-            </span>
           </Link>
 
           {/* Center: City selector + Nav (hidden on mobile) */}

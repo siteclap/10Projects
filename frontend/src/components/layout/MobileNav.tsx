@@ -76,16 +76,14 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
             href={ROUTES.HOME}
             className="flex items-center gap-sm no-underline hover:no-underline"
             onClick={onClose}
-            aria-label="10Projects home"
+            aria-label="LeadMAAXX home"
           >
             <img
-              src="/logo.svg"
-              alt=""
-              width={32}
-              height={32}
-              className="h-[32px] w-[32px]"
+              src="/logo.png"
+              alt="LeadMAAXX"
+              height={40}
+              className="h-[40px] w-auto"
             />
-            <span className="text-h4 text-gray-900">Projects</span>
           </Link>
 
           <button

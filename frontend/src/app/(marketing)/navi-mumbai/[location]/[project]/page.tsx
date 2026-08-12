@@ -24,7 +24,7 @@ import {
   faqJsonLd,
 } from '@/lib/seo/json-ld';
 import { formatPrice, formatPriceRange } from '@/lib/utils/format-price';
-import type { Project, ProjectCard as ProjectCardType } from '@/lib/types/project';
+import type { Project, ProjectCard as ProjectCardType, PropertyType } from '@/lib/types/project';
 
 // --- Mock data (used when WordPress API is unavailable during local build) ---
 
@@ -193,16 +193,79 @@ function generateFaqs(project: Project) {
   return faqs;
 }
 
-const PROJECT_TABS = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'price', label: 'Price' },
-  { id: 'pros-cons', label: 'Pros & Cons' },
-  { id: 'amenities', label: 'Amenities' },
-  { id: 'floor-plans', label: 'Floor Plans' },
-  { id: 'location', label: 'Location' },
-  { id: 'developer', label: 'Developer' },
-  { id: 'faq', label: 'FAQ' },
-];
+function getTabsForCategory(category: PropertyType = 'buy') {
+  switch (category) {
+    case 'rent':
+      return [
+        { id: 'overview', label: 'Overview' },
+        { id: 'rent', label: 'Rent & Details' },
+        { id: 'amenities', label: 'Amenities' },
+        { id: 'floor-plans', label: 'Floor Plans' },
+        { id: 'pros-cons', label: 'Pros & Cons' },
+        { id: 'location', label: 'Location' },
+        { id: 'developer', label: 'Developer' },
+        { id: 'faq', label: 'FAQ' },
+      ];
+    case 'commercial':
+      return [
+        { id: 'overview', label: 'Overview' },
+        { id: 'specs', label: 'Price & Specs' },
+        { id: 'amenities', label: 'Amenities' },
+        { id: 'unit-plans', label: 'Unit Plans' },
+        { id: 'pros-cons', label: 'Pros & Cons' },
+        { id: 'location', label: 'Location' },
+        { id: 'developer', label: 'Developer' },
+        { id: 'faq', label: 'FAQ' },
+      ];
+    case 'plot':
+    case 'plots':
+      return [
+        { id: 'overview', label: 'Overview' },
+        { id: 'plot', label: 'Price & Details' },
+        { id: 'features', label: 'Features' },
+        { id: 'pros-cons', label: 'Pros & Cons' },
+        { id: 'location', label: 'Location' },
+        { id: 'developer', label: 'Developer' },
+        { id: 'faq', label: 'FAQ' },
+      ];
+    case 'pg':
+      return [
+        { id: 'overview', label: 'Overview' },
+        { id: 'rooms', label: 'Rooms & Pricing' },
+        { id: 'amenities', label: 'Amenities & Facilities' },
+        { id: 'rules', label: 'Rules' },
+        { id: 'location', label: 'Location' },
+        { id: 'faq', label: 'FAQ' },
+      ];
+    default: // buy, resale
+      return [
+        { id: 'overview', label: 'Overview' },
+        { id: 'price', label: 'Price' },
+        { id: 'pros-cons', label: 'Pros & Cons' },
+        { id: 'amenities', label: 'Amenities' },
+        { id: 'floor-plans', label: 'Floor Plans' },
+        { id: 'location', label: 'Location' },
+        { id: 'developer', label: 'Developer' },
+        { id: 'faq', label: 'FAQ' },
+      ];
+  }
+}
+
+function getCtaLabels(category: PropertyType = 'buy') {
+  switch (category) {
+    case 'rent':
+      return { primary: 'Schedule Visit', secondary: 'Check Availability' };
+    case 'commercial':
+      return { primary: 'Get Quote', secondary: 'Schedule Tour' };
+    case 'plot':
+    case 'plots':
+      return { primary: 'Get Best Price', secondary: 'Visit Site' };
+    case 'pg':
+      return { primary: 'Check Availability', secondary: 'Book a Room' };
+    default:
+      return { primary: 'Get Best Price', secondary: 'Book Site Visit' };
+  }
+}
 
 // --- Page component ---
 
@@ -245,9 +308,18 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   }
 
   const { project, images } = result;
-  const fullUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://10projects.com'}${project.permalink}`;
+  const fullUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://leadmaaxx.com'}${project.permalink}`;
   const faqs = generateFaqs(project);
   const similarProjects = await getSimilarProjects(location, projectSlug);
+
+  const category = (project.property_type || 'buy') as PropertyType;
+  const tabs = getTabsForCategory(category);
+  const ctaLabels = getCtaLabels(category);
+  const isBuy = category === 'buy' || category === 'resale';
+  const isRent = category === 'rent';
+  const isCommercial = category === 'commercial';
+  const isPlot = category === 'plot' || category === 'plots';
+  const isPg = category === 'pg';
 
   const pros = project.pros || [];
   const cons = project.cons || [];
@@ -281,7 +353,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       <JsonLd data={faqJsonLd(faqs)} />
 
       {/* Tab navigation */}
-      <ProjectTabs tabs={PROJECT_TABS} />
+      <ProjectTabs tabs={tabs} />
 
       {/* Full-width gallery — outside the content+sidebar flex */}
       <Container>
@@ -298,6 +370,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         {/* Mobile sidebar — price, advisor, trust (visible below lg) */}
         <ProjectSidebar
           project={project}
+          propertyType={category}
+          ctaLabels={ctaLabels}
           className="mt-xl lg:hidden"
         />
 
@@ -354,9 +428,9 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                   <p className="mt-lg text-sm leading-relaxed text-gray-600">
                     {project.description || (
                       <>
-                        {project.title} is a residential project by {project.developer}{' '}
+                        {project.title} is a {isRent ? 'rental property' : isCommercial ? 'commercial property' : isPlot ? 'plot' : isPg ? 'paying guest accommodation' : 'residential project'} by {project.developer}{' '}
                         located in {project.location}, Navi Mumbai.
-                        {project.configurations.length > 0 && (
+                        {isBuy && project.configurations.length > 0 && (
                           <> The project offers {project.configurations.map((c) => c.config_type).join(', ')} configurations.</>
                         )}
                       </>
@@ -401,7 +475,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               {pros.length > 0 && (
                 <div className="mt-xl rounded-md border border-accent/20 bg-accent/5 p-xl">
                   <h3 className="text-base font-semibold text-gray-900">
-                    Why consider buying at{' '}
+                    {isRent ? 'Why consider renting at' : isCommercial ? 'Why consider this commercial space at' : isPlot ? 'Why consider this plot at' : isPg ? 'Why consider staying at' : 'Why consider buying at'}{' '}
                     <span className="text-accent-dark">{project.title}</span>?
                   </h3>
                   <div className="mt-md grid grid-cols-1 gap-sm sm:grid-cols-2">
@@ -429,8 +503,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               )}
             </section>
 
-            {/* Section: Price — only if configurations exist */}
-            {project.configurations.length > 0 && (
+            {/* Section: Price (Buy/Resale) — only if configurations exist */}
+            {isBuy && project.configurations.length > 0 && (
               <section id="price" className="mt-3xl border-t border-gray-100 pt-3xl">
                 <h2 className="text-h2 text-gray-900">Price & Configuration</h2>
 
@@ -477,6 +551,137 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                 {project.price_min > 0 && (
                   <div className="mt-3xl">
                     <EmiCalculator defaultPrice={project.price_min} />
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Section: Rent & Details (Rental) */}
+            {isRent && project.rental && (
+              <section id="rent" className="mt-3xl border-t border-gray-100 pt-3xl">
+                <h2 className="text-h2 text-gray-900">Rent & Details</h2>
+                <div className="mt-xl rounded-md border border-gray-200 divide-y divide-gray-100">
+                  {project.rental.monthly_rent && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Monthly Rent</span><span className="text-sm font-semibold text-primary">₹{project.rental.monthly_rent.toLocaleString('en-IN')}/mo</span></div>
+                  )}
+                  {project.rental.security_deposit && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Security Deposit</span><span className="text-sm font-semibold text-gray-900">₹{project.rental.security_deposit.toLocaleString('en-IN')}</span></div>
+                  )}
+                  {project.rental.maintenance_charges && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Maintenance</span><span className="text-sm font-semibold text-gray-900">₹{project.rental.maintenance_charges.toLocaleString('en-IN')}/mo</span></div>
+                  )}
+                  {project.rental.furnishing_status && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Furnishing</span><span className="text-sm font-semibold text-gray-900">{project.rental.furnishing_status}</span></div>
+                  )}
+                  {project.rental.available_from && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Available From</span><span className="text-sm font-semibold text-gray-900">{project.rental.available_from}</span></div>
+                  )}
+                  {project.rental.tenant_preferred && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Tenant Preferred</span><span className="text-sm font-semibold text-gray-900">{project.rental.tenant_preferred}</span></div>
+                  )}
+                  {project.rental.lock_in_period && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Lock-in Period</span><span className="text-sm font-semibold text-gray-900">{project.rental.lock_in_period}</span></div>
+                  )}
+                  {project.rental.brokerage && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Brokerage</span><span className="text-sm font-semibold text-gray-900">{project.rental.brokerage}</span></div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* Section: Commercial Specs */}
+            {isCommercial && project.commercial && (
+              <section id="specs" className="mt-3xl border-t border-gray-100 pt-3xl">
+                <h2 className="text-h2 text-gray-900">Price & Specifications</h2>
+                <div className="mt-xl rounded-md border border-gray-200 divide-y divide-gray-100">
+                  {project.commercial.commercial_type && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Property Type</span><span className="text-sm font-semibold text-gray-900">{project.commercial.commercial_type}</span></div>
+                  )}
+                  {project.commercial.commercial_carpet && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Carpet Area</span><span className="text-sm font-semibold text-gray-900">{project.commercial.commercial_carpet.toLocaleString('en-IN')} sqft</span></div>
+                  )}
+                  {project.commercial.price_per_sqft && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Price per sqft</span><span className="text-sm font-semibold text-primary">₹{project.commercial.price_per_sqft.toLocaleString('en-IN')}/sqft</span></div>
+                  )}
+                  {project.commercial.building_grade && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Building Grade</span><span className="text-sm font-semibold text-gray-900">{project.commercial.building_grade}</span></div>
+                  )}
+                  {project.commercial.fitout_status && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Fit-out Status</span><span className="text-sm font-semibold text-gray-900">{project.commercial.fitout_status}</span></div>
+                  )}
+                  {project.commercial.cam_charges && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">CAM Charges</span><span className="text-sm font-semibold text-gray-900">₹{project.commercial.cam_charges}/sqft/mo</span></div>
+                  )}
+                  {project.commercial.seating_capacity && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Seating Capacity</span><span className="text-sm font-semibold text-gray-900">{project.commercial.seating_capacity}</span></div>
+                  )}
+                  {project.commercial.parking_bays && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Parking Bays</span><span className="text-sm font-semibold text-gray-900">{project.commercial.parking_bays}</span></div>
+                  )}
+                  {project.commercial.hvac_type && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">HVAC</span><span className="text-sm font-semibold text-gray-900">{project.commercial.hvac_type}</span></div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* Section: Plot Details */}
+            {isPlot && project.plot && (
+              <section id="plot" className="mt-3xl border-t border-gray-100 pt-3xl">
+                <h2 className="text-h2 text-gray-900">Plot Details & Pricing</h2>
+                <div className="mt-xl rounded-md border border-gray-200 divide-y divide-gray-100">
+                  {project.plot.plot_type && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Plot Type</span><span className="text-sm font-semibold text-gray-900">{project.plot.plot_type}</span></div>
+                  )}
+                  {project.plot.plot_area && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Plot Area</span><span className="text-sm font-semibold text-gray-900">{project.plot.plot_area.toLocaleString('en-IN')} sqft</span></div>
+                  )}
+                  {project.plot.plot_width && project.plot.plot_depth && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Dimensions</span><span className="text-sm font-semibold text-gray-900">{project.plot.plot_width} × {project.plot.plot_depth} ft</span></div>
+                  )}
+                  {project.plot.corner_plot && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Corner Plot</span><span className="text-sm font-semibold text-gray-900">{project.plot.corner_plot}</span></div>
+                  )}
+                  {project.plot.fsi && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">FSI / FAR</span><span className="text-sm font-semibold text-gray-900">{project.plot.fsi}</span></div>
+                  )}
+                  {project.plot.road_width && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Road Width</span><span className="text-sm font-semibold text-gray-900">{project.plot.road_width}</span></div>
+                  )}
+                  {project.plot.gated_community && (
+                    <div className="flex justify-between px-xl py-lg"><span className="text-sm text-gray-500">Gated Community</span><span className="text-sm font-semibold text-gray-900">{project.plot.gated_community}</span></div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* Section: PG Rooms & Pricing */}
+            {isPg && project.pg && (
+              <section id="rooms" className="mt-3xl border-t border-gray-100 pt-3xl">
+                <h2 className="text-h2 text-gray-900">Rooms & Pricing</h2>
+                {(project.pg.pg_gender || project.pg.pg_occupant) && (
+                  <div className="mt-lg flex gap-sm">
+                    {project.pg.pg_gender && <Badge variant="primary" size="md">{project.pg.pg_gender}</Badge>}
+                    {project.pg.pg_occupant && <Badge variant="accent" size="md">{project.pg.pg_occupant}</Badge>}
+                  </div>
+                )}
+                <div className="mt-xl grid grid-cols-1 gap-lg sm:grid-cols-3">
+                  {[
+                    { label: 'Single Sharing', rent: project.pg.pg_single_rent, icon: '1' },
+                    { label: 'Double Sharing', rent: project.pg.pg_double_rent, icon: '2' },
+                    { label: 'Triple Sharing', rent: project.pg.pg_triple_rent, icon: '3' },
+                  ].filter(s => s.rent).map((s) => (
+                    <div key={s.label} className="rounded-md border-2 border-gray-200 p-xl text-center hover:border-primary transition-colors">
+                      <div className="mx-auto flex h-[40px] w-[40px] items-center justify-center rounded-full bg-gradient-to-br from-primary to-purple-600 text-white font-bold">{s.icon}</div>
+                      <p className="mt-md text-xs text-gray-500 font-medium">{s.label}</p>
+                      <p className="mt-xs text-xl font-bold text-gray-900">₹{s.rent!.toLocaleString('en-IN')}<span className="text-xs text-gray-400 font-normal">/mo</span></p>
+                    </div>
+                  ))}
+                </div>
+                {project.pg.pg_deposit && (
+                  <div className="mt-lg rounded-md border border-gray-200 px-xl py-lg flex justify-between">
+                    <span className="text-sm text-gray-500">Security Deposit</span>
+                    <span className="text-sm font-semibold text-gray-900">₹{project.pg.pg_deposit.toLocaleString('en-IN')}</span>
                   </div>
                 )}
               </section>
@@ -551,12 +756,44 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               </section>
             )}
 
-            {/* Section: Floor Plans */}
-            {project.configurations.length > 0 && (
+            {/* Section: Floor Plans — hidden for Plot/PG */}
+            {!isPlot && !isPg && project.configurations.length > 0 && (
               <FloorPlanSection
                 configurations={project.configurations}
                 projectTitle={project.title}
               />
+            )}
+
+            {/* Section: PG Rules */}
+            {isPg && project.pg && (project.pg.pg_smoking || project.pg.pg_drinking || project.pg.pg_guests || project.pg.pg_curfew) && (
+              <section id="rules" className="mt-3xl border-t border-gray-100 pt-3xl">
+                <h2 className="text-h2 text-gray-900">House Rules</h2>
+                <div className="mt-xl grid grid-cols-1 gap-lg sm:grid-cols-2">
+                  {[
+                    { label: 'Smoking', value: project.pg.pg_smoking },
+                    { label: 'Drinking', value: project.pg.pg_drinking },
+                    { label: 'Guests', value: project.pg.pg_guests },
+                    { label: 'Curfew', value: project.pg.pg_curfew },
+                  ].filter(r => r.value).map((rule) => {
+                    const isNo = rule.value?.toLowerCase() === 'no';
+                    return (
+                      <div key={rule.label} className="flex items-start gap-md rounded-md border border-gray-200 p-lg">
+                        <span className={`flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full ${isNo ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600'}`}>
+                          {isNo ? (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                          ) : (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6 9 17l-5-5" /></svg>
+                          )}
+                        </span>
+                        <div>
+                          <p className="text-xs text-gray-500">{rule.label}</p>
+                          <p className="text-sm font-semibold text-gray-900">{rule.value}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
             )}
 
             {/* Inline CTA — after floor plans */}
@@ -771,9 +1008,9 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               </section>
             )}
 
-            {/* Section: Why Buy from 10Projects */}
+            {/* Section: Why Buy from LeadMAAXX */}
             <section className="mt-3xl border-t border-gray-100 pt-3xl">
-              <h2 className="text-h2 text-gray-900">Why Buy from 10Projects?</h2>
+              <h2 className="text-h2 text-gray-900">Why Buy from LeadMAAXX?</h2>
               <div className="mt-xl grid grid-cols-2 gap-md sm:grid-cols-4">
                 <div className="flex flex-col items-center gap-sm rounded-lg border border-gray-200 bg-white p-lg text-center">
                   <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-success/10">
@@ -881,13 +1118,15 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           {/* Desktop sidebar — sticky, hidden on mobile */}
           <ProjectSidebar
             project={project}
+            propertyType={category}
+            ctaLabels={ctaLabels}
             className="sticky top-[100px] hidden w-[340px] shrink-0 self-start lg:flex"
           />
         </div>
       </Container>
 
       {/* Mobile sticky CTA bar */}
-      <MobileStickyBar projectTitle={project.title} projectUrl={fullUrl} />
+      <MobileStickyBar projectTitle={project.title} projectUrl={fullUrl} ctaLabels={ctaLabels} />
     </LeadFormWrapper>
   );
 }

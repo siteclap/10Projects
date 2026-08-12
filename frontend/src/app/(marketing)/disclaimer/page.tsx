@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { Container } from '@/components/layout/Container';
 
 export const metadata: Metadata = {
-  title: 'Disclaimer | 10Projects',
+  title: 'Disclaimer | LeadMAAXX',
   description:
-    'Important disclaimers regarding the use of 10Projects.com, project information accuracy, and RERA compliance.',
+    'Important disclaimers regarding the use of LeadMAAXX.com, project information accuracy, and RERA compliance.',
 };
 
 export default function DisclaimerPage() {
@@ -21,7 +21,7 @@ export default function DisclaimerPage() {
           <section>
             <h2 className="text-h3 text-gray-900">Terms of Use</h2>
             <p className="mt-lg">
-              10Projects.com functions as an information and advertising platform
+              LeadMAAXX.com functions as an information and advertising platform
               and does not facilitate direct transactions between developers and
               website users. By using this website, you agree to the following
               terms.
@@ -65,7 +65,7 @@ export default function DisclaimerPage() {
           <section>
             <h2 className="text-h3 text-gray-900">RERA Compliance</h2>
             <p className="mt-lg">
-              Display of project information on 10Projects.com does not confirm
+              Display of project information on LeadMAAXX.com does not confirm
               or guarantee a developer&apos;s registration or compliance with the
               Real Estate (Regulation and Development) Act, 2016. RERA
               registration numbers displayed are sourced from public records and
@@ -79,7 +79,7 @@ export default function DisclaimerPage() {
               AI Scoring &amp; Fit Score
             </h2>
             <p className="mt-lg">
-              The Fit Score and AI-powered analysis provided on 10Projects.com
+              The Fit Score and AI-powered analysis provided on LeadMAAXX.com
               are generated using proprietary algorithms based on publicly
               available data. These scores are intended as a decision-support
               tool only and should not be considered as professional real estate
@@ -91,7 +91,7 @@ export default function DisclaimerPage() {
           <section>
             <h2 className="text-h3 text-gray-900">Limitation of Liability</h2>
             <p className="mt-lg">
-              10Projects.com and its stakeholders — including promoters,
+              LeadMAAXX.com and its stakeholders — including promoters,
               directors, employees, and affiliates — disclaim responsibility
               for:
             </p>
@@ -120,7 +120,7 @@ export default function DisclaimerPage() {
           <section>
             <h2 className="text-h3 text-gray-900">Communication</h2>
             <p className="mt-lg">
-              By submitting your contact information on 10Projects.com, you
+              By submitting your contact information on LeadMAAXX.com, you
               consent to be contacted by our team or partner agents via phone,
               SMS, email, or WhatsApp for the purpose of providing property
               information, scheduling site visits, and sharing relevant offers.
@@ -135,10 +135,10 @@ export default function DisclaimerPage() {
               If you have any questions about this disclaimer, please contact us
               at{' '}
               <a
-                href="mailto:legal@10projects.com"
+                href="mailto:legal@leadmaaxx.com"
                 className="text-brand-primary hover:underline"
               >
-                legal@10projects.com
+                legal@leadmaaxx.com
               </a>
               .
             </p>

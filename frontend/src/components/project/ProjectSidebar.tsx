@@ -4,10 +4,12 @@ import { cn } from '@/lib/utils/cn';
 import { formatPrice } from '@/lib/utils/format-price';
 import { calculateEMI } from '@/lib/utils/calculate-emi';
 import { useLeadForm } from '@/components/lead/LeadFormContext';
-import type { Project } from '@/lib/types/project';
+import type { Project, PropertyType } from '@/lib/types/project';
 
 interface ProjectSidebarProps {
   project: Project;
+  propertyType?: PropertyType;
+  ctaLabels?: { primary: string; secondary: string };
   className?: string;
 }
 
@@ -82,9 +84,14 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-export function ProjectSidebar({ project, className }: ProjectSidebarProps) {
+export function ProjectSidebar({ project, propertyType = 'buy', ctaLabels, className }: ProjectSidebarProps) {
   const { openForm } = useLeadForm();
-  const emi = project.price_min > 0 ? calculateEMI(project.price_min) : 0;
+  const isBuy = propertyType === 'buy' || propertyType === 'resale';
+  const isRent = propertyType === 'rent';
+  const isPg = propertyType === 'pg';
+  const primaryLabel = ctaLabels?.primary || 'Get Best Price';
+  const secondaryLabel = ctaLabels?.secondary || 'Book Site Visit';
+  const emi = isBuy && project.price_min > 0 ? calculateEMI(project.price_min) : 0;
   const advisorName = 'Priya Sharma';
   const advisorRole = 'Property Advisor';
   const advisorRating = 4.8;
@@ -94,11 +101,22 @@ export function ProjectSidebar({ project, className }: ProjectSidebarProps) {
     <aside className={cn('flex flex-col gap-md', className)}>
       {/* Price + CTA */}
       <div className="rounded-md border border-gray-200 bg-white p-lg shadow-card">
-        <p className="text-caption uppercase tracking-wider text-gray-500">Starting from</p>
-        <p className="mt-xs text-price text-gray-900">
-          {formatPrice(project.price_min)}
+        <p className="text-caption uppercase tracking-wider text-gray-500">
+          {isRent ? 'Rent' : isPg ? 'Starting from' : 'Starting from'}
         </p>
-        {emi > 0 && (
+        <p className="mt-xs text-price text-gray-900">
+          {isRent && project.rental?.monthly_rent
+            ? `₹${project.rental.monthly_rent.toLocaleString('en-IN')}/mo`
+            : isPg && project.pg?.pg_single_rent
+              ? `₹${project.pg.pg_single_rent.toLocaleString('en-IN')}/bed/mo`
+              : formatPrice(project.price_min)}
+        </p>
+        {isRent && project.rental?.security_deposit && (
+          <p className="mt-xs text-sm text-gray-500">
+            Deposit: ₹{project.rental.security_deposit.toLocaleString('en-IN')}
+          </p>
+        )}
+        {isBuy && emi > 0 && (
           <p className="mt-xs text-sm text-gray-500">
             EMI from {formatPrice(Math.round(emi))}/mo
           </p>
@@ -125,14 +143,14 @@ export function ProjectSidebar({ project, className }: ProjectSidebarProps) {
             onClick={() => openForm('best_price')}
             className="inline-flex h-[40px] items-center justify-center rounded-sm bg-brand-primary text-sm font-medium text-white transition-colors hover:bg-brand-primary-dark"
           >
-            Get Best Price
+            {primaryLabel}
           </button>
           <button
             type="button"
             onClick={() => openForm('site_visit')}
             className="inline-flex h-[40px] items-center justify-center rounded-sm border border-gray-300 bg-white text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
           >
-            Book Site Visit
+            {secondaryLabel}
           </button>
         </div>
       </div>

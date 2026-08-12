@@ -4,12 +4,12 @@ import { Section } from '@/components/layout/Section';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { breadcrumbJsonLd } from '@/lib/seo/json-ld';
 
-const SITE_NAME = '10Projects';
+const SITE_NAME = 'LeadMAAXX';
 
 export function generateMetadata(): Metadata {
   const title = `How We Score Projects — Methodology — ${SITE_NAME}`;
   const description =
-    'Learn how 10Projects scores every real estate project across 20 categories including value for money, construction quality, developer reputation, RERA compliance, and more. Transparent, data-driven, and AI-powered.';
+    'Learn how LeadMAAXX scores every real estate project across 20 categories including value for money, construction quality, developer reputation, RERA compliance, and more. Transparent, data-driven, and AI-powered.';
 
   return {
     title,
@@ -17,7 +17,7 @@ export function generateMetadata(): Metadata {
     openGraph: {
       title,
       description,
-      url: 'https://10projects.com/methodology',
+      url: 'https://leadmaaxx.com/methodology',
       siteName: SITE_NAME,
       type: 'website',
       locale: 'en_IN',
@@ -231,7 +231,7 @@ export default function MethodologyPage() {
         <Container>
           <h1 className="text-h1 text-gray-900">How We Score Projects</h1>
           <p className="mt-md max-w-[640px] text-body-lg text-gray-600">
-            Every project on 10Projects is evaluated across 20 objective
+            Every project on LeadMAAXX is evaluated across 20 objective
             categories. Our scoring engine combines verified data, on-ground
             research, and AI-powered analysis to generate a comprehensive Fit
             Score for each project.
@@ -396,7 +396,7 @@ export default function MethodologyPage() {
           <div className="mx-auto max-w-narrow text-center">
             <h2 className="text-h2 text-gray-900">Our Transparency Pledge</h2>
             <p className="mt-lg text-base leading-relaxed text-gray-600">
-              10Projects is committed to unbiased, data-driven project evaluation.
+              LeadMAAXX is committed to unbiased, data-driven project evaluation.
               We do not accept payments from developers to influence scores.
               Our revenue comes from connecting qualified buyers with trusted
               channel partners -- never from manipulating rankings.

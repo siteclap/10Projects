@@ -6,12 +6,12 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { breadcrumbJsonLd } from '@/lib/seo/json-ld';
 import type { DeveloperCard as DeveloperCardType } from '@/lib/types/developer';
 
-const SITE_NAME = '10Projects';
+const SITE_NAME = 'LeadMAAXX';
 
 export function generateMetadata(): Metadata {
   const title = `Trusted Developers in Navi Mumbai — Ratings & Reviews — ${SITE_NAME}`;
   const description =
-    'Explore verified real estate developers in Navi Mumbai. View completed projects, customer ratings, RERA compliance, and delivery track record for every developer on 10Projects.';
+    'Explore verified real estate developers in Navi Mumbai. View completed projects, customer ratings, RERA compliance, and delivery track record for every developer on LeadMAAXX.';
 
   return {
     title,
@@ -19,7 +19,7 @@ export function generateMetadata(): Metadata {
     openGraph: {
       title,
       description,
-      url: 'https://10projects.com/developers',
+      url: 'https://leadmaaxx.com/developers',
       siteName: SITE_NAME,
       type: 'website',
       locale: 'en_IN',
@@ -130,7 +130,7 @@ export default function DevelopersArchivePage() {
             Trusted Developers in Navi Mumbai
           </h1>
           <p className="mt-md max-w-[640px] text-body-lg text-gray-600">
-            Every developer on 10Projects is evaluated for delivery track record,
+            Every developer on LeadMAAXX is evaluated for delivery track record,
             RERA compliance, financial stability, and customer satisfaction. Choose
             with confidence.
           </p>

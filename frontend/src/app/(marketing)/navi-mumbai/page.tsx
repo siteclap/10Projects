@@ -8,12 +8,12 @@ import { breadcrumbJsonLd } from '@/lib/seo/json-ld';
 import type { LocationCard } from '@/lib/types/location';
 import type { ProjectCard as ProjectCardType } from '@/lib/types/project';
 
-const SITE_NAME = '10Projects';
+const SITE_NAME = 'LeadMAAXX';
 
 export function generateMetadata(): Metadata {
   const title = `New Projects in Navi Mumbai — Prices, Scores & Reviews — ${SITE_NAME}`;
   const description =
-    'Explore 150+ new residential projects across 15 locations in Navi Mumbai. AI-scored rankings, prices, pros & cons for every project. Find your perfect home with 10Projects.';
+    'Explore 150+ new residential projects across 15 locations in Navi Mumbai. AI-scored rankings, prices, pros & cons for every project. Find your perfect home with LeadMAAXX.';
 
   return {
     title,
@@ -21,7 +21,7 @@ export function generateMetadata(): Metadata {
     openGraph: {
       title,
       description,
-      url: 'https://10projects.com/navi-mumbai',
+      url: 'https://leadmaaxx.com/navi-mumbai',
       siteName: SITE_NAME,
       type: 'website',
       locale: 'en_IN',

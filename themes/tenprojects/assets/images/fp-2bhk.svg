@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 400" fill="none">
+  <rect x="1" y="1" width="518" height="398" rx="4" stroke="#d1d5db" stroke-width="2" fill="#fafafa"/>
+  <!-- Living + Dining -->
+  <rect x="20" y="20" width="240" height="200" rx="2" stroke="#9ca3af" stroke-width="1.5" fill="#f3f4f6"/>
+  <text x="140" y="100" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" font-weight="600" fill="#6b7280">Living &amp; Dining</text>
+  <text x="140" y="120" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#9ca3af">16' × 12'</text>
+  <!-- Master Bedroom -->
+  <rect x="270" y="20" width="230" height="150" rx="2" stroke="#9ca3af" stroke-width="1.5" fill="#eff6ff"/>
+  <text x="385" y="85" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" font-weight="600" fill="#3b82f6">Master Bedroom</text>
+  <text x="385" y="105" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#9ca3af">14' × 12'</text>
+  <!-- Bedroom 2 -->
+  <rect x="270" y="180" width="230" height="130" rx="2" stroke="#9ca3af" stroke-width="1.5" fill="#eff6ff"/>
+  <text x="385" y="240" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" font-weight="600" fill="#3b82f6">Bedroom 2</text>
+  <text x="385" y="260" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#9ca3af">12' × 10'</text>
+  <!-- Kitchen -->
+  <rect x="20" y="230" width="160" height="110" rx="2" stroke="#9ca3af" stroke-width="1.5" fill="#fefce8"/>
+  <text x="100" y="285" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" font-weight="600" fill="#a16207">Kitchen</text>
+  <text x="100" y="305" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#9ca3af">10' × 8'</text>
+  <!-- Bathroom 1 -->
+  <rect x="190" y="230" width="70" height="110" rx="2" stroke="#9ca3af" stroke-width="1.5" fill="#f0fdf4"/>
+  <text x="225" y="285" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#15803d">Bath 1</text>
+  <!-- Bathroom 2 -->
+  <rect x="270" y="320" width="100" height="60" rx="2" stroke="#9ca3af" stroke-width="1.5" fill="#f0fdf4"/>
+  <text x="320" y="355" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#15803d">Bath 2</text>
+  <!-- Balcony -->
+  <rect x="20" y="350" width="160" height="30" rx="2" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="6 3" fill="#faf5ff"/>
+  <text x="100" y="370" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="600" fill="#7c3aed">Balcony</text>
+  <!-- Balcony 2 -->
+  <rect x="380" y="320" width="120" height="60" rx="2" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="6 3" fill="#faf5ff"/>
+  <text x="440" y="355" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="600" fill="#7c3aed">Balcony</text>
+  <!-- Label -->
+  <text x="260" y="393" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#d1d5db">2 BHK — Indicative Layout</text>
+</svg>

@@ -7,7 +7,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { breadcrumbJsonLd } from '@/lib/seo/json-ld';
 import type { GuideCard } from '@/lib/types/guide';
 
-const SITE_NAME = '10Projects';
+const SITE_NAME = 'LeadMAAXX';
 
 export function generateMetadata(): Metadata {
   const title = `Buyer Guides & Resources — ${SITE_NAME}`;
@@ -20,7 +20,7 @@ export function generateMetadata(): Metadata {
     openGraph: {
       title,
       description,
-      url: 'https://10projects.com/guides',
+      url: 'https://leadmaaxx.com/guides',
       siteName: SITE_NAME,
       type: 'website',
       locale: 'en_IN',

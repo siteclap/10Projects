@@ -3,7 +3,7 @@ import { Container } from '@/components/layout/Container';
 import { EmiCalculator } from '@/components/widgets/EmiCalculator';
 
 export const metadata: Metadata = {
-  title: 'EMI Calculator — Home Loan EMI Calculator | 10Projects',
+  title: 'EMI Calculator — Home Loan EMI Calculator | LeadMAAXX',
   description:
     'Calculate your home loan EMI instantly. Free EMI calculator with adjustable loan amount, interest rate, and tenure for properties in Navi Mumbai.',
 };

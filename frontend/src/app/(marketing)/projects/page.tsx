@@ -4,7 +4,7 @@ import { Section } from '@/components/layout/Section';
 import { ProjectsFilter } from './ProjectsFilter';
 import type { ProjectCard as ProjectCardType } from '@/lib/types/project';
 
-const SITE_NAME = '10Projects';
+const SITE_NAME = 'LeadMAAXX';
 
 export function generateMetadata(): Metadata {
   const title = `New Projects in Navi Mumbai — Browse & Filter — ${SITE_NAME}`;
@@ -17,7 +17,7 @@ export function generateMetadata(): Metadata {
     openGraph: {
       title,
       description,
-      url: 'https://10projects.com/projects',
+      url: 'https://leadmaaxx.com/projects',
       siteName: SITE_NAME,
       type: 'website',
       locale: 'en_IN',

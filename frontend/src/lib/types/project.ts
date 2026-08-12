@@ -42,6 +42,82 @@ export interface ScoreHighlight {
   score: number;
 }
 
+export type PropertyType = 'buy' | 'rent' | 'commercial' | 'plot' | 'plots' | 'pg' | 'resale';
+
+export interface RentalDetails {
+  monthly_rent?: number;
+  security_deposit?: number;
+  maintenance_charges?: number;
+  lock_in_period?: string;
+  notice_period?: string;
+  available_from?: string;
+  tenant_preferred?: string;
+  furnishing_status?: string;
+  furnishing_details?: string;
+  pets_allowed?: string;
+  nonveg_allowed?: string;
+  water_supply?: string;
+  brokerage?: string;
+}
+
+export interface CommercialDetails {
+  commercial_type?: string;
+  building_grade?: string;
+  fitout_status?: string;
+  commercial_carpet?: number;
+  price_per_sqft?: number;
+  cam_charges?: number;
+  power_load?: string;
+  seating_capacity?: number;
+  cabins_count?: number;
+  washrooms_count?: number;
+  hvac_type?: string;
+  parking_bays?: number;
+  fire_noc?: string;
+  lease_term?: string;
+  lock_in_period?: string;
+  escalation_clause?: string;
+}
+
+export interface PlotDetails {
+  plot_type?: string;
+  plot_area?: number;
+  plot_width?: number;
+  plot_depth?: number;
+  corner_plot?: string;
+  road_width?: string;
+  sides_open?: string;
+  boundary_wall?: string;
+  topography?: string;
+  fsi?: number;
+  permissible_floors?: string;
+  water_connection?: string;
+  electricity_connection?: string;
+  sewage_connection?: string;
+  gated_community?: string;
+}
+
+export interface PgDetails {
+  pg_gender?: string;
+  pg_occupant?: string;
+  pg_single_rent?: number;
+  pg_double_rent?: number;
+  pg_triple_rent?: number;
+  pg_deposit?: number;
+  pg_notice_period?: string;
+  pg_meals?: string;
+  pg_meal_type?: string;
+  pg_kitchen?: string;
+  pg_wifi?: string;
+  pg_laundry?: string;
+  pg_housekeeping?: string;
+  pg_ac?: string;
+  pg_smoking?: string;
+  pg_drinking?: string;
+  pg_guests?: string;
+  pg_curfew?: string;
+}
+
 export interface Project {
   id: number | string;
   title: string;
@@ -56,6 +132,7 @@ export interface Project {
   configurations: ProjectConfiguration[];
   price_min: number;
   price_max: number;
+  property_type?: PropertyType;
   railway_distance_km?: number;
   latitude?: number;
   longitude?: number;
@@ -94,6 +171,11 @@ export interface Project {
   location_advantage_1?: string;
   location_advantage_2?: string;
   location_brief?: string;
+  // Category-specific data (populated conditionally by API).
+  rental?: RentalDetails;
+  commercial?: CommercialDetails;
+  plot?: PlotDetails;
+  pg?: PgDetails;
 }
 
 /**
@@ -110,6 +192,7 @@ export interface ProjectCard {
   construction_stage: string;
   expected_possession: string;
   rera_number: string;
+  property_type?: PropertyType;
   configurations: ProjectConfiguration[];
   price_min: number;
   price_max: number;

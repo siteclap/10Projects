@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { Container } from '@/components/layout/Container';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | 10Projects',
+  title: 'Terms of Service | LeadMAAXX',
   description:
-    'Terms and conditions for using 10Projects.com, including user obligations, intellectual property, and liability.',
+    'Terms and conditions for using LeadMAAXX.com, including user obligations, intellectual property, and liability.',
 };
 
 export default function TermsPage() {
@@ -21,7 +21,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-h3 text-gray-900">Acceptance of Terms</h2>
             <p className="mt-lg">
-              By accessing or using 10Projects.com (&quot;the Website&quot;),
+              By accessing or using LeadMAAXX.com (&quot;the Website&quot;),
               you agree to be bound by these Terms of Service. If you do not
               agree to these terms, please do not use the Website.
             </p>
@@ -31,7 +31,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-h3 text-gray-900">Description of Service</h2>
             <p className="mt-lg">
-              10Projects.com is an AI-powered real estate discovery platform
+              LeadMAAXX.com is an AI-powered real estate discovery platform
               that helps buyers find their best-fit residential projects. Our
               services include property information, AI-driven Fit Scores,
               property comparisons, and connecting users with developers and
@@ -78,7 +78,7 @@ export default function TermsPage() {
             <p className="mt-lg">
               All content on the Website — including text, graphics, logos, AI
               algorithms, scoring methodologies, design, and software — is the
-              property of 10Projects or its licensors and is protected by
+              property of LeadMAAXX or its licensors and is protected by
               intellectual property laws. You may not use, copy, or distribute
               any content without prior written consent.
             </p>
@@ -123,7 +123,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-h3 text-gray-900">Limitation of Liability</h2>
             <p className="mt-lg">
-              To the maximum extent permitted by law, 10Projects.com shall not
+              To the maximum extent permitted by law, LeadMAAXX.com shall not
               be liable for any indirect, incidental, special, consequential, or
               punitive damages arising out of or related to your use of the
               Website. Our total liability for any claims shall not exceed the
@@ -135,7 +135,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-h3 text-gray-900">Indemnification</h2>
             <p className="mt-lg">
-              You agree to indemnify and hold harmless 10Projects.com, its
+              You agree to indemnify and hold harmless LeadMAAXX.com, its
               directors, employees, and affiliates from any claims, damages, or
               expenses arising from your use of the Website or violation of
               these terms.
@@ -181,10 +181,10 @@ export default function TermsPage() {
               If you have any questions about these Terms of Service, please
               contact us at{' '}
               <a
-                href="mailto:legal@10projects.com"
+                href="mailto:legal@leadmaaxx.com"
                 className="text-brand-primary hover:underline"
               >
-                legal@10projects.com
+                legal@leadmaaxx.com
               </a>
               .
             </p>

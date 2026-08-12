@@ -12,13 +12,13 @@ import { ProjectCarousel } from '@/components/project/ProjectCarousel';
 import { LocationGrid } from '@/components/location/LocationGrid';
 import { DeveloperLogos } from '@/components/developer/DeveloperLogos';
 import { ROUTES } from '@/lib/constants/routes';
-import { wpFetchSearchConfig } from '@/lib/wp-api';
+import { wpFetchSearchConfig, wpFetchSiteSettings } from '@/lib/wp-api';
 import type { ProjectCard as ProjectCardType } from '@/lib/types/project';
 import type { LocationCard as LocationCardType } from '@/lib/types/location';
 import type { DeveloperCard } from '@/lib/types/developer';
 
 export const metadata: Metadata = {
-  title: '10Projects — Find the 10 Best-Fit Projects for You',
+  title: 'LeadMAAXX — Maximum Growth Solutions',
   description:
     "Search 150+ verified projects in Navi Mumbai by name, location, or developer. Compare RERA-verified prices, floor plans, and book free site visits. Zero brokerage, no spam.",
   alternates: {
@@ -298,15 +298,22 @@ const developerPartners: DeveloperCard[] = [
 /* ---------- Page Component ---------- */
 
 export default async function HomePage() {
-  const activeCategories = await wpFetchSearchConfig();
+  const [activeCategories, siteSettings] = await Promise.all([
+    wpFetchSearchConfig(),
+    wpFetchSiteSettings(),
+  ]);
 
   return (
     <>
-      <Header />
+      <Header logoUrl={siteSettings.logo_light} />
 
       <main className="flex-1">
         {/* 1. Hero */}
-        <Hero activeCategories={activeCategories} />
+        <Hero
+          activeCategories={activeCategories}
+          heroDesktop={siteSettings.hero_desktop}
+          heroMobile={siteSettings.hero_mobile}
+        />
 
         {/* 2. Featured Projects carousel */}
         <ProjectCarousel
@@ -339,7 +346,7 @@ export default async function HomePage() {
         {/* 4. How It Works */}
         <HowItWorks />
 
-        {/* 5. Why 10Projects */}
+        {/* 5. Why LeadMAAXX */}
         <WhyUs />
 
         {/* 6. Popular Locations */}
@@ -364,7 +371,7 @@ export default async function HomePage() {
         <FinalCta />
       </main>
 
-      <Footer />
+      <Footer logoUrl={siteSettings.logo_dark || siteSettings.logo_light} settings={siteSettings} />
     </>
   );
 }

@@ -225,7 +225,7 @@ export function LeadFormModal({ projectTitle }: LeadFormModalProps) {
                   className="mt-[3px] h-[16px] w-[16px] shrink-0 rounded border-gray-300 text-brand-primary accent-brand-primary"
                 />
                 <span className="text-caption leading-snug text-gray-500">
-                  I agree to be contacted by 10Projects. We respect your privacy and will never spam you.
+                  I agree to be contacted by LeadMAAXX. We respect your privacy and will never spam you.
                 </span>
               </label>
 

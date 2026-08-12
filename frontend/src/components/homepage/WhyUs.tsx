@@ -73,7 +73,7 @@ export function WhyUs() {
     <Section variant="alt">
       <Container>
         <div className="text-center">
-          <h2 className="text-h2 text-gray-900">Why 10Projects?</h2>
+          <h2 className="text-h2 text-gray-900">Why LeadMAAXX?</h2>
           <p className="mt-sm text-base text-gray-500">
             India&apos;s first transparent property platform — built for home buyers, not brokers
           </p>

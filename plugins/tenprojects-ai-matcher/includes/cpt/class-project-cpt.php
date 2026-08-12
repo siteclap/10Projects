@@ -108,7 +108,7 @@ class Project_CPT {
 			'public'              => true,
 			'publicly_queryable'  => true,
 			'show_ui'             => true,
-			'show_in_menu'        => true,
+			'show_in_menu'        => false,
 			'show_in_rest'        => true,
 			'query_var'           => true,
 			'rewrite'             => array(
@@ -265,6 +265,75 @@ class Project_CPT {
 			'sources'                => array( 'type' => 'string',  'sanitize_callback' => 'wp_kses_post' ),
 			'last_verified'          => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
 			'reviewed_by'            => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+
+			// ── Rental Details ──
+			'monthly_rent'           => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'security_deposit'       => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'maintenance_charges'    => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'lock_in_period'         => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'notice_period'          => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'available_from'         => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'tenant_preferred'       => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'furnishing_status'      => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'furnishing_details'     => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_textarea_field' ),
+			'pets_allowed'           => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'nonveg_allowed'         => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'water_supply'           => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'brokerage'              => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+
+			// ── Commercial Details ──
+			'commercial_type'        => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'building_grade'         => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'fitout_status'          => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'commercial_carpet'      => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'price_per_sqft'         => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'cam_charges'            => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'power_load'             => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'seating_capacity'       => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'cabins_count'           => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'washrooms_count'        => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'hvac_type'              => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'parking_bays'           => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'fire_noc'               => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'lease_term'             => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'escalation_clause'      => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+
+			// ── Plot Details ──
+			'plot_type'              => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'plot_area'              => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'plot_width'             => array( 'type' => 'number',  'sanitize_callback' => array( $this, 'sanitize_float' ) ),
+			'plot_depth'             => array( 'type' => 'number',  'sanitize_callback' => array( $this, 'sanitize_float' ) ),
+			'corner_plot'            => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'road_width'             => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'sides_open'             => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'boundary_wall'          => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'topography'             => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'fsi'                    => array( 'type' => 'number',  'sanitize_callback' => array( $this, 'sanitize_float' ) ),
+			'permissible_floors'     => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'water_connection'       => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'electricity_connection' => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'sewage_connection'      => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'gated_community'        => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+
+			// ── PG Details ──
+			'pg_gender'              => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'pg_occupant'            => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'pg_single_rent'         => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'pg_double_rent'         => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'pg_triple_rent'         => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'pg_deposit'             => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
+			'pg_notice_period'       => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'pg_meals'               => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'pg_meal_type'           => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'pg_kitchen'             => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'pg_wifi'                => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'pg_laundry'             => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'pg_housekeeping'        => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'pg_ac'                  => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'pg_smoking'             => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'pg_drinking'            => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'pg_guests'              => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'pg_curfew'              => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
 		);
 	}
 
@@ -383,14 +452,18 @@ class Project_CPT {
 		</style>';
 
 		$tabs = array(
-			'graphics'    => __( 'Graphics & Media', 'tenprojects-ai-matcher' ),
-			'contact'     => __( 'Contact Details', 'tenprojects-ai-matcher' ),
-			'developer'   => __( 'About Developer', 'tenprojects-ai-matcher' ),
-			'offers'      => __( 'Offers', 'tenprojects-ai-matcher' ),
-			'pricing'     => __( 'Carpet Area & Price', 'tenprojects-ai-matcher' ),
+			'graphics'     => __( 'Graphics & Media', 'tenprojects-ai-matcher' ),
+			'contact'      => __( 'Contact Details', 'tenprojects-ai-matcher' ),
+			'developer'    => __( 'About Developer', 'tenprojects-ai-matcher' ),
+			'offers'       => __( 'Offers', 'tenprojects-ai-matcher' ),
+			'pricing'      => __( 'Carpet Area & Price', 'tenprojects-ai-matcher' ),
 			'construction' => __( 'Construction', 'tenprojects-ai-matcher' ),
-			'location'    => __( 'Location Details', 'tenprojects-ai-matcher' ),
-			'scoring'     => __( 'Scoring & Editorial', 'tenprojects-ai-matcher' ),
+			'rental'       => __( 'Rental Details', 'tenprojects-ai-matcher' ),
+			'commercial'   => __( 'Commercial Details', 'tenprojects-ai-matcher' ),
+			'plot'         => __( 'Plot Details', 'tenprojects-ai-matcher' ),
+			'pg'           => __( 'PG Details', 'tenprojects-ai-matcher' ),
+			'location'     => __( 'Location Details', 'tenprojects-ai-matcher' ),
+			'scoring'      => __( 'Scoring & Editorial', 'tenprojects-ai-matcher' ),
 		);
 
 		echo '<div class="tp-meta-box" data-post-id="' . esc_attr( $post->ID ) . '">';
@@ -414,15 +487,38 @@ class Project_CPT {
 		$this->render_offers_panel( $post );
 		$this->render_pricing_panel( $post );
 		$this->render_construction_panel( $post );
+		$this->render_rental_panel( $post );
+		$this->render_commercial_panel( $post );
+		$this->render_plot_panel( $post );
+		$this->render_pg_panel( $post );
 		$this->render_location_panel( $post );
 		$this->render_scoring_panel( $post );
 		echo '</div>';
 
 		echo '</div>';
 
+		// Detect current property type for JS tab visibility.
+		// URL parameter takes priority (new posts via category menu).
+		$current_type = '';
+		if ( ! empty( $_GET['tp_default_type'] ) ) { // phpcs:ignore
+			$current_type = sanitize_text_field( wp_unslash( $_GET['tp_default_type'] ) );
+		}
+		// Fallback: read stored term (existing projects).
+		if ( empty( $current_type ) && $post->ID ) {
+			$pt_terms     = wp_get_object_terms( $post->ID, 'tp_property_type', array( 'fields' => 'slugs' ) );
+			$current_type = ( ! is_wp_error( $pt_terms ) && ! empty( $pt_terms ) ) ? $pt_terms[0] : '';
+		}
+		if ( empty( $current_type ) ) {
+			$current_type = 'buy';
+		}
+
+		// Hidden field so property type is submitted with the save form.
+		echo '<input type="hidden" name="tp_property_type_override" value="' . esc_attr( $current_type ) . '" />';
+
 		// Inline JS — tab switching + gallery upload (bypasses cached admin.js).
 		echo '<script>
 		(function(){
+			var tpPropertyType = "' . esc_js( $current_type ) . '";
 			/* --- Tab switching --- */
 			document.querySelectorAll(".tp-meta-tab").forEach(function(tab){
 				tab.addEventListener("click", function(e){
@@ -445,6 +541,34 @@ class Project_CPT {
 					if(saved){ var t = box.querySelector(".tp-meta-tab[data-tab=\""+saved+"\"]"); if(t) t.click(); }
 				}
 			}catch(ex){}
+
+			/* --- Category-based tab visibility (uses PHP-injected tpPropertyType) --- */
+			var catTabs = {
+				buy:        { show: ["pricing","construction"], hide: ["rental","commercial","plot","pg"] },
+				resale:     { show: ["pricing","construction"], hide: ["rental","commercial","plot","pg"] },
+				rent:       { show: ["pricing","rental"],       hide: ["construction","commercial","plot","pg"] },
+				commercial: { show: ["pricing","commercial","construction"], hide: ["rental","plot","pg"] },
+				plot:       { show: ["plot"],                   hide: ["pricing","construction","rental","commercial","pg"] },
+				pg:         { show: ["pg"],                     hide: ["pricing","construction","rental","commercial","plot"] }
+			};
+			function updateCatTabs(){
+				var rule = catTabs[tpPropertyType] || catTabs["buy"];
+				var allCat = ["pricing","construction","rental","commercial","plot","pg"];
+				allCat.forEach(function(tab){
+					var tabEl = document.querySelector(".tp-meta-tab[data-tab=\""+tab+"\"]");
+					if(!tabEl) return;
+					if(rule.show.indexOf(tab) >= 0){ tabEl.style.display = ""; }
+					else if(rule.hide.indexOf(tab) >= 0){ tabEl.style.display = "none"; }
+				});
+				/* If active tab is hidden, click first visible tab */
+				var activeTab = document.querySelector(".tp-meta-tab.active");
+				if(activeTab && activeTab.style.display === "none"){
+					var first = document.querySelector(".tp-meta-tab:not([style*=\"display: none\"])");
+					if(first) first.click();
+				}
+			}
+			/* Run immediately */
+			updateCatTabs();
 
 			/* --- Gallery / Choose Media --- */
 			document.querySelectorAll(".tp-gallery-add").forEach(function(btn){
@@ -1034,6 +1158,282 @@ class Project_CPT {
 	 * @param int      $post_id Post ID.
 	 * @param \WP_Post $post    Post object.
 	 */
+	/* =====================================================================
+	   Category-Specific Panels
+	   ===================================================================== */
+
+	/**
+	 * Rental Details panel.
+	 */
+	private function render_rental_panel( \WP_Post $post ) {
+		echo '<div class="tp-meta-panel" data-panel="rental">';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">Rent & Deposit</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_field( $post->ID, 'monthly_rent', 'Monthly Rent (₹)', 'number', 'e.g. 25000' );
+		$this->render_field( $post->ID, 'security_deposit', 'Security Deposit (₹)', 'number' );
+		$this->render_field( $post->ID, 'maintenance_charges', 'Maintenance (₹/mo)', 'number' );
+		echo '</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_field( $post->ID, 'brokerage', 'Brokerage', 'text', 'e.g. 1 Month or Zero' );
+		$this->render_field( $post->ID, 'lock_in_period', 'Lock-in Period', 'text', 'e.g. 6 Months' );
+		$this->render_field( $post->ID, 'notice_period', 'Notice Period', 'text', 'e.g. 1 Month' );
+		echo '</div>';
+		echo '</div>';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">Tenant & Availability</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_field( $post->ID, 'available_from', 'Available From', 'date' );
+		$this->render_select( $post->ID, 'tenant_preferred', 'Tenant Preferred', array(
+			'family'  => 'Family',
+			'bachelor' => 'Bachelor',
+			'company' => 'Company',
+			'any'     => 'Any',
+		) );
+		$this->render_select( $post->ID, 'furnishing_status', 'Furnishing Status', array(
+			'furnished'      => 'Fully Furnished',
+			'semi-furnished' => 'Semi-Furnished',
+			'unfurnished'    => 'Unfurnished',
+		) );
+		echo '</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_select( $post->ID, 'pets_allowed', 'Pets Allowed', array( 'yes' => 'Yes', 'no' => 'No' ) );
+		$this->render_select( $post->ID, 'nonveg_allowed', 'Non-veg Allowed', array( 'yes' => 'Yes', 'no' => 'No' ) );
+		$this->render_select( $post->ID, 'water_supply', 'Water Supply', array( '24_hours' => '24 Hours', 'timed' => 'Timed' ) );
+		echo '</div>';
+		echo '</div>';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">Furnishing Details</div>';
+		echo '<div class="tp-field-row tp-cols-2">';
+		$this->render_textarea( $post->ID, 'furnishing_details', 'Furnishing Details', 'e.g. 2 AC, Geyser, Fridge, Washing Machine, Sofa, 2 Beds' );
+		echo '</div>';
+		echo '</div>';
+
+		echo '</div>';
+	}
+
+	/**
+	 * Commercial Details panel.
+	 */
+	private function render_commercial_panel( \WP_Post $post ) {
+		echo '<div class="tp-meta-panel" data-panel="commercial">';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">Property Type & Grade</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_select( $post->ID, 'commercial_type', 'Property Sub-type', array(
+			'office'     => 'Office Space',
+			'retail'     => 'Retail Shop',
+			'showroom'   => 'Showroom',
+			'warehouse'  => 'Warehouse',
+			'coworking'  => 'Co-working',
+			'it_park'    => 'IT Park',
+		) );
+		$this->render_select( $post->ID, 'building_grade', 'Building Grade', array(
+			'grade_a' => 'Grade A',
+			'grade_b' => 'Grade B',
+			'grade_c' => 'Grade C',
+		) );
+		$this->render_select( $post->ID, 'fitout_status', 'Fit-out Status', array(
+			'bare_shell'     => 'Bare Shell',
+			'warm_shell'     => 'Warm Shell',
+			'plug_and_play'  => 'Plug and Play',
+		) );
+		echo '</div>';
+		echo '</div>';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">Area & Pricing</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_field( $post->ID, 'commercial_carpet', 'Carpet Area (sqft)', 'number' );
+		$this->render_field( $post->ID, 'price_per_sqft', 'Price Per Sqft (₹)', 'number' );
+		$this->render_field( $post->ID, 'cam_charges', 'CAM Charges (₹/sqft/mo)', 'number' );
+		echo '</div>';
+		echo '</div>';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">Specifications</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_field( $post->ID, 'power_load', 'Power Load (KVA)', 'text' );
+		$this->render_field( $post->ID, 'seating_capacity', 'Seating Capacity', 'number' );
+		$this->render_field( $post->ID, 'cabins_count', 'Cabins/Rooms', 'number' );
+		echo '</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_field( $post->ID, 'washrooms_count', 'Washrooms', 'number' );
+		$this->render_field( $post->ID, 'parking_bays', 'Parking Bays', 'number' );
+		$this->render_select( $post->ID, 'hvac_type', 'HVAC / AC', array(
+			'centralized' => 'Centralized AC',
+			'split'       => 'Split AC',
+			'none'        => 'None',
+		) );
+		echo '</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_select( $post->ID, 'fire_noc', 'Fire NOC', array( 'yes' => 'Yes', 'no' => 'No' ) );
+		echo '</div>';
+		echo '</div>';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">Lease Terms</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_field( $post->ID, 'lease_term', 'Lease Term', 'text', 'e.g. 5 Years' );
+		$this->render_field( $post->ID, 'lock_in_period', 'Lock-in Period', 'text', 'e.g. 3 Years' );
+		$this->render_field( $post->ID, 'escalation_clause', 'Escalation Clause', 'text', 'e.g. 5% per year' );
+		echo '</div>';
+		echo '</div>';
+
+		echo '</div>';
+	}
+
+	/**
+	 * Plot Details panel.
+	 */
+	private function render_plot_panel( \WP_Post $post ) {
+		echo '<div class="tp-meta-panel" data-panel="plot">';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">Plot Type & Area</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_select( $post->ID, 'plot_type', 'Plot Type', array(
+			'residential'  => 'Residential',
+			'commercial'   => 'Commercial',
+			'agricultural' => 'Agricultural',
+			'mixed_use'    => 'Mixed-use',
+		) );
+		$this->render_field( $post->ID, 'plot_area', 'Plot Area (sqft)', 'number' );
+		$this->render_field( $post->ID, 'fsi', 'FSI / FAR', 'number', 'e.g. 1.5' );
+		echo '</div>';
+		echo '</div>';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">Dimensions & Layout</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_field( $post->ID, 'plot_width', 'Width / Frontage (ft)', 'number' );
+		$this->render_field( $post->ID, 'plot_depth', 'Depth / Length (ft)', 'number' );
+		$this->render_select( $post->ID, 'corner_plot', 'Corner Plot', array( 'yes' => 'Yes', 'no' => 'No' ) );
+		echo '</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_field( $post->ID, 'road_width', 'Road Width Facing (ft)', 'text', 'e.g. 30 ft' );
+		$this->render_select( $post->ID, 'sides_open', 'Sides Open', array(
+			'1' => '1 Side', '2' => '2 Sides', '3' => '3 Sides', '4' => '4 Sides (All)',
+		) );
+		$this->render_select( $post->ID, 'topography', 'Topography', array( 'flat' => 'Flat', 'sloped' => 'Sloped' ) );
+		echo '</div>';
+		echo '</div>';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">Infrastructure & Approvals</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_select( $post->ID, 'boundary_wall', 'Boundary Wall', array(
+			'full' => 'Fully Constructed', 'partial' => 'Partial', 'none' => 'None',
+		) );
+		$this->render_field( $post->ID, 'permissible_floors', 'Permissible Floors', 'text', 'e.g. G+3' );
+		$this->render_select( $post->ID, 'gated_community', 'Gated Community', array( 'yes' => 'Yes', 'no' => 'No' ) );
+		echo '</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_select( $post->ID, 'water_connection', 'Water Connection', array( 'yes' => 'Available', 'no' => 'Not Available' ) );
+		$this->render_select( $post->ID, 'electricity_connection', 'Electricity Connection', array( 'yes' => 'Available', 'no' => 'Not Available' ) );
+		$this->render_select( $post->ID, 'sewage_connection', 'Sewage Connection', array( 'yes' => 'Available', 'no' => 'Not Available' ) );
+		echo '</div>';
+		echo '</div>';
+
+		echo '</div>';
+	}
+
+	/**
+	 * PG Details panel.
+	 */
+	private function render_pg_panel( \WP_Post $post ) {
+		echo '<div class="tp-meta-panel" data-panel="pg">';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">PG For & Occupant</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_select( $post->ID, 'pg_gender', 'PG For', array(
+			'boys'   => 'Boys Only',
+			'girls'  => 'Girls Only',
+			'unisex' => 'Unisex (Co-ed)',
+		) );
+		$this->render_select( $post->ID, 'pg_occupant', 'Occupant Type', array(
+			'students'     => 'Students',
+			'working'      => 'Working Professionals',
+			'any'          => 'Any',
+		) );
+		echo '</div>';
+		echo '</div>';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">Rent by Sharing</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_field( $post->ID, 'pg_single_rent', 'Single Sharing (₹/mo)', 'number' );
+		$this->render_field( $post->ID, 'pg_double_rent', 'Double Sharing (₹/mo)', 'number' );
+		$this->render_field( $post->ID, 'pg_triple_rent', 'Triple Sharing (₹/mo)', 'number' );
+		echo '</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_field( $post->ID, 'pg_deposit', 'Security Deposit (₹)', 'number' );
+		$this->render_field( $post->ID, 'pg_notice_period', 'Notice Period', 'text', 'e.g. 1 Month' );
+		echo '</div>';
+		echo '</div>';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">Food & Kitchen</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_select( $post->ID, 'pg_meals', 'Meals Included', array(
+			'none'              => 'None',
+			'breakfast_dinner'  => 'Breakfast + Dinner',
+			'all_meals'         => 'All Meals (3)',
+		) );
+		$this->render_select( $post->ID, 'pg_meal_type', 'Meal Type', array(
+			'veg_only'    => 'Veg Only',
+			'veg_nonveg'  => 'Veg + Non-veg',
+		) );
+		$this->render_select( $post->ID, 'pg_kitchen', 'Kitchen Access', array( 'yes' => 'Yes', 'no' => 'No' ) );
+		echo '</div>';
+		echo '</div>';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">Facilities</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_select( $post->ID, 'pg_wifi', 'Wi-Fi', array(
+			'included' => 'Included', 'paid' => 'Paid Extra', 'none' => 'None',
+		) );
+		$this->render_select( $post->ID, 'pg_laundry', 'Laundry', array(
+			'included' => 'Included', 'shared' => 'Shared Machine', 'paid' => 'Paid Service', 'none' => 'None',
+		) );
+		$this->render_select( $post->ID, 'pg_housekeeping', 'Housekeeping', array(
+			'daily' => 'Daily', 'weekly' => 'Weekly', 'none' => 'None',
+		) );
+		echo '</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_select( $post->ID, 'pg_ac', 'AC Rooms', array(
+			'yes' => 'Yes', 'no' => 'No', 'optional' => 'Optional (Extra)',
+		) );
+		echo '</div>';
+		echo '</div>';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">House Rules</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_select( $post->ID, 'pg_smoking', 'Smoking', array( 'yes' => 'Allowed', 'no' => 'Not Allowed' ) );
+		$this->render_select( $post->ID, 'pg_drinking', 'Drinking', array( 'yes' => 'Allowed', 'no' => 'Not Allowed' ) );
+		$this->render_select( $post->ID, 'pg_guests', 'Guests', array(
+			'yes' => 'Allowed', 'common' => 'In Common Areas Only', 'no' => 'Not Allowed',
+		) );
+		echo '</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_field( $post->ID, 'pg_curfew', 'Curfew Time', 'text', 'e.g. 10 PM or No Curfew' );
+		echo '</div>';
+		echo '</div>';
+
+		echo '</div>';
+	}
+
+	/* =====================================================================
+	   Save
+	   ===================================================================== */
+
 	public function save_meta( int $post_id, \WP_Post $post ) {
 		// Verify nonce.
 		if ( ! isset( $_POST['tp_project_meta_nonce'] )

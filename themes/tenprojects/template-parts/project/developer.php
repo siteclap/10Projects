@@ -1,6 +1,6 @@
 <?php
 /**
- * About Developer Section
+ * About Developer Section — Simplified
  *
  * @package TenProjects
  */
@@ -14,93 +14,61 @@ $google_rating  = tp_get_meta( $post_id, 'google_review_rating' );
 $overview       = tp_get_meta( $post_id, 'short_overview' );
 $qr_urls        = tp_get_qr_urls( $post_id );
 $offers         = tp_parse_json_meta( $post_id, 'offers' );
-$location       = tp_get_location_term( $post_id );
-$loc_name       = $location ? $location->name : '';
-
-// Project details.
-$details = array(
-	'Project Location'  => tp_get_meta( $post_id, 'project_location' ) ?: $loc_name,
-	'Land Parcel'       => tp_get_meta( $post_id, 'land_parcel' ),
-	'Floors'            => tp_get_meta( $post_id, 'floors_display' ),
-	'Possession'        => tp_get_meta( $post_id, 'expected_possession' ),
-	'RERA Number'       => tp_get_meta( $post_id, 'rera_number' ),
-	'Configurations'    => tp_get_meta( $post_id, 'available_configs_text' ),
-	'Construction'      => tp_get_meta( $post_id, 'construction_stage' ),
-	'Price Range'       => tp_format_price_range(
-		intval( tp_get_meta( $post_id, 'price_display_min' ) ),
-		intval( tp_get_meta( $post_id, 'price_display_max' ) )
-	),
-);
-$details = array_filter( $details );
 
 if ( ! $dev_name ) return;
 ?>
 
 <section class="tp-section" id="developer">
-	<h2>About the Developer</h2>
+	<h2>About <?php echo esc_html( $dev_name ); ?></h2>
 
-	<!-- Developer Header -->
-	<div class="tp-developer-header">
-		<?php if ( $dev_logo ) : ?>
-			<img src="<?php echo esc_url( $dev_logo ); ?>" alt="<?php echo esc_attr( $dev_name ); ?>" class="tp-developer-logo">
-		<?php else : ?>
-			<div class="tp-developer-initials">
-				<?php echo esc_html( strtoupper( substr( $dev_name, 0, 2 ) ) ); ?>
-			</div>
-		<?php endif; ?>
-		<div>
-			<div class="text-h4"><?php echo esc_html( $dev_name ); ?></div>
-			<?php if ( $google_rating ) : ?>
-				<div class="text-sm text-gray-500" style="margin-top:2px;">
-					⭐ <?php echo esc_html( $google_rating ); ?> Google Rating
+	<div class="tp-dev-card">
+		<div class="tp-dev-card__header">
+			<?php if ( $dev_logo ) : ?>
+				<img src="<?php echo esc_url( $dev_logo ); ?>" alt="<?php echo esc_attr( $dev_name ); ?>" class="tp-dev-card__logo">
+			<?php else : ?>
+				<div class="tp-dev-card__initials">
+					<?php echo esc_html( strtoupper( substr( $dev_name, 0, 2 ) ) ); ?>
 				</div>
 			<?php endif; ?>
+			<div>
+				<div class="tp-dev-card__name"><?php echo esc_html( $dev_name ); ?></div>
+				<?php if ( $google_rating ) : ?>
+					<div class="tp-dev-card__rating">
+						<svg width="14" height="14" fill="var(--accent)" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+						<?php echo esc_html( $google_rating ); ?> Google Rating
+					</div>
+				<?php endif; ?>
+			</div>
 		</div>
+
+		<?php if ( $overview ) : ?>
+			<div class="tp-dev-card__overview">
+				<?php echo wp_kses_post( $overview ); ?>
+			</div>
+		<?php endif; ?>
 	</div>
 
-	<!-- Project Details Grid -->
-	<?php if ( ! empty( $details ) ) : ?>
-		<div class="tp-details-grid">
-			<?php foreach ( $details as $label => $value ) : ?>
-				<div>
-					<div class="tp-stat__label"><?php echo esc_html( $label ); ?></div>
-					<div class="tp-stat__value"><?php echo esc_html( $value ); ?></div>
-				</div>
-			<?php endforeach; ?>
-		</div>
-	<?php endif; ?>
-
-	<!-- Overview -->
-	<?php if ( $overview ) : ?>
-		<div class="tp-card mb-xl">
-			<h3 style="font-size:16px;font-weight:600;margin-bottom:var(--md);">Project Overview</h3>
-			<p style="font-size:14px;color:var(--gray-600);line-height:1.7;">
-				<?php echo wp_kses_post( $overview ); ?>
-			</p>
-		</div>
-	<?php endif; ?>
-
-	<!-- QR Code -->
+	<!-- RERA QR Code -->
 	<?php if ( ! empty( $qr_urls ) ) : ?>
-		<div class="tp-card mb-xl">
-			<h3 style="font-size:16px;font-weight:600;margin-bottom:var(--md);">RERA QR Code</h3>
-			<div class="tp-qr-codes">
+		<div class="tp-rera-qr">
+			<h3>RERA QR Code</h3>
+			<div class="tp-rera-qr__codes">
 				<?php foreach ( $qr_urls as $qr ) : ?>
-					<img src="<?php echo esc_url( $qr ); ?>" alt="RERA QR Code">
+					<img src="<?php echo esc_url( $qr ); ?>" alt="RERA QR Code" loading="lazy">
 				<?php endforeach; ?>
 			</div>
 		</div>
 	<?php endif; ?>
 
-	<!-- Offers -->
+	<!-- Current Offers -->
 	<?php if ( ! empty( $offers ) ) : ?>
-		<div class="tp-card tp-card--accent">
-			<h3 style="font-size:16px;font-weight:600;margin-bottom:var(--lg);">Current Offers</h3>
-			<div class="tp-offers-grid">
+		<div class="tp-offers-card">
+			<h3>Current Offers</h3>
+			<div class="tp-offers-list">
 				<?php foreach ( $offers as $offer ) : ?>
-					<div class="tp-offer-card">
-						<span class="tag-icon">🏷️</span>
-						<?php echo esc_html( $offer ); ?>
+					<div class="tp-offer-item">
+						<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2"><path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+						<span><?php echo esc_html( $offer ); ?></span>
 					</div>
 				<?php endforeach; ?>
 			</div>

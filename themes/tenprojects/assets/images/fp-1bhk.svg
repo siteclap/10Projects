@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" fill="none">
+  <rect x="1" y="1" width="478" height="358" rx="4" stroke="#d1d5db" stroke-width="2" fill="#fafafa"/>
+  <!-- Living Room -->
+  <rect x="20" y="20" width="260" height="180" rx="2" stroke="#9ca3af" stroke-width="1.5" fill="#f3f4f6"/>
+  <text x="150" y="105" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" font-weight="600" fill="#6b7280">Living Room</text>
+  <text x="150" y="125" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#9ca3af">14' × 12'</text>
+  <!-- Bedroom -->
+  <rect x="290" y="20" width="170" height="180" rx="2" stroke="#9ca3af" stroke-width="1.5" fill="#eff6ff"/>
+  <text x="375" y="105" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" font-weight="600" fill="#3b82f6">Bedroom</text>
+  <text x="375" y="125" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#9ca3af">12' × 10'</text>
+  <!-- Kitchen -->
+  <rect x="20" y="210" width="180" height="130" rx="2" stroke="#9ca3af" stroke-width="1.5" fill="#fefce8"/>
+  <text x="110" y="275" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" font-weight="600" fill="#a16207">Kitchen</text>
+  <text x="110" y="295" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#9ca3af">10' × 8'</text>
+  <!-- Bathroom -->
+  <rect x="210" y="210" width="120" height="130" rx="2" stroke="#9ca3af" stroke-width="1.5" fill="#f0fdf4"/>
+  <text x="270" y="275" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" font-weight="600" fill="#15803d">Bath</text>
+  <text x="270" y="295" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#9ca3af">8' × 6'</text>
+  <!-- Balcony -->
+  <rect x="340" y="210" width="120" height="130" rx="2" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="6 3" fill="#faf5ff"/>
+  <text x="400" y="275" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" font-weight="600" fill="#7c3aed">Balcony</text>
+  <!-- Door arcs -->
+  <path d="M280 170 Q280 200 260 200" stroke="#9ca3af" stroke-width="1" fill="none"/>
+  <path d="M290 170 Q290 200 310 200" stroke="#9ca3af" stroke-width="1" fill="none"/>
+  <!-- Label -->
+  <text x="240" y="352" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#d1d5db">1 BHK — Indicative Layout</text>
+</svg>

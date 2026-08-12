@@ -1,7 +1,7 @@
 import type { Project } from '@/lib/types/project';
 import type { Location } from '@/lib/types/location';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://10projects.com';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://leadmaaxx.com';
 
 interface BreadcrumbItem {
   name: string;
@@ -49,13 +49,13 @@ export function realEstateListingJsonLd(project: Project): Record<string, unknow
 }
 
 /**
- * Generate Organization JSON-LD for 10Projects.
+ * Generate Organization JSON-LD for LeadMAAXX.
  */
 export function organizationJsonLd(): Record<string, unknown> {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: '10Projects',
+    name: 'LeadMAAXX',
     url: BASE_URL,
     logo: `${BASE_URL}/logo.png`,
     description:

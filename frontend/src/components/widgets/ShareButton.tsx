@@ -22,7 +22,7 @@ export function ShareButton({
   const handleShare = useCallback(async () => {
     const shareData = {
       title,
-      text: text ?? `Check out ${title} on 10Projects`,
+      text: text ?? `Check out ${title} on LeadMAAXX`,
       url,
     };
 

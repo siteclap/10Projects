@@ -6,6 +6,7 @@
  */
 
 import type { Project, ProjectCard, ProjectConfiguration } from '@/lib/types/project';
+import type { SiteSettings } from '@/lib/types/site-settings';
 
 const WP_API_BASE =
   process.env.WP_API_URL ||
@@ -124,7 +125,7 @@ interface WpApiResponse<T> {
 async function wpFetch<T>(endpoint: string): Promise<T | null> {
   try {
     const url = `${WP_API_BASE}${endpoint}`;
-    const res = await fetch(url, { cache: 'no-store' }); // Always fetch fresh during build.
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return null;
     const json: WpApiResponse<T> = await res.json();
     return json.success ? json.data : null;
@@ -190,6 +191,41 @@ export async function wpFetchLocations(): Promise<Array<{ slug: string; name: st
 export async function wpFetchSearchConfig(): Promise<string[]> {
   const data = await wpFetch<{ active_categories: string[] }>('/search/config');
   return data?.active_categories || ['buy'];
+}
+
+/**
+ * Fetch site-wide brand settings (logos, colors, banners).
+ */
+export async function wpFetchSiteSettings(): Promise<SiteSettings> {
+  const data = await wpFetch<SiteSettings>('/site-settings');
+  return data || {
+    site_name: '10Projects',
+    logo_light: '',
+    logo_dark: '',
+    favicon: '',
+    hero_desktop: '',
+    hero_mobile: '',
+    phone: '',
+    email: '',
+    address: '',
+    rera_agent: '',
+    rera_legal_name: '',
+    about: '',
+    colors: {
+      primary: '#4B1CB0',
+      primary_dark: '#3B1490',
+      accent: '#F59E0B',
+      hero_bg: '#111827',
+    },
+    social: {
+      facebook: '',
+      instagram: '',
+      linkedin: '',
+      youtube: '',
+      twitter: '',
+      whatsapp: '',
+    },
+  };
 }
 
 // ---------- Mappers ----------

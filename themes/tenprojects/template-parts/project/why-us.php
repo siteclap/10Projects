@@ -1,6 +1,6 @@
 <?php
 /**
- * Why Buy from 10Projects Section
+ * Why Buy from 10Projects — compact inline strip
  *
  * @package TenProjects
  */
@@ -8,29 +8,12 @@
 defined( 'ABSPATH' ) || exit;
 ?>
 
-<section class="tp-section">
-	<h2>Why Buy from 10Projects?</h2>
-
-	<div class="tp-why-grid">
-		<div class="tp-why-item">
-			<div class="tp-why-item__icon" style="background:var(--success-light);color:var(--success);">💰</div>
-			<div class="tp-why-item__title">Lowest Price</div>
-			<div class="tp-why-item__desc">Guaranteed best deal</div>
-		</div>
-		<div class="tp-why-item">
-			<div class="tp-why-item__icon" style="background:var(--brand-primary-pale);color:var(--brand-primary);">⭕</div>
-			<div class="tp-why-item__title">No Brokerage</div>
-			<div class="tp-why-item__desc">Zero commission</div>
-		</div>
-		<div class="tp-why-item">
-			<div class="tp-why-item__icon" style="background:var(--accent-pale);color:var(--accent-dark);">🚗</div>
-			<div class="tp-why-item__title">Free Site Visit</div>
-			<div class="tp-why-item__desc">With cab pickup</div>
-		</div>
-		<div class="tp-why-item">
-			<div class="tp-why-item__icon" style="background:var(--brand-primary-pale);color:var(--brand-primary);">📊</div>
-			<div class="tp-why-item__title">Unbiased Reports</div>
-			<div class="tp-why-item__desc">AI-powered analysis</div>
-		</div>
-	</div>
-</section>
+<div class="tp-why-strip">
+	<span class="tp-why-strip__item"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--success)" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Lowest Price Guaranteed</span>
+	<span class="tp-why-strip__sep">·</span>
+	<span class="tp-why-strip__item"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--brand-primary)" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Zero Brokerage</span>
+	<span class="tp-why-strip__sep">·</span>
+	<span class="tp-why-strip__item"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--success)" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Free Site Visit with Cab</span>
+	<span class="tp-why-strip__sep">·</span>
+	<span class="tp-why-strip__item"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--brand-primary)" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Unbiased AI Reports</span>
+</div>

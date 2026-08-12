@@ -74,7 +74,7 @@ class Location_Taxonomy {
 			'public'             => true,
 			'publicly_queryable' => true,
 			'show_ui'            => true,
-			'show_in_menu'       => true,
+			'show_in_menu'       => false,
 			'show_in_nav_menus'  => true,
 			'show_tagcloud'      => false,
 			'show_in_quick_edit' => true,
@@ -82,7 +82,7 @@ class Location_Taxonomy {
 			'show_in_rest'       => true,
 			'rest_base'          => 'tp-locations',
 			'rewrite'            => array(
-				'slug'         => 'location',
+				'slug'         => 'navi-mumbai',
 				'with_front'   => false,
 				'hierarchical' => true,
 			),

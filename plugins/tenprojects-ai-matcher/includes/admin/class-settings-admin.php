@@ -74,6 +74,225 @@ class Settings_Admin {
 	}
 
 	/**
+	 * Brand Settings page vertical tabs.
+	 *
+	 * @return array slug => array( label, icon ).
+	 */
+	private function get_brand_tabs(): array {
+		return array(
+			'identity'    => array( 'Brand Identity', 'dashicons-id-alt' ),
+			'logo'        => array( 'Logo & Media', 'dashicons-format-image' ),
+			'colors'      => array( 'Color Guidelines', 'dashicons-art' ),
+			'social'      => array( 'Social Links', 'dashicons-share' ),
+			'lead'        => array( 'Lead Integration', 'dashicons-admin-links' ),
+		);
+	}
+
+	/**
+	 * Get the current brand tab from query string.
+	 *
+	 * @return string
+	 */
+	private function get_current_brand_tab(): string {
+		// phpcs:ignore WordPress.Security.NonceVerification
+		$tab  = isset( $_GET['btab'] ) ? sanitize_text_field( wp_unslash( $_GET['btab'] ) ) : 'identity';
+		$tabs = $this->get_brand_tabs();
+		return array_key_exists( $tab, $tabs ) ? $tab : 'identity';
+	}
+
+	/**
+	 * Render the dedicated Brand Settings page (top-level menu) with vertical tabs.
+	 */
+	public function render_brand_page(): void {
+		// Register all brand-related settings groups.
+		$this->register_brand_identity_fields();
+		$this->register_brand_logo_fields();
+		$this->register_brand_color_fields();
+		$this->register_brand_social_fields();
+		$this->register_brand_lead_fields();
+
+		$tabs        = $this->get_brand_tabs();
+		$current_tab = $this->get_current_brand_tab();
+
+		echo '<div class="wrap">';
+		echo '<h1 style="margin-bottom:20px;">' . esc_html__( 'Brand Settings', 'tenprojects-ai-matcher' ) . '</h1>';
+
+		// Vertical tab layout.
+		echo '<div style="display:flex;gap:0;min-height:500px;border:1px solid #c3c4c7;border-radius:4px;background:#fff;">';
+
+		// Left: vertical tabs.
+		echo '<div style="width:220px;min-width:220px;background:#f0f0f1;border-right:1px solid #c3c4c7;">';
+		foreach ( $tabs as $slug => $tab ) {
+			list( $label, $icon ) = $tab;
+			$is_active = ( $slug === $current_tab );
+			$url       = admin_url( 'admin.php?page=tenprojects-brand&btab=' . $slug );
+			$bg        = $is_active ? 'background:#fff;border-right:1px solid #fff;margin-right:-1px;font-weight:600;color:#1d2327;' : 'color:#50575e;';
+			echo '<a href="' . esc_url( $url ) . '" style="display:flex;align-items:center;gap:8px;padding:12px 16px;text-decoration:none;border-bottom:1px solid #c3c4c7;' . $bg . '">';
+			echo '<span class="dashicons ' . esc_attr( $icon ) . '" style="font-size:18px;width:18px;height:18px;"></span>';
+			echo '<span>' . esc_html( $label ) . '</span>';
+			echo '</a>';
+		}
+		echo '</div>';
+
+		// Right: content area.
+		echo '<div style="flex:1;padding:24px 30px;">';
+
+		echo '<form method="post" action="options.php">';
+
+		switch ( $current_tab ) {
+			case 'identity':
+				settings_fields( 'tp_brand_identity_group' );
+				do_settings_sections( 'tp_brand_identity_group' );
+				break;
+
+			case 'logo':
+				settings_fields( 'tp_brand_logo_group' );
+				do_settings_sections( 'tp_brand_logo_group' );
+				break;
+
+			case 'colors':
+				settings_fields( 'tp_brand_color_group' );
+				do_settings_sections( 'tp_brand_color_group' );
+				break;
+
+			case 'social':
+				settings_fields( 'tp_brand_social_group' );
+				do_settings_sections( 'tp_brand_social_group' );
+				break;
+
+			case 'lead':
+				settings_fields( 'tp_brand_lead_group' );
+				do_settings_sections( 'tp_brand_lead_group' );
+				break;
+		}
+
+		submit_button();
+		echo '</form>';
+
+		echo '</div>'; // end content.
+		echo '</div>'; // end flex wrapper.
+
+		$this->render_brand_admin_js();
+
+		echo '</div>'; // end wrap.
+	}
+
+	/**
+	 * Register Brand Identity fields (tab 1).
+	 */
+	private function register_brand_identity_fields(): void {
+		$group   = 'tp_brand_identity_group';
+		$section = 'tp_brand_identity_section';
+
+		add_settings_section(
+			$section,
+			__( 'Brand Identity', 'tenprojects-ai-matcher' ),
+			function () {
+				echo '<p>' . esc_html__( 'Configure your brand details. These appear in the header, footer, and lead communications.', 'tenprojects-ai-matcher' ) . '</p>';
+			},
+			$group
+		);
+
+		$this->add_text_field( $group, $section, 'brand_name', __( 'Brand Name', 'tenprojects-ai-matcher' ), '10Projects' );
+		$this->add_text_field( $group, $section, 'brand_rera_agent', __( 'Agent RERA Number', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'brand_rera_legal_name', __( 'RERA Legal Name', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'brand_address', __( 'Office Address', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'brand_email', __( 'Primary Email', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'brand_email_secondary', __( 'Secondary Email', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'brand_phone', __( 'Official Phone Number', 'tenprojects-ai-matcher' ) );
+		$this->add_textarea_field( $group, $section, 'brand_about', __( 'About / Company Description', 'tenprojects-ai-matcher' ), '', __( 'Short description about your company. Displayed in the website footer.', 'tenprojects-ai-matcher' ) );
+	}
+
+	/**
+	 * Register Logo & Media fields (tab 2).
+	 */
+	private function register_brand_logo_fields(): void {
+		$group   = 'tp_brand_logo_group';
+		$section = 'tp_brand_logo_section';
+
+		add_settings_section(
+			$section,
+			__( 'Logo & Media', 'tenprojects-ai-matcher' ),
+			function () {
+				echo '<p>' . esc_html__( 'Upload logos, favicon, and homepage banners. Changes reflect automatically on the frontend.', 'tenprojects-ai-matcher' ) . '</p>';
+			},
+			$group
+		);
+
+		$this->add_media_field( $group, $section, 'brand_logo_light', __( 'Logo (Light Background)', 'tenprojects-ai-matcher' ), __( 'Used in the header on white backgrounds. Recommended: PNG with transparent background.', 'tenprojects-ai-matcher' ) );
+		$this->add_media_field( $group, $section, 'brand_logo_dark', __( 'Logo (Dark Background)', 'tenprojects-ai-matcher' ), __( 'Used in the footer on dark backgrounds. If empty, the light logo will be used with invert filter.', 'tenprojects-ai-matcher' ) );
+		$this->add_media_field( $group, $section, 'brand_favicon', __( 'Favicon', 'tenprojects-ai-matcher' ), __( 'Site icon shown in browser tabs. Recommended: 32x32 or 180x180 PNG.', 'tenprojects-ai-matcher' ) );
+		$this->add_media_field( $group, $section, 'brand_hero_desktop', __( 'Homepage Banner (Desktop)', 'tenprojects-ai-matcher' ), __( 'Hero background image for desktop. Recommended: 1920x800 or wider.', 'tenprojects-ai-matcher' ) );
+		$this->add_media_field( $group, $section, 'brand_hero_mobile', __( 'Homepage Banner (Mobile)', 'tenprojects-ai-matcher' ), __( 'Hero background image for mobile. Recommended: 800x600 or taller.', 'tenprojects-ai-matcher' ) );
+	}
+
+	/**
+	 * Register Color Guidelines fields (tab 3).
+	 */
+	private function register_brand_color_fields(): void {
+		$group   = 'tp_brand_color_group';
+		$section = 'tp_brand_color_section';
+
+		add_settings_section(
+			$section,
+			__( 'Color Guidelines', 'tenprojects-ai-matcher' ),
+			function () {
+				echo '<p>' . esc_html__( 'Customise your site colors. These override the default color scheme on the frontend.', 'tenprojects-ai-matcher' ) . '</p>';
+			},
+			$group
+		);
+
+		$this->add_color_field( $group, $section, 'brand_color_primary', __( 'Primary Color', 'tenprojects-ai-matcher' ), '#4B1CB0' );
+		$this->add_color_field( $group, $section, 'brand_color_primary_dark', __( 'Primary Dark', 'tenprojects-ai-matcher' ), '#3B1490' );
+		$this->add_color_field( $group, $section, 'brand_color_accent', __( 'Accent Color', 'tenprojects-ai-matcher' ), '#F59E0B' );
+		$this->add_color_field( $group, $section, 'brand_color_hero_bg', __( 'Hero Background', 'tenprojects-ai-matcher' ), '#111827' );
+	}
+
+	/**
+	 * Register Social Links fields (tab 4).
+	 */
+	private function register_brand_social_fields(): void {
+		$group   = 'tp_brand_social_group';
+		$section = 'tp_brand_social_section';
+
+		add_settings_section(
+			$section,
+			__( 'Social Media Links', 'tenprojects-ai-matcher' ),
+			function () {
+				echo '<p>' . esc_html__( 'Add your social media profile URLs. These appear in the website footer.', 'tenprojects-ai-matcher' ) . '</p>';
+			},
+			$group
+		);
+
+		$this->add_text_field( $group, $section, 'social_facebook', __( 'Facebook', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'social_instagram', __( 'Instagram', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'social_linkedin', __( 'LinkedIn', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'social_youtube', __( 'YouTube', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'social_twitter', __( 'X (Twitter)', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'social_whatsapp', __( 'WhatsApp Number', 'tenprojects-ai-matcher' ) );
+	}
+
+	/**
+	 * Register Lead Integration fields (tab 5).
+	 */
+	private function register_brand_lead_fields(): void {
+		$group   = 'tp_brand_lead_group';
+		$section = 'tp_brand_lead_section';
+
+		add_settings_section(
+			$section,
+			__( 'Lead Integration', 'tenprojects-ai-matcher' ),
+			function () {
+				echo '<p>' . esc_html__( 'Configure webhook URLs for lead capture and chatbot integration.', 'tenprojects-ai-matcher' ) . '</p>';
+			},
+			$group
+		);
+
+		$this->add_text_field( $group, $section, 'lead_webhook_url', __( 'Webhook URL', 'tenprojects-ai-matcher' ) );
+		$this->add_text_field( $group, $section, 'lead_chatbot_webhook_url', __( 'Chat Bot Webhook URL', 'tenprojects-ai-matcher' ) );
+	}
+
+	/**
 	 * Render the settings page.
 	 */
 	public function render_page(): void {
@@ -149,7 +368,73 @@ class Settings_Admin {
 		submit_button();
 
 		echo '</form>';
+
+		// Inline JS for media uploads and color picker interactions (only on brand tab).
+		if ( 'brand' === $current_tab ) {
+			$this->render_brand_admin_js();
+		}
+
 		echo '</div>';
+	}
+
+	/**
+	 * Render inline JS for media upload buttons and color picker helpers.
+	 */
+	private function render_brand_admin_js(): void {
+		?>
+		<script>
+		(function($){
+			if (typeof wp === 'undefined' || typeof wp.media === 'undefined') return;
+
+			// Media upload buttons.
+			$(document).on('click', '.tp-media-upload', function(e) {
+				e.preventDefault();
+				var $wrap = $(this).closest('.tp-media-field');
+				var $input = $wrap.find('.tp-media-url');
+				var $preview = $wrap.find('.tp-media-preview');
+				var $remove = $wrap.find('.tp-media-remove');
+
+				var frame = wp.media({
+					title: 'Select or Upload Media',
+					button: { text: 'Use this file' },
+					multiple: false
+				});
+
+				frame.on('select', function() {
+					var attachment = frame.state().get('selection').first().toJSON();
+					$input.val(attachment.url);
+					$preview.html('<img src="' + attachment.url + '" style="max-width:300px;max-height:120px;border:1px solid #ddd;border-radius:4px;padding:4px;" />');
+					$remove.show();
+				});
+
+				frame.open();
+			});
+
+			// Media remove buttons.
+			$(document).on('click', '.tp-media-remove', function(e) {
+				e.preventDefault();
+				var $wrap = $(this).closest('.tp-media-field');
+				$wrap.find('.tp-media-url').val('');
+				$wrap.find('.tp-media-preview').html('');
+				$(this).hide();
+			});
+
+			// Color picker — update hex display on change.
+			$(document).on('input change', 'input[type="color"]', function() {
+				$(this).siblings('.tp-color-hex').text(this.value);
+			});
+
+			// Color reset buttons.
+			$(document).on('click', '.tp-color-reset', function(e) {
+				e.preventDefault();
+				var defaultVal = $(this).data('default');
+				var $input = $(this).siblings('input[type="color"]');
+				$input.val(defaultVal);
+				$(this).siblings('.tp-color-hex').text(defaultVal);
+			});
+		})(jQuery);
+		</script>
+		<?php
 	}
 
 	// ------------------------------------------------------------------
@@ -157,27 +442,15 @@ class Settings_Admin {
 	// ------------------------------------------------------------------
 
 	/**
-	 * Register brand identity settings.
+	 * Register brand identity settings (used by the main Settings page Brand tab).
+	 * Delegates to the same individual registration methods used by the Brand Settings page.
 	 */
 	private function register_brand_settings(): void {
-		$group   = 'tp_brand_settings';
-		$section = 'tp_brand_section';
-
-		add_settings_section(
-			$section,
-			__( 'Brand Identity', 'tenprojects-ai-matcher' ),
-			function () {
-				echo '<p>' . esc_html__( 'Configure your brand details. These appear in the header, footer, and lead communications.', 'tenprojects-ai-matcher' ) . '</p>';
-			},
-			$group
-		);
-
-		$this->add_text_field( $group, $section, 'brand_name', __( 'Brand Name', 'tenprojects-ai-matcher' ), '10Projects' );
-		$this->add_text_field( $group, $section, 'brand_rera_agent', __( 'RERA Agent Number', 'tenprojects-ai-matcher' ) );
-		$this->add_text_field( $group, $section, 'brand_logo_url', __( 'Logo URL', 'tenprojects-ai-matcher' ) );
-		$this->add_text_field( $group, $section, 'brand_address', __( 'Office Address', 'tenprojects-ai-matcher' ) );
-		$this->add_text_field( $group, $section, 'brand_email', __( 'Contact Email', 'tenprojects-ai-matcher' ) );
-		$this->add_text_field( $group, $section, 'brand_phone', __( 'Contact Phone', 'tenprojects-ai-matcher' ) );
+		$this->register_brand_identity_fields();
+		$this->register_brand_logo_fields();
+		$this->register_brand_color_fields();
+		$this->register_brand_social_fields();
+		$this->register_brand_lead_fields();
 	}
 
 	// ------------------------------------------------------------------
@@ -537,6 +810,41 @@ class Settings_Admin {
 	}
 
 	/**
+	 * Register and render a textarea field.
+	 *
+	 * @param string $group       Settings group.
+	 * @param string $section     Section ID.
+	 * @param string $key         Option key (without prefix).
+	 * @param string $label       Field label.
+	 * @param string $default     Default value.
+	 * @param string $description Help text.
+	 */
+	private function add_textarea_field( string $group, string $section, string $key, string $label, string $default = '', string $description = '' ): void {
+		$opt_key = self::OPT_PREFIX . $key;
+
+		register_setting( $group, $opt_key, array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_textarea_field',
+			'default'           => $default,
+		) );
+
+		add_settings_field(
+			$key,
+			$label,
+			function () use ( $opt_key, $default, $description ) {
+				$value = get_option( $opt_key, $default );
+				echo '<textarea name="' . esc_attr( $opt_key ) . '" rows="4" class="large-text">'
+					. esc_textarea( $value ) . '</textarea>';
+				if ( $description ) {
+					echo '<p class="description">' . esc_html( $description ) . '</p>';
+				}
+			},
+			$group,
+			$section
+		);
+	}
+
+	/**
 	 * Register and render a password field.
 	 *
 	 * @param string $group   Settings group.
@@ -597,6 +905,82 @@ class Settings_Admin {
 				$max_attr = $max ? ' max="' . esc_attr( $max ) . '"' : '';
 				echo '<input type="number" name="' . esc_attr( $opt_key ) . '" value="' . esc_attr( $value )
 					. '" min="' . esc_attr( $min ) . '"' . $max_attr . ' step="' . esc_attr( $step ) . '" style="width:120px;" />';
+			},
+			$group,
+			$section
+		);
+	}
+
+	/**
+	 * Register and render a media upload field.
+	 *
+	 * @param string $group       Settings group.
+	 * @param string $section     Section ID.
+	 * @param string $key         Option key (without prefix).
+	 * @param string $label       Field label.
+	 * @param string $description Help text.
+	 */
+	private function add_media_field( string $group, string $section, string $key, string $label, string $description = '' ): void {
+		$opt_key = self::OPT_PREFIX . $key;
+
+		register_setting( $group, $opt_key, array(
+			'type'              => 'string',
+			'sanitize_callback' => 'esc_url_raw',
+			'default'           => '',
+		) );
+
+		add_settings_field(
+			$key,
+			$label,
+			function () use ( $opt_key, $description ) {
+				$value = get_option( $opt_key, '' );
+				echo '<div class="tp-media-field" data-target="' . esc_attr( $opt_key ) . '">';
+				echo '<input type="text" name="' . esc_attr( $opt_key ) . '" value="' . esc_attr( $value ) . '" class="regular-text tp-media-url" />';
+				echo ' <button type="button" class="button tp-media-upload">' . esc_html__( 'Upload', 'tenprojects-ai-matcher' ) . '</button>';
+				echo ' <button type="button" class="button tp-media-remove" style="' . ( empty( $value ) ? 'display:none' : '' ) . '">' . esc_html__( 'Remove', 'tenprojects-ai-matcher' ) . '</button>';
+				if ( $description ) {
+					echo '<p class="description">' . esc_html( $description ) . '</p>';
+				}
+				echo '<div class="tp-media-preview" style="margin-top:8px;">';
+				if ( ! empty( $value ) ) {
+					echo '<img src="' . esc_url( $value ) . '" style="max-width:300px;max-height:120px;border:1px solid #ddd;border-radius:4px;padding:4px;" />';
+				}
+				echo '</div>';
+				echo '</div>';
+			},
+			$group,
+			$section
+		);
+	}
+
+	/**
+	 * Register and render a color picker field.
+	 *
+	 * @param string $group   Settings group.
+	 * @param string $section Section ID.
+	 * @param string $key     Option key (without prefix).
+	 * @param string $label   Field label.
+	 * @param string $default Default hex value.
+	 */
+	private function add_color_field( string $group, string $section, string $key, string $label, string $default = '#000000' ): void {
+		$opt_key = self::OPT_PREFIX . $key;
+
+		register_setting( $group, $opt_key, array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_hex_color',
+			'default'           => $default,
+		) );
+
+		add_settings_field(
+			$key,
+			$label,
+			function () use ( $opt_key, $default ) {
+				$value = get_option( $opt_key, $default );
+				echo '<div style="display:flex;align-items:center;gap:8px;">';
+				echo '<input type="color" name="' . esc_attr( $opt_key ) . '" value="' . esc_attr( $value ) . '" style="width:50px;height:36px;padding:2px;cursor:pointer;" />';
+				echo '<code class="tp-color-hex" style="font-size:13px;color:#555;">' . esc_html( $value ) . '</code>';
+				echo '<button type="button" class="button button-small tp-color-reset" data-default="' . esc_attr( $default ) . '" style="font-size:11px;">Reset</button>';
+				echo '</div>';
 			},
 			$group,
 			$section

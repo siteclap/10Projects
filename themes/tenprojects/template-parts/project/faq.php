@@ -62,7 +62,7 @@ if ( empty( $faqs ) ) return;
 ?>
 
 <section class="tp-section" id="faq">
-	<h2>Frequently Asked Questions</h2>
+	<h2>FAQ about <?php echo esc_html( $title ); ?><?php echo $loc_name ? ', ' . esc_html( $loc_name ) : ''; ?></h2>
 
 	<div class="tp-faq">
 		<?php foreach ( $faqs as $faq ) : ?>

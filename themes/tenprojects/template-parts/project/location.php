@@ -19,7 +19,7 @@ $map_query = $address_pin ?: get_the_title() . ', ' . $loc_name . ', Navi Mumbai
 ?>
 
 <section class="tp-section" id="location">
-	<h2>Location</h2>
+	<h2>Location of <?php the_title(); ?><?php echo $loc_name ? ', ' . esc_html( $loc_name ) : ''; ?></h2>
 
 	<div class="tp-map-container">
 		<iframe

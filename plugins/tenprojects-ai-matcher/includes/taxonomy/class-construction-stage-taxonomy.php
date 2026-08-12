@@ -80,7 +80,7 @@ class Construction_Stage_Taxonomy {
 			'public'             => true,
 			'publicly_queryable' => true,
 			'show_ui'            => true,
-			'show_in_menu'       => true,
+			'show_in_menu'       => false,
 			'show_in_nav_menus'  => true,
 			'show_tagcloud'      => false,
 			'show_in_quick_edit' => true,

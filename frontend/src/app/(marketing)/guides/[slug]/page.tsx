@@ -8,8 +8,8 @@ import { breadcrumbJsonLd } from '@/lib/seo/json-ld';
 import Link from 'next/link';
 import type { Guide } from '@/lib/types/guide';
 
-const SITE_NAME = '10Projects';
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://10projects.com';
+const SITE_NAME = 'LeadMAAXX';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://leadmaaxx.com';
 
 /* ---------- Mock guide data ---------- */
 
@@ -61,13 +61,13 @@ const MOCK_GUIDES: Record<string, Guide> = {
 <li>Check the developer track record on delivery timelines</li>
 <li>Review the sale agreement with a property lawyer</li>
 <li>Compare prices with 3-4 similar projects in the area</li>
-<li>Use 10Projects AI scoring to get an objective analysis across 20 categories</li>
+<li>Use LeadMAAXX AI scoring to get an objective analysis across 20 categories</li>
 </ul>`,
     thumbnail: null,
     category: 'Buying Guide',
     published_at: '2026-06-15',
     reading_time: 12,
-    author: '10Projects Editorial',
+    author: 'LeadMAAXX Editorial',
   },
   'understanding-rera-home-buyer-rights': {
     id: 2,
@@ -95,7 +95,7 @@ const MOCK_GUIDES: Record<string, Guide> = {
 <li>Review the project details including approved plans, timeline, and financial disclosures</li>
 <li>Check the complaint section for any pending issues</li>
 </ul>
-<p>On 10Projects, every listed project includes its RERA registration number, and our AI scoring system factors RERA compliance into the overall project score.</p>
+<p>On LeadMAAXX, every listed project includes its RERA registration number, and our AI scoring system factors RERA compliance into the overall project score.</p>
 
 <h2 id="filing-complaints">Filing Complaints</h2>
 <p>If a developer violates RERA provisions, buyers can file complaints through the MahaRERA portal. Common grounds for complaints include possession delays, changes in approved plans, carpet area discrepancies, and misleading advertising. The tribunal typically resolves complaints within 60 days.</p>`,
@@ -103,7 +103,7 @@ const MOCK_GUIDES: Record<string, Guide> = {
     category: 'Legal',
     published_at: '2026-05-20',
     reading_time: 8,
-    author: '10Projects Editorial',
+    author: 'LeadMAAXX Editorial',
   },
   'navi-mumbai-vs-mumbai-investment-comparison': {
     id: 3,
@@ -134,12 +134,12 @@ const MOCK_GUIDES: Record<string, Guide> = {
 <p>While rental yields in Mumbai average 2-3%, Navi Mumbai offers slightly better returns at 3-4% for well-located properties near railway stations and IT parks. Key rental hotspots include Airoli, Ghansoli, and Vashi, driven by proximity to IT hubs and commercial centres.</p>
 
 <h2 id="verdict">Our Verdict</h2>
-<p>For investors seeking capital appreciation, Navi Mumbai locations near the upcoming airport (Ulwe, Panvel) offer the highest potential. For end-users seeking a balance of affordability and livability, Kharghar remains the top choice. Use the 10Projects AI assessment to find your perfect match based on your specific investment criteria.</p>`,
+<p>For investors seeking capital appreciation, Navi Mumbai locations near the upcoming airport (Ulwe, Panvel) offer the highest potential. For end-users seeking a balance of affordability and livability, Kharghar remains the top choice. Use the LeadMAAXX AI assessment to find your perfect match based on your specific investment criteria.</p>`,
     thumbnail: null,
     category: 'Investment',
     published_at: '2026-04-10',
     reading_time: 10,
-    author: '10Projects Editorial',
+    author: 'LeadMAAXX Editorial',
   },
   'home-loan-guide-2026': {
     id: 4,
@@ -178,12 +178,12 @@ const MOCK_GUIDES: Record<string, Guide> = {
 <li><strong>Section 24(b):</strong> Up to Rs 2L deduction on interest paid (self-occupied property)</li>
 <li><strong>Section 80EEA:</strong> Additional Rs 1.5L deduction for first-time buyers (stamp value up to Rs 45L)</li>
 </ul>
-<p>For a property purchased at Rs 70L with a Rs 55L loan, you could save Rs 75,000 - 1,00,000 annually in taxes. Use the EMI calculator on 10Projects to estimate your complete financial commitment including tax savings.</p>`,
+<p>For a property purchased at Rs 70L with a Rs 55L loan, you could save Rs 75,000 - 1,00,000 annually in taxes. Use the EMI calculator on LeadMAAXX to estimate your complete financial commitment including tax savings.</p>`,
     thumbnail: null,
     category: 'Finance',
     published_at: '2026-03-25',
     reading_time: 15,
-    author: '10Projects Editorial',
+    author: 'LeadMAAXX Editorial',
   },
 };
 
@@ -210,7 +210,7 @@ function articleJsonLd(guide: Guide): Record<string, unknown> {
     },
     publisher: {
       '@type': 'Organization',
-      name: '10Projects',
+      name: 'LeadMAAXX',
       url: BASE_URL,
       logo: {
         '@type': 'ImageObject',

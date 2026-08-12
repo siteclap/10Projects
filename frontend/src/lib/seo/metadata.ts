@@ -4,19 +4,19 @@ import type { Location } from '@/lib/types/location';
 import type { Developer } from '@/lib/types/developer';
 import { formatPriceRange } from '@/lib/utils/format-price';
 
-const SITE_NAME = '10Projects';
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://10projects.com';
+const SITE_NAME = 'LeadMAAXX';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://leadmaaxx.com';
 
 /**
  * Generate metadata for the homepage.
  */
 export function homeMetadata(): Metadata {
   return {
-    title: '10Projects — Find the 10 Best-Fit Projects for You',
+    title: 'LeadMAAXX — Find the 10 Best-Fit Projects for You',
     description:
       "India's first AI-powered real estate platform. Our scoring engine analyses 150+ projects across 20 categories to find the 10 best-fit matches for your lifestyle, budget, and priorities.",
     openGraph: {
-      title: '10Projects — Find the 10 Best-Fit Projects for You',
+      title: 'LeadMAAXX — Find the 10 Best-Fit Projects for You',
       description:
         "India's first AI-powered real estate platform that scores every project across 20 categories.",
       url: BASE_URL,
@@ -26,7 +26,7 @@ export function homeMetadata(): Metadata {
     },
     twitter: {
       card: 'summary_large_image',
-      title: '10Projects — Find the 10 Best-Fit Projects for You',
+      title: 'LeadMAAXX — Find the 10 Best-Fit Projects for You',
     },
     robots: {
       index: true,

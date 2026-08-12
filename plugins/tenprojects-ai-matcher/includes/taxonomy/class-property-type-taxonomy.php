@@ -34,12 +34,12 @@ class Property_Type_Taxonomy {
 	 * @var string[]
 	 */
 	const DEFAULT_TERMS = array(
-		'Residential Apartment',
-		'Villa',
-		'Row House',
-		'Commercial Office',
-		'Commercial Shop',
+		'Buy',
+		'Rent',
+		'Commercial',
+		'Resale',
 		'Plot',
+		'PG',
 	);
 
 	/**
@@ -78,11 +78,11 @@ class Property_Type_Taxonomy {
 		$args = array(
 			'labels'             => $labels,
 			'description'        => __( 'Property type classification for projects.', 'flavor-starter' ),
-			'hierarchical'       => false,
+			'hierarchical'       => true,
 			'public'             => true,
 			'publicly_queryable' => true,
 			'show_ui'            => true,
-			'show_in_menu'       => true,
+			'show_in_menu'       => false,
 			'show_in_nav_menus'  => true,
 			'show_tagcloud'      => false,
 			'show_in_quick_edit' => true,
@@ -90,7 +90,7 @@ class Property_Type_Taxonomy {
 			'show_in_rest'       => true,
 			'rest_base'          => 'tp-property-types',
 			'rewrite'            => array(
-				'slug'       => 'type',
+				'slug'       => 'properties',
 				'with_front' => false,
 			),
 			'query_var'          => true,

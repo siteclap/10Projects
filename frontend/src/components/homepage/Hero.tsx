@@ -20,20 +20,36 @@ const stats = [
 
 interface HeroProps {
   activeCategories?: string[];
+  heroDesktop?: string;
+  heroMobile?: string;
 }
 
-export function Hero({ activeCategories }: HeroProps) {
+export function Hero({ activeCategories, heroDesktop, heroMobile }: HeroProps) {
   const [selectedCity, setSelectedCity] = useState('navi-mumbai');
 
   return (
-    <section className="relative overflow-hidden bg-gray-900 pb-3xl pt-4xl md:pb-4xl md:pt-5xl">
+    <section
+      className="relative overflow-hidden pb-3xl pt-4xl md:pb-4xl md:pt-5xl"
+      style={{ backgroundColor: 'var(--hero-bg, #111827)' }}
+    >
       {/* Background hero image */}
       <img
-        src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80"
+        src={heroDesktop || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80'}
         alt=""
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover opacity-20"
+        className={cn(
+          'absolute inset-0 h-full w-full object-cover opacity-20',
+          heroMobile && 'hidden md:block'
+        )}
       />
+      {heroMobile && (
+        <img
+          src={heroMobile}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover opacity-20 md:hidden"
+        />
+      )}
 
       {/* Background gradient effects */}
       <div

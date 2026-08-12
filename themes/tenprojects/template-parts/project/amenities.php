@@ -7,7 +7,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$post_id = $args['post_id'] ?? get_the_ID();
+$post_id  = $args['post_id'] ?? get_the_ID();
+$location = tp_get_location_term( $post_id );
+$loc_name = $location ? $location->name : '';
 
 // Get amenities from taxonomy terms.
 $terms = wp_get_object_terms( $post_id, 'tp_amenity' );
@@ -30,7 +32,7 @@ $total = count( $amenities );
 ?>
 
 <section class="tp-section" id="amenities">
-	<h2>Amenities</h2>
+	<h2>Amenities in <?php the_title(); ?><?php echo $loc_name ? ', ' . esc_html( $loc_name ) : ''; ?></h2>
 
 	<div class="tp-amenities" id="amenityList">
 		<?php foreach ( $amenities as $i => $amenity ) : ?>

@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { Container } from '@/components/layout/Container';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | 10Projects',
+  title: 'Privacy Policy | LeadMAAXX',
   description:
-    'Learn how 10Projects.com collects, uses, and protects your personal information.',
+    'Learn how LeadMAAXX.com collects, uses, and protects your personal information.',
 };
 
 export default function PrivacyPolicyPage() {
@@ -21,7 +21,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-h3 text-gray-900">Introduction</h2>
             <p className="mt-lg">
-              10Projects.com (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;)
+              LeadMAAXX.com (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;)
               is committed to protecting your privacy. This Privacy Policy
               explains how we collect, use, disclose, and safeguard your
               information when you visit our website or use our services.
@@ -202,10 +202,10 @@ export default function PrivacyPolicyPage() {
               If you have any questions about this Privacy Policy, please
               contact us at{' '}
               <a
-                href="mailto:privacy@10projects.com"
+                href="mailto:privacy@leadmaaxx.com"
                 className="text-brand-primary hover:underline"
               >
-                privacy@10projects.com
+                privacy@leadmaaxx.com
               </a>
               .
             </p>

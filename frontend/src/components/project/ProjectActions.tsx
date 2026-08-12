@@ -35,7 +35,7 @@ export function ProjectActions({
   const handleShare = useCallback(async () => {
     const shareData = {
       title: projectTitle,
-      text: `Check out ${projectTitle} on 10Projects`,
+      text: `Check out ${projectTitle} on LeadMAAXX`,
       url: projectUrl,
     };
 

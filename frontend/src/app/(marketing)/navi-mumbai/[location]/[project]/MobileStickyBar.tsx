@@ -6,9 +6,12 @@ import { useLeadForm } from '@/components/lead/LeadFormContext';
 interface MobileStickyBarProps {
   projectTitle: string;
   projectUrl: string;
+  ctaLabels?: { primary: string; secondary: string };
 }
 
-export function MobileStickyBar({ projectTitle, projectUrl }: MobileStickyBarProps) {
+export function MobileStickyBar({ projectTitle, projectUrl, ctaLabels }: MobileStickyBarProps) {
+  const primaryLabel = ctaLabels?.primary || 'Best Price';
+  const secondaryLabel = ctaLabels?.secondary || 'Site Visit';
   const { openForm } = useLeadForm();
 
   const whatsappMessage = encodeURIComponent(
@@ -40,16 +43,16 @@ export function MobileStickyBar({ projectTitle, projectUrl }: MobileStickyBarPro
           onClick={() => openForm('best_price')}
           className="flex h-[44px] flex-1 items-center justify-center rounded-sm bg-brand-primary font-medium text-white transition-colors hover:bg-brand-primary-dark"
         >
-          Best Price
+          {primaryLabel}
         </button>
 
-        {/* Book Site Visit */}
+        {/* Secondary CTA */}
         <button
           type="button"
           onClick={() => openForm('site_visit')}
           className="flex h-[44px] flex-1 items-center justify-center rounded-sm border border-gray-300 bg-white font-medium text-gray-700 transition-colors hover:bg-gray-50"
         >
-          Site Visit
+          {secondaryLabel}
         </button>
       </div>
     </div>

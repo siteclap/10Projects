@@ -19,12 +19,8 @@ defined( 'ABSPATH' ) || exit;
 
 <header class="tp-header">
 	<div class="tp-header-inner">
-		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="tp-logo">
-			<svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<rect width="40" height="40" rx="10" fill="#4B1CB0"/>
-				<text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="Inter, sans-serif" font-weight="800" font-size="18">10</text>
-			</svg>
-			<span>Projects</span>
+		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="tp-logo" aria-label="LeadMAAXX home">
+			<img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/logo.png' ); ?>" alt="LeadMAAXX" height="48">
 		</a>
 
 		<nav class="tp-nav">

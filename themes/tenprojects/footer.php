@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 		<div>
 			<h4>About</h4>
 			<p style="font-size:14px;line-height:1.7;">
-				10Projects uses AI to find your 10 best-fit properties from hundreds of options. Unbiased analysis, transparent scoring.
+				LeadMAAXX helps you find the best-fit properties from hundreds of options. Unbiased analysis, transparent scoring.
 			</p>
 		</div>
 		<div>
@@ -37,7 +37,7 @@ defined( 'ABSPATH' ) || exit;
 		<div>
 			<h4>Contact</h4>
 			<ul>
-				<li><a href="mailto:hello@10projects.com">hello@10projects.com</a></li>
+				<li><a href="mailto:hello@leadmaaxx.com">hello@leadmaaxx.com</a></li>
 				<li><a href="<?php echo esc_url( home_url( '/privacy/' ) ); ?>">Privacy Policy</a></li>
 				<li><a href="<?php echo esc_url( home_url( '/terms/' ) ); ?>">Terms of Service</a></li>
 				<li><a href="<?php echo esc_url( home_url( '/disclaimer/' ) ); ?>">Disclaimer</a></li>
@@ -45,10 +45,11 @@ defined( 'ABSPATH' ) || exit;
 		</div>
 	</div>
 	<div class="tp-footer-bottom">
-		&copy; <?php echo date( 'Y' ); ?> 10Projects. All rights reserved.
+		&copy; <?php echo date( 'Y' ); ?> LeadMAAXX. All rights reserved.
 	</div>
 </footer>
 
+<?php get_template_part( 'template-parts/chatbot' ); ?>
 <?php wp_footer(); ?>
 </body>
 </html>

@@ -64,14 +64,7 @@ class Admin {
 			array( $this, 'render_dashboard' )
 		);
 
-		// 2. Projects — CPT list table.
-		add_submenu_page(
-			self::MENU_SLUG,
-			__( 'Projects', 'tenprojects-ai-matcher' ),
-			__( 'Projects', 'tenprojects-ai-matcher' ),
-			self::CAPABILITY,
-			'edit.php?post_type=tp_project'
-		);
+		// Projects submenu removed — each category (Buy, Rent, etc.) has its own top-level menu.
 
 		// 3. Developers — CPT list table.
 		add_submenu_page(
@@ -149,6 +142,17 @@ class Admin {
 			self::CAPABILITY,
 			self::MENU_SLUG . '-settings',
 			array( $this, 'render_settings' )
+		);
+
+		// 11. Brand Settings — dedicated top-level menu after PG.
+		$this->page_hooks[] = add_menu_page(
+			__( 'Brand Settings', 'tenprojects-ai-matcher' ),
+			__( 'Brand Settings', 'tenprojects-ai-matcher' ),
+			self::CAPABILITY,
+			self::MENU_SLUG . '-brand',
+			array( $this, 'render_brand_settings' ),
+			'dashicons-art',
+			10
 		);
 
 		// Bootstrap sub-modules that need early hooks (e.g. project columns).
@@ -280,6 +284,14 @@ class Admin {
 	}
 
 	/**
+	 * Render the Brand Settings page (dedicated top-level menu).
+	 */
+	public function render_brand_settings(): void {
+		$settings = new Settings_Admin();
+		$settings->render_brand_page();
+	}
+
+	/**
 	 * Render the Settings page.
 	 */
 	public function render_settings(): void {
@@ -299,6 +311,11 @@ class Admin {
 
 		if ( ! $is_plugin_page && ! $is_cpt_page ) {
 			return;
+		}
+
+		// Enqueue WP media library on the settings page (needed for brand media uploads).
+		if ( $is_plugin_page ) {
+			wp_enqueue_media();
 		}
 
 		wp_enqueue_style(

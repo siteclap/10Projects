@@ -66,14 +66,14 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          primary: '#4B1CB0',
-          'primary-dark': '#3B1490',
+          primary: 'var(--brand-primary, #4B1CB0)',
+          'primary-dark': 'var(--brand-primary-dark, #3B1490)',
           'primary-light': '#7C3AED',
           'primary-pale': '#EDE9FE',
           'primary-bg': '#F5F3FF',
         },
         accent: {
-          DEFAULT: '#F59E0B',
+          DEFAULT: 'var(--brand-accent, #F59E0B)',
           dark: '#D97706',
           light: '#FDE68A',
           pale: '#FEF3C7',

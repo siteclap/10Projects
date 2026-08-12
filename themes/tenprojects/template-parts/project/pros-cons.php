@@ -14,7 +14,7 @@ if ( empty( $pros ) && empty( $cons ) ) return;
 ?>
 
 <section class="tp-section" id="pros-cons">
-	<h2>Pros & Cons</h2>
+	<h2>Pros & Cons of <?php the_title(); ?></h2>
 
 	<div class="tp-pros-cons">
 		<?php if ( ! empty( $pros ) ) : ?>

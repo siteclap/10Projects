@@ -89,6 +89,19 @@ class Project_API extends API_Base {
 			)
 		);
 
+		// GET /site-settings — public brand/site configuration for the frontend.
+		register_rest_route(
+			$this->namespace,
+			'/site-settings',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_site_settings' ),
+					'permission_callback' => array( $this, 'public_permissions' ),
+				),
+			)
+		);
+
 		// GET /projects/<id>/scores/<requirement_id> — fit score breakdown.
 		register_rest_route(
 			$this->namespace,
@@ -143,6 +156,10 @@ class Project_API extends API_Base {
 				'sanitize_callback' => 'sanitize_text_field',
 			),
 			'construction_stage' => array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+			'property_type'      => array(
 				'type'              => 'string',
 				'sanitize_callback' => 'sanitize_text_field',
 			),
@@ -202,6 +219,7 @@ class Project_API extends API_Base {
 			'config'             => 'tp_configuration',
 			'budget_range'       => 'tp_budget_range',
 			'construction_stage' => 'tp_construction_stage',
+			'property_type'      => 'tp_property_type',
 		);
 
 		foreach ( $tax_map as $param => $taxonomy ) {
@@ -361,6 +379,10 @@ class Project_API extends API_Base {
 		$banner_mobile_images   = $this->resolve_image_ids( get_post_meta( $post_id, '_tp_banner_mobile_ids', true ) );
 		$developer_logo_url     = $this->resolve_image_ids( get_post_meta( $post_id, '_tp_developer_logo_id', true ) );
 
+		// Determine property type.
+		$property_type_terms = $this->get_taxonomy_terms( $post_id, 'tp_property_type' );
+		$property_type       = ! empty( $property_type_terms ) ? $property_type_terms[0]['slug'] : 'buy';
+
 		// Build full detail response.
 		$data = array(
 			'id'                     => $post_id,
@@ -371,6 +393,7 @@ class Project_API extends API_Base {
 			'thumbnail'              => get_the_post_thumbnail_url( $post_id, 'large' ) ?: null,
 			'permalink'              => get_permalink( $post_id ),
 			'published_at'           => $post->post_date,
+			'property_type'          => $property_type,
 
 			// Images & galleries.
 			'gallery_images'         => $gallery_images,
@@ -474,6 +497,89 @@ class Project_API extends API_Base {
 			'configurations'         => $formatted_configs,
 			'taxonomies'             => $taxonomies,
 		);
+
+		// ── Category-specific fields ──────────────────────────────
+		if ( 'rent' === $property_type ) {
+			$data['rental'] = array(
+				'monthly_rent'        => (int) get_post_meta( $post_id, '_tp_monthly_rent', true ) ?: null,
+				'security_deposit'    => (int) get_post_meta( $post_id, '_tp_security_deposit', true ) ?: null,
+				'maintenance_charges' => (int) get_post_meta( $post_id, '_tp_maintenance_charges', true ) ?: null,
+				'lock_in_period'      => get_post_meta( $post_id, '_tp_lock_in_period', true ) ?: null,
+				'notice_period'       => get_post_meta( $post_id, '_tp_notice_period', true ) ?: null,
+				'available_from'      => get_post_meta( $post_id, '_tp_available_from', true ) ?: null,
+				'tenant_preferred'    => get_post_meta( $post_id, '_tp_tenant_preferred', true ) ?: null,
+				'furnishing_status'   => get_post_meta( $post_id, '_tp_furnishing_status', true ) ?: null,
+				'furnishing_details'  => get_post_meta( $post_id, '_tp_furnishing_details', true ) ?: null,
+				'pets_allowed'        => get_post_meta( $post_id, '_tp_pets_allowed', true ) ?: null,
+				'nonveg_allowed'      => get_post_meta( $post_id, '_tp_nonveg_allowed', true ) ?: null,
+				'water_supply'        => get_post_meta( $post_id, '_tp_water_supply', true ) ?: null,
+				'brokerage'           => get_post_meta( $post_id, '_tp_brokerage', true ) ?: null,
+			);
+		}
+
+		if ( 'commercial' === $property_type ) {
+			$data['commercial'] = array(
+				'commercial_type'     => get_post_meta( $post_id, '_tp_commercial_type', true ) ?: null,
+				'building_grade'      => get_post_meta( $post_id, '_tp_building_grade', true ) ?: null,
+				'fitout_status'       => get_post_meta( $post_id, '_tp_fitout_status', true ) ?: null,
+				'commercial_carpet'   => (int) get_post_meta( $post_id, '_tp_commercial_carpet', true ) ?: null,
+				'price_per_sqft'      => (int) get_post_meta( $post_id, '_tp_price_per_sqft', true ) ?: null,
+				'cam_charges'         => (int) get_post_meta( $post_id, '_tp_cam_charges', true ) ?: null,
+				'power_load'          => get_post_meta( $post_id, '_tp_power_load', true ) ?: null,
+				'seating_capacity'    => (int) get_post_meta( $post_id, '_tp_seating_capacity', true ) ?: null,
+				'cabins_count'        => (int) get_post_meta( $post_id, '_tp_cabins_count', true ) ?: null,
+				'washrooms_count'     => (int) get_post_meta( $post_id, '_tp_washrooms_count', true ) ?: null,
+				'hvac_type'           => get_post_meta( $post_id, '_tp_hvac_type', true ) ?: null,
+				'parking_bays'        => (int) get_post_meta( $post_id, '_tp_parking_bays', true ) ?: null,
+				'fire_noc'            => get_post_meta( $post_id, '_tp_fire_noc', true ) ?: null,
+				'lease_term'          => get_post_meta( $post_id, '_tp_lease_term', true ) ?: null,
+				'lock_in_period'      => get_post_meta( $post_id, '_tp_lock_in_period', true ) ?: null,
+				'escalation_clause'   => get_post_meta( $post_id, '_tp_escalation_clause', true ) ?: null,
+			);
+		}
+
+		if ( 'plot' === $property_type || 'plots' === $property_type ) {
+			$data['plot'] = array(
+				'plot_type'              => get_post_meta( $post_id, '_tp_plot_type', true ) ?: null,
+				'plot_area'              => (int) get_post_meta( $post_id, '_tp_plot_area', true ) ?: null,
+				'plot_width'             => (float) get_post_meta( $post_id, '_tp_plot_width', true ) ?: null,
+				'plot_depth'             => (float) get_post_meta( $post_id, '_tp_plot_depth', true ) ?: null,
+				'corner_plot'            => get_post_meta( $post_id, '_tp_corner_plot', true ) ?: null,
+				'road_width'             => get_post_meta( $post_id, '_tp_road_width', true ) ?: null,
+				'sides_open'             => get_post_meta( $post_id, '_tp_sides_open', true ) ?: null,
+				'boundary_wall'          => get_post_meta( $post_id, '_tp_boundary_wall', true ) ?: null,
+				'topography'             => get_post_meta( $post_id, '_tp_topography', true ) ?: null,
+				'fsi'                    => (float) get_post_meta( $post_id, '_tp_fsi', true ) ?: null,
+				'permissible_floors'     => get_post_meta( $post_id, '_tp_permissible_floors', true ) ?: null,
+				'water_connection'       => get_post_meta( $post_id, '_tp_water_connection', true ) ?: null,
+				'electricity_connection' => get_post_meta( $post_id, '_tp_electricity_connection', true ) ?: null,
+				'sewage_connection'      => get_post_meta( $post_id, '_tp_sewage_connection', true ) ?: null,
+				'gated_community'        => get_post_meta( $post_id, '_tp_gated_community', true ) ?: null,
+			);
+		}
+
+		if ( 'pg' === $property_type ) {
+			$data['pg'] = array(
+				'pg_gender'        => get_post_meta( $post_id, '_tp_pg_gender', true ) ?: null,
+				'pg_occupant'      => get_post_meta( $post_id, '_tp_pg_occupant', true ) ?: null,
+				'pg_single_rent'   => (int) get_post_meta( $post_id, '_tp_pg_single_rent', true ) ?: null,
+				'pg_double_rent'   => (int) get_post_meta( $post_id, '_tp_pg_double_rent', true ) ?: null,
+				'pg_triple_rent'   => (int) get_post_meta( $post_id, '_tp_pg_triple_rent', true ) ?: null,
+				'pg_deposit'       => (int) get_post_meta( $post_id, '_tp_pg_deposit', true ) ?: null,
+				'pg_notice_period' => get_post_meta( $post_id, '_tp_pg_notice_period', true ) ?: null,
+				'pg_meals'         => get_post_meta( $post_id, '_tp_pg_meals', true ) ?: null,
+				'pg_meal_type'     => get_post_meta( $post_id, '_tp_pg_meal_type', true ) ?: null,
+				'pg_kitchen'       => get_post_meta( $post_id, '_tp_pg_kitchen', true ) ?: null,
+				'pg_wifi'          => get_post_meta( $post_id, '_tp_pg_wifi', true ) ?: null,
+				'pg_laundry'       => get_post_meta( $post_id, '_tp_pg_laundry', true ) ?: null,
+				'pg_housekeeping'  => get_post_meta( $post_id, '_tp_pg_housekeeping', true ) ?: null,
+				'pg_ac'            => get_post_meta( $post_id, '_tp_pg_ac', true ) ?: null,
+				'pg_smoking'       => get_post_meta( $post_id, '_tp_pg_smoking', true ) ?: null,
+				'pg_drinking'      => get_post_meta( $post_id, '_tp_pg_drinking', true ) ?: null,
+				'pg_guests'        => get_post_meta( $post_id, '_tp_pg_guests', true ) ?: null,
+				'pg_curfew'        => get_post_meta( $post_id, '_tp_pg_curfew', true ) ?: null,
+			);
+		}
 
 		return $this->success( $data );
 	}
@@ -617,6 +723,47 @@ class Project_API extends API_Base {
 	}
 
 	/**
+	 * GET /site-settings
+	 *
+	 * Returns brand settings (logos, colors, banners) for the frontend.
+	 *
+	 * @param \WP_REST_Request $request Request object.
+	 * @return \WP_REST_Response
+	 */
+	public function get_site_settings( $request ) {
+		$data = array(
+			'site_name'       => get_option( 'tp_brand_name', '10Projects' ),
+			'logo_light'      => get_option( 'tp_brand_logo_light', '' ),
+			'logo_dark'       => get_option( 'tp_brand_logo_dark', '' ),
+			'favicon'         => get_option( 'tp_brand_favicon', '' ),
+			'hero_desktop'    => get_option( 'tp_brand_hero_desktop', '' ),
+			'hero_mobile'     => get_option( 'tp_brand_hero_mobile', '' ),
+			'phone'           => get_option( 'tp_brand_phone', '' ),
+			'email'           => get_option( 'tp_brand_email', '' ),
+			'address'         => get_option( 'tp_brand_address', '' ),
+			'rera_agent'      => get_option( 'tp_brand_rera_agent', '' ),
+			'rera_legal_name' => get_option( 'tp_brand_rera_legal_name', '' ),
+			'about'           => get_option( 'tp_brand_about', '' ),
+			'colors'          => array(
+				'primary'      => get_option( 'tp_brand_color_primary', '#4B1CB0' ),
+				'primary_dark' => get_option( 'tp_brand_color_primary_dark', '#3B1490' ),
+				'accent'       => get_option( 'tp_brand_color_accent', '#F59E0B' ),
+				'hero_bg'      => get_option( 'tp_brand_color_hero_bg', '#111827' ),
+			),
+			'social'          => array(
+				'facebook'  => get_option( 'tp_social_facebook', '' ),
+				'instagram' => get_option( 'tp_social_instagram', '' ),
+				'linkedin'  => get_option( 'tp_social_linkedin', '' ),
+				'youtube'   => get_option( 'tp_social_youtube', '' ),
+				'twitter'   => get_option( 'tp_social_twitter', '' ),
+				'whatsapp'  => get_option( 'tp_social_whatsapp', '' ),
+			),
+		);
+
+		return $this->success( $data );
+	}
+
+	/**
 	 * Format a project post into card-level data for list responses.
 	 *
 	 * @param int $post_id Post ID.
@@ -651,12 +798,17 @@ class Project_API extends API_Base {
 		// Get location term.
 		$locations = $this->get_taxonomy_terms( $post_id, 'tp_location_area' );
 
+		// Get property type term.
+		$property_types = $this->get_taxonomy_terms( $post_id, 'tp_property_type' );
+		$property_type  = ! empty( $property_types ) ? $property_types[0]['slug'] : 'buy';
+
 		return array(
 			'id'                  => $post_id,
 			'title'               => get_the_title( $post_id ),
 			'slug'                => get_post_field( 'post_name', $post_id ),
 			'thumbnail'           => get_the_post_thumbnail_url( $post_id, 'medium' ) ?: null,
 			'permalink'           => get_permalink( $post_id ),
+			'property_type'       => $property_type,
 			'location'            => $locations,
 			'developer_name'      => $developer_name,
 			'price_range'         => array(
@@ -722,3 +874,4 @@ class Project_API extends API_Base {
 		);
 	}
 }
+

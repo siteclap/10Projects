@@ -167,6 +167,9 @@ class Plugin {
                 $admin->register_menus();
             }
         } );
+
+        // Category menu items (Buy, Rent, Commercial, Resale, Plot).
+        ( new Admin\Category_Menu() )->register();
     }
 
     /**

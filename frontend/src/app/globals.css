@@ -6,6 +6,10 @@
 :root {
   --color-background: #ffffff;
   --color-foreground: #111827;
+  --brand-primary: #4B1CB0;
+  --brand-primary-dark: #3B1490;
+  --brand-accent: #F59E0B;
+  --hero-bg: #111827;
 }
 
 html {
@@ -22,7 +26,7 @@ body {
 /* Base link styles — in @layer base so Tailwind utilities can override */
 @layer base {
   a {
-    color: #4b1cb0;
+    color: var(--brand-primary, #4b1cb0);
     text-decoration: none;
   }
   a:hover {
