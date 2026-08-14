@@ -48,6 +48,32 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${inter.className} h-full antialiased`} style={cssVars}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+  // Anti-copy deterrent — blocks casual right-click, view-source, and devtools shortcuts
+  // Does NOT prevent determined developers (they can always use browser devtools)
+  document.addEventListener('contextmenu',function(e){
+    var t=e.target;
+    if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable))return;
+    e.preventDefault();
+  });
+  document.addEventListener('keydown',function(e){
+    // Block Ctrl+U (view source), Ctrl+S (save), Ctrl+Shift+I (devtools), F12
+    if((e.ctrlKey||e.metaKey)&&e.key==='u'){e.preventDefault();return;}
+    if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();return;}
+    if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key==='I'){e.preventDefault();return;}
+    if(e.key==='F12'){e.preventDefault();return;}
+  });
+  // Block image dragging
+  document.addEventListener('dragstart',function(e){
+    if(e.target&&e.target.tagName==='IMG')e.preventDefault();
+  });
+})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

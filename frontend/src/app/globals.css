@@ -87,6 +87,25 @@ img {
   word-wrap: normal !important;
 }
 
+/* Anti-copy protection — selectively applied to proprietary content */
+.protected-content {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection inside form elements within protected areas */
+.protected-content input,
+.protected-content textarea,
+.protected-content select,
+.protected-content [contenteditable="true"] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
 /* Assessment chat animations */
 @keyframes fadeUp {
   from {

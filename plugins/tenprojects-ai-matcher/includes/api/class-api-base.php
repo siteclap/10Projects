@@ -176,6 +176,12 @@ class API_Base extends \WP_REST_Controller {
      * @return true|\WP_Error
      */
     public function public_permissions( $request ) {
+        // Require X-Requested-With header to deter trivial curl/scraper access
+        $xhr = $request->get_header( 'X-Requested-With' );
+        if ( ! $xhr || strtolower( $xhr ) !== 'xmlhttprequest' ) {
+            return $this->error( 'forbidden', 'Invalid request.', 403 );
+        }
+
         return $this->check_rate_limit( $request );
     }
 

@@ -98,7 +98,7 @@ export function ProjectSidebar({ project, propertyType = 'buy', ctaLabels, class
   const advisorInitials = 'PS';
 
   return (
-    <aside className={cn('flex flex-col gap-md', className)}>
+    <aside className={cn('flex flex-col gap-md protected-content', className)}>
       {/* Price + CTA */}
       <div className="rounded-md border border-gray-200 bg-white p-lg shadow-card">
         <p className="text-caption uppercase tracking-wider text-gray-500">

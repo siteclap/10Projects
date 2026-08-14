@@ -23,7 +23,7 @@ const UTM_KEYS = [
  */
 function setCookie(name: string, value: string, days: number): void {
   const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires};path=/;SameSite=Lax`;
+  document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires};path=/;SameSite=Lax;Secure`;
 }
 
 /**

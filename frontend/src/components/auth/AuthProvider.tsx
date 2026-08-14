@@ -19,11 +19,11 @@ const AUTH_COOKIE = 'tp_auth_token';
 
 function setAuthCookie(token: string, expiresAt: string): void {
   const expires = new Date(expiresAt).toUTCString();
-  document.cookie = `${AUTH_COOKIE}=${encodeURIComponent(token)};expires=${expires};path=/;SameSite=Lax`;
+  document.cookie = `${AUTH_COOKIE}=${encodeURIComponent(token)};expires=${expires};path=/;SameSite=Strict;Secure`;
 }
 
 function clearAuthCookie(): void {
-  document.cookie = `${AUTH_COOKIE}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax`;
+  document.cookie = `${AUTH_COOKIE}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Strict;Secure`;
 }
 
 function getAuthCookie(): string | null {

@@ -64,7 +64,7 @@ export function ProjectCard({
   return (
     <div
       className={cn(
-        'group flex w-[320px] min-w-[320px] flex-col overflow-hidden rounded-md border border-gray-200 bg-white shadow-card transition-shadow duration-200 hover:shadow-hover',
+        'group flex w-[320px] min-w-[320px] flex-col overflow-hidden rounded-md border border-gray-200 bg-white shadow-card transition-shadow duration-200 hover:shadow-hover protected-content',
         className
       )}
     >

@@ -61,6 +61,7 @@ export async function apiClient<T>(endpoint: string, options: ApiClientOptions =
 
   const headers: Record<string, string> = {
     'Accept': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
     ...(fetchOptions.headers as Record<string, string> || {}),
   };
 
@@ -163,6 +164,7 @@ export async function apiClientPaginated<T>(
 
   const headers: Record<string, string> = {
     'Accept': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
     ...(fetchOptions.headers as Record<string, string> || {}),
   };
 

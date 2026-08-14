@@ -52,7 +52,7 @@ export function ProsConsList({ pros, cons }: ProsConsListProps) {
   if (!hasPros && !hasCons) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-3xl md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-3xl md:grid-cols-2 protected-content">
       {/* Strengths */}
       {hasPros && (
         <div>

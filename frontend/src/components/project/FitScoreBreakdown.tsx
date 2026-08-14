@@ -60,7 +60,7 @@ export function FitScoreBreakdown({ scores, weights, initialCount = 4 }: FitScor
   const hasMore = sortedEntries.length > initialCount;
 
   return (
-    <div className="flex flex-col gap-lg">
+    <div className="flex flex-col gap-lg protected-content">
       {visibleEntries.map(([key, score]) => {
         const label = categoryLabelMap[key] ?? key;
         const clampedScore = Math.min(100, Math.max(0, Math.round(score)));
