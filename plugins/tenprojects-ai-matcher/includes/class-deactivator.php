@@ -36,11 +36,8 @@ class Deactivator {
     private static function clear_transients() {
         global $wpdb;
 
-        $wpdb->query(
-            "DELETE FROM {$wpdb->options}
-             WHERE option_name LIKE '_transient_tp_%'
-             OR option_name LIKE '_transient_timeout_tp_%'"
-        );
+        $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_tp_%' ) );
+        $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_timeout_tp_%' ) );
     }
 
     /**

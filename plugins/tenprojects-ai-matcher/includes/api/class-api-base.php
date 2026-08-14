@@ -62,13 +62,12 @@ class API_Base extends \WP_REST_Controller {
      * @return string IP address.
      */
     protected function get_client_ip( $request ) {
-        $ip = $request->get_header( 'X-Forwarded-For' );
-        if ( $ip ) {
-            $ip = explode( ',', $ip )[0];
-            return sanitize_text_field( trim( $ip ) );
-        }
+        // Only trust REMOTE_ADDR — X-Forwarded-For can be spoofed by clients
+        // to bypass rate limiting. If behind a trusted reverse proxy (e.g.
+        // Cloudflare, Nginx), configure the proxy to set REMOTE_ADDR instead.
+        $ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '0.0.0.0';
 
-        return sanitize_text_field( $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0' );
+        return $ip;
     }
 
     /**

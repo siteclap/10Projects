@@ -11,7 +11,17 @@ import type { SiteSettings } from '@/lib/types/site-settings';
 const WP_API_BASE =
   process.env.WP_API_URL ||
   process.env.NEXT_PUBLIC_WP_API_URL ||
-  'https://leadmax.siteclap.com/wp-json/tenprojects/v1';
+  (() => {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'WP_API_URL or NEXT_PUBLIC_WP_API_URL environment variable is required in production',
+      );
+    }
+    console.warn(
+      '[wp-api] No WP_API_URL set — falling back to staging URL. Set WP_API_URL in .env.local for local dev.',
+    );
+    return 'https://leadmax.siteclap.com/wp-json/tenprojects/v1';
+  })();
 
 // ---------- Raw WP API response types ----------
 

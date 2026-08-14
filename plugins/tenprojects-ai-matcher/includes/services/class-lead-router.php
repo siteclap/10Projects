@@ -145,9 +145,10 @@ class Lead_Router {
 
         // Fetch all active rules, sorted by priority.
         $rules = $wpdb->get_results(
-            "SELECT * FROM {$prefix}tp_lead_routing_rules
-             WHERE is_active = 1
-             ORDER BY priority ASC"
+            $wpdb->prepare(
+                "SELECT * FROM {$prefix}tp_lead_routing_rules WHERE is_active = %d ORDER BY priority ASC",
+                1
+            )
         );
 
         if ( empty( $rules ) ) {

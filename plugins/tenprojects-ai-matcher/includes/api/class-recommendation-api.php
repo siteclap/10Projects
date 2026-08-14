@@ -60,7 +60,7 @@ class Recommendation_API extends API_Base {
 				array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_recommendation' ),
-					'permission_callback' => array( $this, 'public_permissions' ),
+					'permission_callback' => array( $this, 'customer_permissions' ),
 					'args'                => array(
 						'id' => array(
 							'type'              => 'integer',
@@ -136,6 +136,12 @@ class Recommendation_API extends API_Base {
 		$recommendation = $this->recommendation_engine->find( $id );
 		if ( ! $recommendation ) {
 			return $this->error( 'not_found', 'Recommendation not found.', 404 );
+		}
+
+		// Verify ownership — only the customer who owns this recommendation can access it.
+		$customer = $this->get_current_customer( $request );
+		if ( $recommendation && (int) $recommendation->customer_id !== (int) $customer->id ) {
+			return new \WP_Error( 'forbidden', 'You do not have access to this recommendation.', array( 'status' => 403 ) );
 		}
 
 		if ( 'active' !== $recommendation->status ) {

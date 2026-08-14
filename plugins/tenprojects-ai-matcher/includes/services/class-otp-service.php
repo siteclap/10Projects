@@ -217,11 +217,9 @@ class OTP_Service {
 	 * @return bool Always returns true.
 	 */
 	private function send_dev_mode( $phone, $code ) {
-		error_log( sprintf(
-			'[TenProjects DEV] OTP for %s: %s (dev mode — not actually sent)',
-			$phone,
-			$code
-		) );
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'TP OTP: Code generated for phone ending in ' . substr( $phone, -4 ) );
+		}
 
 		return true;
 	}

@@ -63,6 +63,7 @@ function tenprojects_enqueue_assets() {
 		);
 		wp_localize_script( 'tenprojects-nearby', 'tpNearby', array(
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
+			'nonce'    => wp_create_nonce( 'tp_nearby_nonce' ),
 		) );
 	}
 
@@ -512,6 +513,8 @@ function tp_haversine_distance( $lat1, $lng1, $lat2, $lng2 ) {
  * AJAX handler: find nearby projects based on user's lat/lng.
  */
 function tp_ajax_nearby_projects() {
+	check_ajax_referer( 'tp_nearby_nonce', 'nonce' );
+
 	$lat = isset( $_POST['lat'] ) ? floatval( $_POST['lat'] ) : 0;
 	$lng = isset( $_POST['lng'] ) ? floatval( $_POST['lng'] ) : 0;
 

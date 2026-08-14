@@ -21,6 +21,9 @@ wp-content/uploads/
 wp-content/cache/
 wp-content/upgrade/
 
+# Deploy scripts (may contain credentials or DB config)
+deploy/*.php
+
 # Build
 *.log
 *.zip

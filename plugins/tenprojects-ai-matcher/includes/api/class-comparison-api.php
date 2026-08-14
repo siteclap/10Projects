@@ -95,7 +95,7 @@ class Comparison_API extends API_Base {
 				array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_comparison' ),
-					'permission_callback' => array( $this, 'public_permissions' ),
+					'permission_callback' => array( $this, 'customer_permissions' ),
 					'args'                => array(
 						'id' => array(
 							'required'          => true,
@@ -314,6 +314,12 @@ class Comparison_API extends API_Base {
 
 		if ( ! $comparison ) {
 			return $this->error( 'not_found', 'Comparison not found.', 404 );
+		}
+
+		// Verify ownership — only the customer who owns this comparison can access it.
+		$customer = $this->get_current_customer( $request );
+		if ( (int) $comparison->customer_id !== (int) $customer->id ) {
+			return new \WP_Error( 'forbidden', 'You do not have access to this comparison.', array( 'status' => 403 ) );
 		}
 
 		return $this->success( $this->format_comparison_detail( $comparison ) );

@@ -640,7 +640,7 @@ switch ( $property_type ) {
 		btn.querySelector('.tp-lf__submit-text').textContent = 'Submitting...';
 
 		var data = new FormData(form);
-		fetch('<?php echo admin_url("admin-ajax.php"); ?>', { method: 'POST', body: data })
+		fetch('<?php echo esc_url( admin_url("admin-ajax.php") ); ?>', { method: 'POST', body: data })
 			.then(function(r){ return r.json(); })
 			.then(function(res){
 				if (res.success) {

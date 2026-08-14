@@ -148,6 +148,14 @@ class Import_Admin {
 			return;
 		}
 
+		$filetype = wp_check_filetype( $file['name'], array( 'csv' => 'text/csv' ) );
+		if ( ! $filetype['ext'] ) {
+			wp_die( 'Invalid file type. Only CSV files are allowed.', 'Upload Error', array( 'back_link' => true ) );
+		}
+		if ( $file['size'] > 10 * 1024 * 1024 ) {
+			wp_die( 'File too large. Maximum size is 10MB.', 'Upload Error', array( 'back_link' => true ) );
+		}
+
 		$update_existing = ! empty( $_POST['tp_update_existing'] );
 
 		$handle = fopen( $file['tmp_name'], 'r' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen

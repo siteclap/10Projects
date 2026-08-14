@@ -213,7 +213,7 @@ if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) ) === $tabl
 		</div>
 		<div class="br-header__meta">
 			Project Brochure<br>
-			<?php echo date( 'F Y' ); ?>
+			<?php echo esc_html( date( 'F Y' ) ); ?>
 		</div>
 	</div>
 
