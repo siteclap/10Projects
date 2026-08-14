@@ -34,7 +34,7 @@ $socials = array(
 		<!-- Brand column -->
 		<div>
 			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="tp-footer-logo" aria-label="<?php echo esc_attr( $site_name ); ?> home">
-				<img src="<?php echo esc_url( $logo ); ?>" alt="<?php echo esc_attr( $site_name ); ?>" height="40" style="height:40px;width:auto;filter:brightness(0) invert(1);">
+				<img src="<?php echo esc_url( $logo ); ?>" alt="<?php echo esc_attr( $site_name ); ?>" height="40" style="height:40px;width:auto;">
 			</a>
 			<?php if ( $about ) : ?>
 				<p style="font-size:14px;line-height:1.7;margin-top:12px;color:#9CA3AF;">

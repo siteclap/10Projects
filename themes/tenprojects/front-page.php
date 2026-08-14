@@ -39,11 +39,15 @@ $locations = get_terms( array(
 
 $project_count = wp_count_posts( 'tp_project' )->publish ?: 0;
 
+// Hero banner from Brand Settings.
+$hero_desktop = get_option( 'tp_brand_hero_desktop', '' );
+$hero_bg      = $hero_desktop ?: get_template_directory_uri() . '/assets/images/hero-banner.png';
+
 get_header();
 ?>
 
 <!-- ═══════════════ HERO ═══════════════ -->
-<section class="tp-hero" style="background-image:url('<?php echo esc_url( get_template_directory_uri() . '/assets/images/hero-banner.png' ); ?>');">
+<section class="tp-hero" style="background-image:url('<?php echo esc_url( $hero_bg ); ?>');">
 	<div class="tp-hero__content">
 		<!-- Live Badge -->
 		<div class="tp-hero__badge">
