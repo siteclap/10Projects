@@ -5,6 +5,9 @@ Thumbs.db
 # IDE
 .idea/
 .vscode/
+.claude/
+.agents/
+.windsurf/
 *.swp
 *.swo
 
@@ -15,16 +18,34 @@ vendor/
 # Environment
 .env
 .env.local
+.env.production
 
 # WordPress
 wp-content/uploads/
 wp-content/cache/
 wp-content/upgrade/
 
-# Deploy scripts (may contain credentials or DB config)
-deploy/*.php
+# -----------------------------------------------
+# NOT USED IN PRODUCTION — WordPress PHP is live
+# -----------------------------------------------
+# Next.js frontend (development only, not deployed)
+frontend/
 
-# Build
+# Old HTML prototypes
+prototype/
+
+# Root .htaccess (source of truth is deploy/htaccess.txt)
+.htaccess
+
+# -----------------------------------------------
+# Deploy & Build
+# -----------------------------------------------
+deploy/*.php
+deploy/*.zip
 *.log
 *.zip
+*.tar.gz
+
+# Stale / one-off files
 10projects-project-page-showcase.html
+LeadMAAXX*.png
