@@ -80,6 +80,184 @@ function tenprojects_enqueue_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'tenprojects_enqueue_assets' );
 
+/* ─── Performance: Remove WordPress Bloat ────────────────── */
+
+function tenprojects_remove_bloat() {
+	// Remove Gutenberg block library CSS (theme uses classic editor, not blocks).
+	wp_dequeue_style( 'wp-block-library' );
+	wp_dequeue_style( 'wp-block-library-theme' );
+	wp_dequeue_style( 'wc-blocks-style' );
+
+	// Remove global styles (Gutenberg FSE styles — not used).
+	wp_dequeue_style( 'global-styles' );
+	wp_dequeue_style( 'classic-theme-styles' );
+
+	// Remove emoji styles.
+	wp_dequeue_style( 'wp-emoji-styles' );
+	remove_action( 'wp_print_styles', 'print_emoji_styles' );
+}
+add_action( 'wp_enqueue_scripts', 'tenprojects_remove_bloat', 100 );
+
+// Remove emoji detection script (runs at priority 7 on wp_head).
+remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+
+// Remove global styles inline CSS for classic themes.
+remove_action( 'wp_body_open', 'wp_global_styles_render_svg_filters' );
+remove_action( 'wp_enqueue_scripts', 'wp_enqueue_global_styles' );
+remove_action( 'wp_footer', 'wp_enqueue_global_styles', 1 );
+
+// Remove WordPress version meta tag (security).
+remove_action( 'wp_head', 'wp_generator' );
+
+// Remove RSD/EditURI link (xmlrpc attack surface).
+remove_action( 'wp_head', 'rsd_link' );
+
+// Remove Windows Live Writer manifest.
+remove_action( 'wp_head', 'wlwmanifest_link' );
+
+// Remove shortlink.
+remove_action( 'wp_head', 'wp_shortlink_wp_head' );
+
+// Remove REST API link from head (still accessible, just hidden).
+remove_action( 'wp_head', 'rest_output_link_wp_head' );
+
+// Disable XML-RPC entirely (brute-force attack vector).
+add_filter( 'xmlrpc_enabled', '__return_false' );
+
+/* ─── Performance: Optimize Google Fonts Loading ─────────── */
+
+function tenprojects_preconnect_fonts( $urls, $relation_type ) {
+	if ( 'preconnect' === $relation_type ) {
+		$urls[] = array(
+			'href'        => 'https://fonts.googleapis.com',
+			'crossorigin' => true,
+		);
+		$urls[] = array(
+			'href'        => 'https://fonts.gstatic.com',
+			'crossorigin' => true,
+		);
+	}
+	return $urls;
+}
+add_filter( 'wp_resource_hints', 'tenprojects_preconnect_fonts', 10, 2 );
+
+/* ─── Performance: Defer JS Loading ──────────────────────── */
+
+function tenprojects_defer_scripts( $tag, $handle, $src ) {
+	// Don't defer inline scripts or admin scripts.
+	if ( is_admin() || ! $src ) {
+		return $tag;
+	}
+	// Defer all theme scripts (they're already in footer, defer helps further).
+	$defer_handles = array( 'tenprojects-project', 'tenprojects-nearby', 'tenprojects-filters', 'tp-chatbot' );
+	if ( in_array( $handle, $defer_handles, true ) ) {
+		return str_replace( ' src=', ' defer src=', $tag );
+	}
+	return $tag;
+}
+add_filter( 'script_loader_tag', 'tenprojects_defer_scripts', 10, 3 );
+
+/* ─── LiteSpeed Cache Compatibility ──────────────────────── */
+
+function tenprojects_litespeed_compat() {
+	// Tell LiteSpeed to cache pages for logged-out users.
+	if ( ! is_user_logged_in() && function_exists( 'do_action' ) ) {
+		// Ensure nonces don't break page caching.
+		// LiteSpeed's ESI (Edge Side Includes) handles nonces if enabled.
+		// If ESI is not available, mark nonce-containing pages as cacheable
+		// by using LiteSpeed's public cache tag.
+		if ( defined( 'LSCWP_V' ) ) {
+			do_action( 'litespeed_control_set_public' );
+			do_action( 'litespeed_tag_add', 'tp_homepage' );
+		}
+	}
+}
+add_action( 'wp', 'tenprojects_litespeed_compat' );
+
+/* ─── Anti-Copy & Content Protection ─────────────────────── */
+
+function tenprojects_content_protection() {
+	// Skip for logged-in admins so they can still inspect/debug.
+	if ( current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	?>
+	<style>
+		/* Disable text selection on content areas */
+		body:not(input):not(textarea):not(select) {
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+		}
+		/* Allow selection in form fields */
+		input, textarea, select, [contenteditable="true"] {
+			-webkit-user-select: text !important;
+			-moz-user-select: text !important;
+			-ms-user-select: text !important;
+			user-select: text !important;
+		}
+		/* Prevent image dragging */
+		img {
+			-webkit-user-drag: none;
+			-khtml-user-drag: none;
+			-moz-user-drag: none;
+			-o-user-drag: none;
+			user-drag: none;
+			pointer-events: none;
+		}
+		/* Re-enable pointer events on clickable images (links) */
+		a img { pointer-events: auto; }
+	</style>
+	<script>
+	(function(){
+		// Block right-click context menu (except on form fields)
+		document.addEventListener('contextmenu',function(e){
+			var t=e.target.tagName.toLowerCase();
+			if(t==='input'||t==='textarea'||t==='select')return;
+			e.preventDefault();
+		});
+
+		// Block keyboard shortcuts: Ctrl+U, Ctrl+S, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, F12
+		document.addEventListener('keydown',function(e){
+			// F12
+			if(e.key==='F12'){e.preventDefault();return;}
+			if(e.ctrlKey||e.metaKey){
+				// Ctrl+U (view source)
+				if(e.key==='u'||e.key==='U'){e.preventDefault();return;}
+				// Ctrl+S (save page)
+				if(e.key==='s'||e.key==='S'){e.preventDefault();return;}
+				// Ctrl+Shift+I (DevTools), Ctrl+Shift+J (Console), Ctrl+Shift+C (Inspector)
+				if(e.shiftKey&&(e.key==='I'||e.key==='i'||e.key==='J'||e.key==='j'||e.key==='C'||e.key==='c')){
+					e.preventDefault();return;
+				}
+			}
+		});
+
+		// Block image drag
+		document.addEventListener('dragstart',function(e){
+			if(e.target.tagName==='IMG'){e.preventDefault();}
+		});
+
+		// Disable copy (except in form fields)
+		document.addEventListener('copy',function(e){
+			var t=document.activeElement.tagName.toLowerCase();
+			if(t==='input'||t==='textarea')return;
+			e.preventDefault();
+		});
+
+		// Disable cut
+		document.addEventListener('cut',function(e){
+			var t=document.activeElement.tagName.toLowerCase();
+			if(t==='input'||t==='textarea')return;
+			e.preventDefault();
+		});
+	})();
+	</script>
+	<?php
+}
+add_action( 'wp_head', 'tenprojects_content_protection', 99 );
+
 /* ─── Helper Functions ────────────────────────────────────── */
 
 /**

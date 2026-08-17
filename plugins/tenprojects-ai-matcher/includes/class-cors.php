@@ -19,7 +19,12 @@ class CORS {
 	 * Register hooks.
 	 */
 	public function __construct() {
+		// Priority 15 — set our CORS headers early during rest_api_init.
 		add_action( 'rest_api_init', [ $this, 'add_cors_headers' ], 15 );
+
+		// Priority 9999 — run AFTER WordPress's rest_send_cors_headers (priority 10)
+		// to strip its permissive headers and re-apply our locked-down ones.
+		add_filter( 'rest_pre_serve_request', [ $this, 'enforce_cors' ], 9999, 4 );
 		add_filter( 'rest_pre_serve_request', [ $this, 'handle_preflight' ], 10, 4 );
 	}
 
@@ -74,6 +79,42 @@ class CORS {
 		header( 'Access-Control-Allow-Headers: Content-Type, X-TP-Auth-Token, X-WP-Nonce, Authorization' );
 		header( 'Access-Control-Expose-Headers: X-WP-Total, X-WP-TotalPages' );
 		header( 'Vary: Origin' );
+	}
+
+	/**
+	 * Enforce CORS lockdown after WordPress default handler.
+	 *
+	 * WordPress's rest_send_cors_headers() (priority 10) reflects ANY origin.
+	 * This runs at priority 9999 — strips those permissive headers and
+	 * re-applies our locked-down headers only for allowed origins.
+	 *
+	 * @param bool              $served  Whether the request has already been served.
+	 * @param \WP_HTTP_Response $result  Response object.
+	 * @param \WP_REST_Request  $request Request object.
+	 * @param \WP_REST_Server   $server  Server instance.
+	 * @return bool
+	 */
+	public function enforce_cors( bool $served, \WP_HTTP_Response $result, \WP_REST_Request $request, \WP_REST_Server $server ): bool {
+		// Strip ALL CORS headers (including WordPress defaults).
+		header_remove( 'Access-Control-Allow-Origin' );
+		header_remove( 'Access-Control-Allow-Methods' );
+		header_remove( 'Access-Control-Allow-Credentials' );
+		header_remove( 'Access-Control-Allow-Headers' );
+		header_remove( 'Access-Control-Expose-Headers' );
+
+		$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+		// Only re-add CORS headers for allowed origins.
+		if ( $origin && $this->is_origin_allowed( $origin ) ) {
+			header( 'Access-Control-Allow-Origin: ' . esc_url_raw( $origin ) );
+			header( 'Access-Control-Allow-Credentials: true' );
+			header( 'Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS' );
+			header( 'Access-Control-Allow-Headers: Content-Type, X-Requested-With, X-TP-Auth-Token, X-WP-Nonce, Authorization' );
+			header( 'Access-Control-Expose-Headers: X-WP-Total, X-WP-TotalPages' );
+			header( 'Vary: Origin' );
+		}
+
+		return $served;
 	}
 
 	/**

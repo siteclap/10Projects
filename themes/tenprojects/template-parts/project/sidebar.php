@@ -153,6 +153,17 @@ $cb_avatar = get_template_directory_uri() . '/assets/images/nidhi-avatar.png';
 	<div class="tp-share-hint">Shares a detailed project brochure via WhatsApp</div>
 </div>
 
+<!-- Download Brochure Card -->
+<div class="tp-sidebar-card tp-sidebar-card--brochure">
+	<button type="button" class="tp-brochure-btn js-brochure-open">
+		<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+			<path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+		</svg>
+		Download Brochure
+	</button>
+	<div class="tp-brochure-hint">Floor plans, price list &amp; project details — Free</div>
+</div>
+
 <script>
 /* Lead form — handles multiple instances */
 document.querySelectorAll('.js-lead-form').forEach(function(form){

@@ -2663,6 +2663,36 @@ a:hover { text-decoration: underline; }
 	margin-top: 8px;
 }
 
+/* ── Brochure Card ── */
+
+.tp-sidebar-card--brochure { padding: 16px var(--xl); }
+
+.tp-brochure-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 100%;
+	padding: 12px 20px;
+	background: #fff;
+	color: var(--primary);
+	border: 2px solid var(--primary);
+	border-radius: 10px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	font-family: inherit;
+	transition: background 0.15s, color 0.15s;
+}
+.tp-brochure-btn:hover { background: var(--primary); color: #fff; }
+
+.tp-brochure-hint {
+	font-size: 11px;
+	color: var(--gray-400);
+	text-align: center;
+	margin-top: 8px;
+}
+
 /* ── Lead Popup — Premium ── */
 
 .tp-lead-popup {

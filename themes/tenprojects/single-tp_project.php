@@ -678,4 +678,5 @@ switch ( $property_type ) {
 })();
 </script>
 
+<?php get_template_part( 'template-parts/project/brochure-modal', null, array( 'post_id' => $post_id ) ); ?>
 <?php get_footer(); ?>
