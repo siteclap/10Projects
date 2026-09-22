@@ -18,9 +18,9 @@ class Category_Menu {
 
 	const CATEGORIES = array(
 		'buy'        => array( 'Buy',        'dashicons-building',        4 ),
-		'rent'       => array( 'Rent',       'dashicons-admin-home',      5 ),
-		'commercial' => array( 'Commercial', 'dashicons-store',           6 ),
-		'resale'     => array( 'Resale',     'dashicons-update',          7 ),
+		'commercial' => array( 'Commercial', 'dashicons-store',           5 ),
+		'resale'     => array( 'Resale',     'dashicons-update',          6 ),
+		'rent'       => array( 'Rent',       'dashicons-admin-home',      7 ),
 		'plot'       => array( 'Plot',       'dashicons-layout',          8 ),
 		'pg'         => array( 'PG',         'dashicons-admin-multisite', 9 ),
 	);

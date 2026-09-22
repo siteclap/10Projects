@@ -78,6 +78,7 @@ class Plugin {
             'CPT\\Review_CPT',
             'CPT\\Infrastructure_CPT',
             'CPT\\Market_Report_CPT',
+            'CPT\\Landing_Page_CPT',
         );
 
         foreach ( $cpts as $cpt_class ) {

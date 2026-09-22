@@ -20,7 +20,7 @@
 
 	// Project data from PHP
 	var projectTitle = tpChatbot.page_title || '';
-	var configs = tpChatbot.configs || []; // e.g. ['1 BHK', '2 BHK', '3 BHK']
+	// configs read lazily via getConfigs() so LP inline override takes effect
 	var isProjectPage = !!projectTitle;
 
 	// ── Helpers ──
@@ -140,6 +140,38 @@
 		});
 	}
 
+	function getTrackingData() {
+		var params = new URLSearchParams(window.location.search);
+		return {
+			utm_source:   params.get('utm_source') || '',
+			utm_medium:   params.get('utm_medium') || '',
+			utm_campaign: params.get('utm_campaign') || '',
+			utm_term:     params.get('utm_term') || '',
+			utm_content:  params.get('utm_content') || '',
+			referrer:     document.referrer || '',
+			device:       /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+			browser:      (function() {
+				var ua = navigator.userAgent;
+				if (ua.indexOf('Chrome') > -1 && ua.indexOf('Edg') === -1) return 'Chrome';
+				if (ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') === -1) return 'Safari';
+				if (ua.indexOf('Firefox') > -1) return 'Firefox';
+				if (ua.indexOf('Edg') > -1) return 'Edge';
+				return 'Other';
+			})(),
+			os: (function() {
+				var ua = navigator.userAgent;
+				if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
+				if (/Android/.test(ua)) return 'Android';
+				if (/Windows/.test(ua)) return 'Windows';
+				if (/Mac OS/.test(ua)) return 'macOS';
+				if (/Linux/.test(ua)) return 'Linux';
+				return 'Other';
+			})(),
+			screen: screen.width + 'x' + screen.height,
+			landing_page: window.location.pathname
+		};
+	}
+
 	function submitLead(phone, meta) {
 		var data = new FormData();
 		data.append('action', 'tp_chatbot_lead');
@@ -156,20 +188,16 @@
 		if (meta.visited) data.append('visited', meta.visited);
 		if (meta.date) data.append('presentation_date', meta.date);
 		if (meta.time) data.append('presentation_time', meta.time);
+		// Tracking data
+		var t = getTrackingData();
+		for (var k in t) { if (t[k]) data.append(k, t[k]); }
 
 		showTyping();
+		var tyUrl = tpChatbot.thankyou_url + '?name=' + encodeURIComponent(answers.name || '') + '&project=' + encodeURIComponent(projectTitle || '');
 		fetch(tpChatbot.ajax_url, { method: 'POST', body: data })
 			.then(function (r) { return r.json(); })
-			.then(function () {
-				hideTyping();
-				var capture = msgs.querySelector('.tp-cb-phone-capture:last-of-type');
-				if (capture) capture.style.display = 'none';
-				showThankYou(meta.thankMsg);
-			})
-			.catch(function () {
-				hideTyping();
-				addBot('Something went wrong. Please try again.');
-			});
+			.then(function () { window.location.href = tyUrl; })
+			.catch(function () { window.location.href = tyUrl; });
 	}
 
 	function showThankYou(customMsg) {
@@ -187,7 +215,8 @@
 	// ── Config Chips (project-specific) ──
 
 	function askConfig(callback) {
-		var chipLabels = configs.length > 0 ? configs : ['1 BHK', '2 BHK', '3 BHK', '4+ BHK'];
+		var cfgs = tpChatbot.configs || [];
+		var chipLabels = cfgs.length > 0 ? cfgs : ['1 BHK', '2 BHK', '3 BHK', '4+ BHK'];
 		typeThenDo(function () {
 			addBot('Select the configuration you are looking for:');
 			addChips(chipLabels, function (selected) {

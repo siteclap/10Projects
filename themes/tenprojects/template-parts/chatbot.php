@@ -8,12 +8,19 @@
 
 defined( 'ABSPATH' ) || exit;
 $cb_avatar = get_template_directory_uri() . '/assets/images/nidhi-avatar.png';
+$cb_project = '';
+if ( ! empty( $GLOBALS['tp_lp_post_id'] ) ) {
+	$cb_project = get_post_meta( $GLOBALS['tp_lp_post_id'], '_tp_lp_project_name', true );
+}
+$cb_greeting = $cb_project
+	? 'Hi! I\'m Nidhi from ' . esc_html( $cb_project ) . '. How can I help you?'
+	: 'Hi! I\'m Nidhi. Need help finding your home?';
 ?>
 
 <!-- Chatbot Floating Trigger -->
 <div class="tp-cb-trigger" id="tp-cb-trigger">
 	<div class="tp-cb-trigger__greeting" id="tp-cb-greeting">
-		<span>Hi! I'm Nidhi. Need help finding your home?</span>
+		<span><?php echo $cb_greeting; ?></span>
 		<button class="tp-cb-trigger__close-greeting" aria-label="Close" onclick="document.getElementById('tp-cb-greeting').style.display='none'">
 			<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 		</button>

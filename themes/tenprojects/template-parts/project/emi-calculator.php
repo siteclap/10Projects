@@ -8,11 +8,11 @@
 defined( 'ABSPATH' ) || exit;
 
 $post_id   = $args['post_id'] ?? get_the_ID();
-$price_min = intval( tp_get_meta( $post_id, 'price_display_min' ) );
+$price_min = floatval( tp_get_meta( $post_id, 'price_display_min' ) );
 
 if ( $price_min <= 0 ) return;
 
-$property_val = $price_min * 100000;
+$property_val = $price_min * 10000000;
 $default_dp   = 20;
 $default_rate = 8.5;
 $default_yrs  = 20;

@@ -43,108 +43,44 @@ class Admin {
 	 * Called from Plugin::register_admin() on the `admin_menu` action.
 	 */
 	public function register_menus(): void {
-		// Top-level menu — points to the Dashboard (Analytics) page.
-		$this->page_hooks[] = add_menu_page(
-			__( '10Projects', 'tenprojects-ai-matcher' ),
-			__( '10Projects', 'tenprojects-ai-matcher' ),
+		// Sidebar order: Buy(4) Commercial(5) Resale(6) Rent(7) Plot(8) PG(9)
+		// → Landing Page(10) → Location Areas(11) → Brand Settings(12)
+		// → Chatbot(13) → Lead(14) → Users(15)
+
+		// Blog (Guides CPT).
+		add_menu_page(
+			__( 'Blog', 'tenprojects-ai-matcher' ),
+			__( 'Blog', 'tenprojects-ai-matcher' ),
 			self::CAPABILITY,
-			self::MENU_SLUG,
-			array( $this, 'render_dashboard' ),
-			'dashicons-building',
-			3
+			'edit.php?post_type=tp_guide',
+			'',
+			'dashicons-welcome-write-blog',
+			10
 		);
 
-		// 1. Dashboard (default submenu — replaces auto-generated duplicate).
-		$this->page_hooks[] = add_submenu_page(
-			self::MENU_SLUG,
-			__( 'Dashboard', 'tenprojects-ai-matcher' ),
-			__( 'Dashboard', 'tenprojects-ai-matcher' ),
+		// Landing Pages.
+		add_menu_page(
+			__( 'Landing Pages', 'tenprojects-ai-matcher' ),
+			__( 'Landing Pages', 'tenprojects-ai-matcher' ),
 			self::CAPABILITY,
-			self::MENU_SLUG,
-			array( $this, 'render_dashboard' )
+			'edit.php?post_type=tp_landing_page',
+			'',
+			'dashicons-media-text',
+			10.1
 		);
 
-		// Projects submenu removed — each category (Buy, Rent, etc.) has its own top-level menu.
-
-		// 3. Developers — CPT list table.
-		add_submenu_page(
-			self::MENU_SLUG,
-			__( 'Developers', 'tenprojects-ai-matcher' ),
-			__( 'Developers', 'tenprojects-ai-matcher' ),
+		// Location Areas.
+		add_menu_page(
+			__( 'Location Areas', 'tenprojects-ai-matcher' ),
+			__( 'Location Areas', 'tenprojects-ai-matcher' ),
 			self::CAPABILITY,
-			'edit.php?post_type=tp_developer'
+			'edit-tags.php?taxonomy=tp_location_area&post_type=tp_project',
+			'',
+			'dashicons-location-alt',
+			11
 		);
 
-		// 4. Locations — CPT list table.
-		add_submenu_page(
-			self::MENU_SLUG,
-			__( 'Locations', 'tenprojects-ai-matcher' ),
-			__( 'Locations', 'tenprojects-ai-matcher' ),
-			self::CAPABILITY,
-			'edit.php?post_type=tp_location'
-		);
-
-		// 5. Leads.
-		$this->page_hooks[] = add_submenu_page(
-			self::MENU_SLUG,
-			__( 'Leads', 'tenprojects-ai-matcher' ),
-			__( 'Leads', 'tenprojects-ai-matcher' ),
-			self::CAPABILITY,
-			self::MENU_SLUG . '-leads',
-			array( $this, 'render_leads' )
-		);
-
-		// 6. Partners.
-		$this->page_hooks[] = add_submenu_page(
-			self::MENU_SLUG,
-			__( 'Partners', 'tenprojects-ai-matcher' ),
-			__( 'Partners', 'tenprojects-ai-matcher' ),
-			self::CAPABILITY,
-			self::MENU_SLUG . '-partners',
-			array( $this, 'render_partners' )
-		);
-
-		// 7. Site Visits.
-		$this->page_hooks[] = add_submenu_page(
-			self::MENU_SLUG,
-			__( 'Site Visits', 'tenprojects-ai-matcher' ),
-			__( 'Site Visits', 'tenprojects-ai-matcher' ),
-			self::CAPABILITY,
-			self::MENU_SLUG . '-site-visits',
-			array( $this, 'render_site_visits' )
-		);
-
-		// 8. Analytics.
-		$this->page_hooks[] = add_submenu_page(
-			self::MENU_SLUG,
-			__( 'Analytics', 'tenprojects-ai-matcher' ),
-			__( 'Analytics', 'tenprojects-ai-matcher' ),
-			self::CAPABILITY,
-			self::MENU_SLUG . '-analytics',
-			array( $this, 'render_analytics' )
-		);
-
-		// 9. Import.
-		$this->page_hooks[] = add_submenu_page(
-			self::MENU_SLUG,
-			__( 'Import', 'tenprojects-ai-matcher' ),
-			__( 'Import', 'tenprojects-ai-matcher' ),
-			self::CAPABILITY,
-			self::MENU_SLUG . '-import',
-			array( $this, 'render_import' )
-		);
-
-		// 10. Settings.
-		$this->page_hooks[] = add_submenu_page(
-			self::MENU_SLUG,
-			__( 'Settings', 'tenprojects-ai-matcher' ),
-			__( 'Settings', 'tenprojects-ai-matcher' ),
-			self::CAPABILITY,
-			self::MENU_SLUG . '-settings',
-			array( $this, 'render_settings' )
-		);
-
-		// 11. Brand Settings — dedicated top-level menu after PG.
+		// Brand Settings.
 		$this->page_hooks[] = add_menu_page(
 			__( 'Brand Settings', 'tenprojects-ai-matcher' ),
 			__( 'Brand Settings', 'tenprojects-ai-matcher' ),
@@ -152,11 +88,54 @@ class Admin {
 			self::MENU_SLUG . '-brand',
 			array( $this, 'render_brand_settings' ),
 			'dashicons-art',
-			10
+			12
 		);
+
+		// Lead.
+		$this->page_hooks[] = add_menu_page(
+			__( 'Lead', 'tenprojects-ai-matcher' ),
+			__( 'Lead', 'tenprojects-ai-matcher' ),
+			self::CAPABILITY,
+			self::MENU_SLUG . '-leads',
+			array( $this, 'render_leads' ),
+			'dashicons-groups',
+			14
+		);
+
+		// Users — WordPress default, reposition to 15.
+		add_menu_page(
+			__( 'Users' ),
+			__( 'Users' ),
+			'list_users',
+			'users.php',
+			'',
+			'dashicons-admin-users',
+			15
+		);
+
+		// Hide default WordPress menus that are not needed.
+		add_action( 'admin_menu', array( $this, 'hide_default_menus' ), 999 );
 
 		// Bootstrap sub-modules that need early hooks (e.g. project columns).
 		$this->bootstrap_modules();
+	}
+
+	/**
+	 * Remove default WordPress sidebar menus that are not needed.
+	 */
+	public function hide_default_menus(): void {
+		remove_menu_page( 'edit.php' );                    // Posts
+		remove_menu_page( 'upload.php' );                  // Media
+		remove_menu_page( 'edit.php?post_type=page' );     // Pages
+		remove_menu_page( 'edit-comments.php' );           // Comments
+		remove_menu_page( 'themes.php' );                  // Appearance
+		remove_menu_page( 'plugins.php' );                 // Plugins
+		remove_menu_page( 'tools.php' );                   // Tools
+		remove_menu_page( 'options-general.php' );         // Settings
+		remove_menu_page( 'litespeed-cache' );             // LiteSpeed Cache
+		remove_menu_page( 'litespeed' );                   // LiteSpeed (alt slug)
+		// Remove the default Users menu (we re-add it at position 15).
+		remove_menu_page( 'users.php' );
 	}
 
 	/**
@@ -177,6 +156,13 @@ class Admin {
 	public function render_dashboard(): void {
 		$analytics = new Analytics_Admin();
 		$analytics->render_dashboard();
+	}
+
+	/**
+	 * Render the Chatbot settings page.
+	 */
+	public function render_chatbot(): void {
+		echo '<div class="wrap"><h1>Chatbot</h1><p>Chatbot settings coming soon.</p></div>';
 	}
 
 	/**
@@ -359,6 +345,7 @@ class Admin {
 			'tp_review',
 			'tp_infrastructure',
 			'tp_market_report',
+			'tp_landing_page',
 		);
 
 		return in_array( $screen->post_type, $plugin_cpts, true );

@@ -30,99 +30,50 @@ $socials = array(
 ?>
 
 <footer class="tp-footer">
-	<div class="tp-footer-grid">
-		<!-- Brand column -->
-		<div>
-			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="tp-footer-logo" aria-label="<?php echo esc_attr( $site_name ); ?> home">
-				<img src="<?php echo esc_url( $logo ); ?>" alt="<?php echo esc_attr( $site_name ); ?>" height="40" style="height:40px;width:auto;">
-			</a>
-			<?php if ( $about ) : ?>
-				<p style="font-size:14px;line-height:1.7;margin-top:12px;color:#9CA3AF;">
-					<?php echo esc_html( $about ); ?>
-				</p>
-			<?php endif; ?>
+	<div class="tp-footer-inner">
 
-			<?php if ( $phone || $email || $address ) : ?>
-				<div style="margin-top:16px;font-size:14px;color:#9CA3AF;display:flex;flex-direction:column;gap:6px;">
-					<?php if ( $phone ) : ?>
-						<a href="tel:<?php echo esc_attr( $phone ); ?>" style="color:#9CA3AF;text-decoration:none;"><?php echo esc_html( $phone ); ?></a>
-					<?php endif; ?>
-					<?php if ( $email ) : ?>
-						<a href="mailto:<?php echo esc_attr( $email ); ?>" style="color:#9CA3AF;text-decoration:none;"><?php echo esc_html( $email ); ?></a>
-					<?php endif; ?>
-					<?php if ( $address ) : ?>
-						<p style="color:#6B7280;margin:0;"><?php echo esc_html( $address ); ?></p>
-					<?php endif; ?>
-				</div>
-			<?php endif; ?>
+		<!-- Logo -->
+		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="tp-footer-logo" aria-label="<?php echo esc_attr( $site_name ); ?> home">
+			<img src="<?php echo esc_url( $logo ); ?>" alt="<?php echo esc_attr( $site_name ); ?>" height="40" style="height:40px;width:auto;">
+		</a>
 
-			<?php
-			// Social icons — only show ones that have a URL.
-			$active_socials = array_filter( $socials, function( $s ) { return ! empty( $s['url'] ); } );
-			if ( ! empty( $active_socials ) ) : ?>
-				<div style="display:flex;align-items:center;gap:8px;margin-top:16px;">
-					<?php foreach ( $active_socials as $key => $s ) :
-						$href = $s['url'];
-						if ( 'whatsapp' === $key && strpos( $href, 'http' ) !== 0 ) {
-							$href = 'https://wa.me/' . preg_replace( '/[^0-9]/', '', $href );
-						}
-					?>
-						<a href="<?php echo esc_url( $href ); ?>" target="_blank" rel="noopener noreferrer"
-						   aria-label="<?php echo esc_attr( $s['label'] ); ?>"
-						   style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#9CA3AF;transition:all 0.15s;"
-						   onmouseover="this.style.color='#fff';this.style.background='rgba(255,255,255,0.1)'"
-						   onmouseout="this.style.color='#9CA3AF';this.style.background='transparent'">
-							<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><?php echo $s['icon']; ?></svg>
-						</a>
-					<?php endforeach; ?>
-				</div>
-			<?php endif; ?>
-		</div>
+		<!-- Nav links -->
+		<nav class="tp-footer-nav" aria-label="Footer navigation">
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>">Search Properties</a>
+			<a href="<?php echo esc_url( home_url( '/about/' ) ); ?>">About</a>
+			<a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">Contact</a>
+			<a href="<?php echo esc_url( home_url( '/privacy/' ) ); ?>">Privacy Policy</a>
+			<a href="<?php echo esc_url( home_url( '/terms/' ) ); ?>">Terms of Service</a>
+			<a href="<?php echo esc_url( home_url( '/disclaimer/' ) ); ?>">Disclaimer</a>
+		</nav>
 
-		<!-- Quick Links -->
-		<div>
-			<h4>Quick Links</h4>
-			<ul>
-				<li><a href="<?php echo esc_url( home_url( '/projects/' ) ); ?>">All Projects</a></li>
-				<li><a href="<?php echo esc_url( home_url( '/methodology/' ) ); ?>">Our Methodology</a></li>
-				<li><a href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">Buyer Guides</a></li>
-				<li><a href="<?php echo esc_url( home_url( '/emi-calculator/' ) ); ?>">EMI Calculator</a></li>
-			</ul>
-		</div>
+		<!-- Social icons -->
+		<?php
+		$active_socials = array_filter( $socials, function( $s ) { return ! empty( $s['url'] ); } );
+		if ( ! empty( $active_socials ) ) : ?>
+			<div class="tp-footer-socials">
+				<?php foreach ( $active_socials as $key => $s ) :
+					$href = $s['url'];
+					if ( 'whatsapp' === $key && strpos( $href, 'http' ) !== 0 ) {
+						$href = 'https://wa.me/' . preg_replace( '/[^0-9]/', '', $href );
+					}
+				?>
+					<a href="<?php echo esc_url( $href ); ?>" target="_blank" rel="noopener noreferrer" aria-label="<?php echo esc_attr( $s['label'] ); ?>" class="tp-footer-social-link">
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><?php echo $s['icon']; ?></svg>
+					</a>
+				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
 
-		<!-- Locations -->
-		<div>
-			<h4>Locations</h4>
-			<ul>
-				<li><a href="<?php echo esc_url( home_url( '/navi-mumbai/kharghar/' ) ); ?>">Kharghar</a></li>
-				<li><a href="<?php echo esc_url( home_url( '/navi-mumbai/panvel/' ) ); ?>">Panvel</a></li>
-				<li><a href="<?php echo esc_url( home_url( '/navi-mumbai/ulwe/' ) ); ?>">Ulwe</a></li>
-				<li><a href="<?php echo esc_url( home_url( '/navi-mumbai/vashi/' ) ); ?>">Vashi</a></li>
-			</ul>
-		</div>
-
-		<!-- Contact / Company -->
-		<div>
-			<h4>Company</h4>
-			<ul>
-				<li><a href="<?php echo esc_url( home_url( '/about/' ) ); ?>">About Us</a></li>
-				<li><a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">Contact</a></li>
-				<li><a href="<?php echo esc_url( home_url( '/privacy/' ) ); ?>">Privacy Policy</a></li>
-				<li><a href="<?php echo esc_url( home_url( '/terms/' ) ); ?>">Terms of Service</a></li>
-				<li><a href="<?php echo esc_url( home_url( '/disclaimer/' ) ); ?>">Disclaimer</a></li>
-			</ul>
-		</div>
-	</div>
-
-	<!-- Bottom bar -->
-	<div class="tp-footer-bottom">
-		<p>&copy; <?php echo esc_html( date( 'Y' ) ); ?> <?php echo esc_html( $site_name ); ?>. All rights reserved.</p>
+		<!-- Copyright -->
+		<p class="tp-footer-copy">&copy; <?php echo esc_html( date( 'Y' ) ); ?> <?php echo esc_html( $site_name ); ?>. All rights reserved.</p>
 		<?php if ( $rera_agent ) : ?>
-			<p style="font-size:11px;color:#6B7280;margin-top:4px;">
+			<p class="tp-footer-rera">
 				RERA Agent: <?php if ( $rera_legal ) echo esc_html( $rera_legal ) . ' | '; ?><?php echo esc_html( $rera_agent ); ?>.
 				All project information is sourced from RERA and developer websites. Verify independently before making any decisions.
 			</p>
 		<?php endif; ?>
+
 	</div>
 </footer>
 

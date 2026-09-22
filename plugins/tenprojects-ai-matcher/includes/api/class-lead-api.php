@@ -146,7 +146,7 @@ class Lead_API extends API_Base {
 							'type'              => 'string',
 							'sanitize_callback' => 'sanitize_text_field',
 							'validate_callback' => function ( $value ) {
-								return in_array( $value, array( 'site_visit', 'best_price', 'advisor', 'callback', 'whatsapp', 'brochure', 'floor_plan' ), true );
+								return in_array( $value, array( 'site_visit', 'best_price', 'advisor', 'callback', 'whatsapp', 'brochure', 'floor_plan', 'post_property' ), true );
 							},
 						),
 						'project_id'  => array(
@@ -460,6 +460,16 @@ class Lead_API extends API_Base {
 		$project_id = $request->get_param( 'project_id' );
 		if ( $project_id ) {
 			$lead_data['project_id'] = absint( $project_id );
+		}
+
+		// Store location and BHK for post_property leads.
+		$location = $request->get_param( 'location' );
+		if ( $location ) {
+			$lead_data['location_preference'] = wp_json_encode( array( sanitize_text_field( $location ) ) );
+		}
+		$bhk = $request->get_param( 'bhk' );
+		if ( $bhk ) {
+			$lead_data['configuration'] = wp_json_encode( array( sanitize_text_field( $bhk ) ) );
 		}
 
 		// Create lead via service.

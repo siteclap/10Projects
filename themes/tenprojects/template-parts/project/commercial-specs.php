@@ -24,7 +24,7 @@ $fire_noc          = tp_get_meta( $post_id, 'fire_noc' );
 $lease_term        = tp_get_meta( $post_id, 'lease_term' );
 $lock_in_period    = tp_get_meta( $post_id, 'lock_in_period' );
 $escalation_clause = tp_get_meta( $post_id, 'escalation_clause' );
-$price_min         = intval( tp_get_meta( $post_id, 'price_display_min' ) );
+$price_min         = floatval( tp_get_meta( $post_id, 'price_display_min' ) );
 
 $has_data = $commercial_type || $commercial_carpet || $price_per_sqft || $price_min;
 if ( ! $has_data ) {

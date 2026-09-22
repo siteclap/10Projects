@@ -69,7 +69,7 @@ class Guide_CPT {
 			'show_in_rest'        => true,
 			'query_var'           => true,
 			'rewrite'             => array(
-				'slug'       => 'guides',
+				'slug'       => 'blog',
 				'with_front' => false,
 			),
 			'capability_type'     => 'post',

@@ -7,35 +7,39 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$post_id = $args['post_id'] ?? get_the_ID();
-$similar = tp_get_similar_projects( $post_id, 6 );
+$post_id  = $args['post_id'] ?? get_the_ID();
+$similar  = tp_get_similar_projects( $post_id, 6 );
 
 if ( empty( $similar ) ) return;
+
+// "View All" → location taxonomy page of current project.
+$cur_loc     = tp_get_location_term( $post_id );
+$view_all_url = $cur_loc ? get_term_link( $cur_loc ) : home_url( '/' );
 ?>
 
 <section class="tp-section">
 	<div class="tp-scroll-header">
 		<h2>Similar Projects Nearby</h2>
-		<div class="tp-scroll-nav">
-			<a href="<?php echo esc_url( home_url( '/projects/' ) ); ?>" class="tp-scroll-header__link">View All →</a>
-			<button class="tp-scroll-arrow" aria-label="Scroll left" onclick="similarScroll(-1)">
-				<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
-			</button>
-			<button class="tp-scroll-arrow" aria-label="Scroll right" onclick="similarScroll(1)">
-				<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
-			</button>
-		</div>
+		<a href="<?php echo esc_url( $view_all_url ); ?>" class="tp-scroll-header__link">View All →</a>
 	</div>
 
+	<div class="tp-hscroll-wrap">
+		<button class="tp-hscroll-arrow tp-hscroll-arrow--left" aria-label="Scroll left" onclick="similarScroll(-1)">
+			<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 19l-7-7 7-7"/></svg>
+		</button>
+		<button class="tp-hscroll-arrow tp-hscroll-arrow--right" aria-label="Scroll right" onclick="similarScroll(1)">
+			<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
+		</button>
 	<div class="tp-hscroll" id="similarScroll">
 		<?php foreach ( $similar as $p ) :
 			$p_id       = $p->ID;
-			$p_thumb    = get_the_post_thumbnail_url( $p_id, 'medium' );
+			$p_banners  = tp_get_banner_urls( $p_id, 'desktop' );
+		$p_thumb    = ! empty( $p_banners ) ? $p_banners[0] : get_the_post_thumbnail_url( $p_id, 'medium' );
 			$p_dev      = tp_get_meta( $p_id, 'developer_name' ) ?: '';
 			$p_loc      = tp_get_location_term( $p_id );
 			$p_loc_name = $p_loc ? $p_loc->name : '';
-			$p_min      = intval( tp_get_meta( $p_id, 'price_display_min' ) );
-			$p_max      = intval( tp_get_meta( $p_id, 'price_display_max' ) );
+			$p_min      = floatval( tp_get_meta( $p_id, 'price_display_min' ) );
+			$p_max      = floatval( tp_get_meta( $p_id, 'price_display_max' ) );
 			$p_configs  = tp_get_meta( $p_id, 'available_configs_text' );
 		?>
 			<a href="<?php echo esc_url( get_permalink( $p_id ) ); ?>" class="tp-project-card tp-hscroll__card">
@@ -64,6 +68,7 @@ if ( empty( $similar ) ) return;
 			</a>
 		<?php endforeach; ?>
 	</div>
+	</div><!-- .tp-hscroll-wrap -->
 
 	<script>
 	(function(){

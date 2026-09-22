@@ -13,8 +13,8 @@ $post_id      = get_the_ID();
 $location     = tp_get_location_term( $post_id );
 $loc_name     = $location ? $location->name : '';
 $loc_slug     = $location ? $location->slug : '';
-$price_min    = intval( tp_get_meta( $post_id, 'price_display_min' ) );
-$price_max    = intval( tp_get_meta( $post_id, 'price_display_max' ) );
+$price_min    = floatval( tp_get_meta( $post_id, 'price_display_min' ) );
+$price_max    = floatval( tp_get_meta( $post_id, 'price_display_max' ) );
 $rera         = tp_get_meta( $post_id, 'rera_number' );
 $stage        = tp_get_meta( $post_id, 'construction_stage' );
 $possession   = tp_get_meta( $post_id, 'expected_possession' );
@@ -91,21 +91,28 @@ switch ( $property_type ) {
 			'pros-cons'   => 'Pros & Cons',
 			'location'    => 'Location',
 			'developer'   => 'Developer',
-			'faq'         => 'FAQ',
 		);
 		break;
 
 	case 'commercial':
 		$sections = array(
-			'overview'    => 'Overview',
-			'specs'       => 'Price & Specs',
-			'amenities'   => 'Amenities',
-			'unit-plans'  => 'Unit Plans',
-			'pros-cons'   => 'Pros & Cons',
-			'location'    => 'Location',
-			'developer'   => 'Developer',
-			'faq'         => 'FAQ',
+			'overview'        => 'Overview',
+			'specs'           => 'Price & Specs',
+			'unit-plans'      => 'Unit Plans',
+			'pros-cons'       => 'Pros & Cons',
+			'location'        => 'Location',
+			'emi-calculator'  => 'EMI Calculator',
+			'developer'       => 'Developer',
+			'faq'             => 'FAQ',
 		);
+		// Add amenities nav only if project has amenity data.
+		$_am_terms = wp_get_object_terms( $post_id, 'tp_amenity', array( 'fields' => 'ids' ) );
+		$_am_json  = tp_parse_json_meta( $post_id, 'highlights' );
+		if ( ( ! is_wp_error( $_am_terms ) && ! empty( $_am_terms ) ) || ! empty( $_am_json ) ) {
+			$sections = array_slice( $sections, 0, 2, true )
+				+ array( 'amenities' => 'Amenities' )
+				+ array_slice( $sections, 2, null, true );
+		}
 		break;
 
 	case 'plot':
@@ -134,14 +141,14 @@ switch ( $property_type ) {
 
 	default: // buy, resale
 		$sections = array(
-			'overview'    => 'Overview',
-			'price'       => 'Price',
-			'floor-plans' => 'Floor Plans',
-			'amenities'   => 'Amenities',
-			'pros-cons'   => 'Pros & Cons',
-			'location'    => 'Location',
-			'developer'   => 'Developer',
-			'faq'         => 'FAQ',
+			'overview'      => 'Overview',
+			'price'         => 'Price & Configuration',
+			'amenities'     => 'Amenities',
+			'pros-cons'     => 'Pros & Cons',
+			'location'      => 'Location',
+			'virtual-tour'  => 'Virtual Tour',
+			'developer'     => 'Developer',
+			'faq'           => 'FAQ',
 		);
 		break;
 }
@@ -167,10 +174,21 @@ switch ( $property_type ) {
 		<?php get_template_part( 'template-parts/project/gallery', null, array( 'images' => $all_images ) ); ?>
 	<?php endif; ?>
 
+	<!-- Offers Strip -->
+	<?php if ( ! empty( $offers ) ) : ?>
+		<?php get_template_part( 'template-parts/project/offers-strip', null, array( 'offers' => $offers ) ); ?>
+	<?php endif; ?>
+
 	<!-- Title + Quick Stats -->
+	<?php $dev_logo = tp_get_developer_logo( $post_id ); ?>
 	<div class="tp-pdp-header">
 		<div class="tp-pdp-header__left">
-			<h1><?php the_title(); ?></h1>
+			<div class="tp-pdp-header__title-row">
+				<?php if ( $dev_logo ) : ?>
+					<img src="<?php echo esc_url( $dev_logo ); ?>" alt="<?php echo esc_attr( $developer ); ?>" class="tp-pdp-header__dev-logo">
+				<?php endif; ?>
+				<h1><?php the_title(); ?></h1>
+			</div>
 			<div class="tp-pdp-header__meta">
 				<span class="tp-pdp-header__dev">by <?php echo esc_html( $developer ); ?></span>
 				<?php if ( $loc_name ) : ?>
@@ -200,12 +218,12 @@ switch ( $property_type ) {
 					<div class="tp-pdp-header__emi">Deposit: ₹<?php echo number_format( $security_deposit ); ?></div>
 				<?php endif; ?>
 			</div>
-		<?php elseif ( 'commercial' === $property_type && $price_per_sqft ) : ?>
+		<?php elseif ( 'commercial' === $property_type && $price_min ) : ?>
 			<div class="tp-pdp-header__price">
-				<div class="tp-pdp-header__price-label">Price</div>
-				<div class="tp-pdp-header__price-value">₹<?php echo number_format( $price_per_sqft ); ?>/sqft</div>
-				<?php if ( $price_min ) : ?>
-					<div class="tp-pdp-header__emi">Total from <?php echo esc_html( tp_format_price( $price_min ) ); ?></div>
+				<div class="tp-pdp-header__price-label">Price Starts From</div>
+				<div class="tp-pdp-header__price-value"><?php echo esc_html( tp_format_price( $price_min ) ); ?></div>
+				<?php if ( $price_per_sqft ) : ?>
+					<div class="tp-pdp-header__emi">₹<?php echo number_format( $price_per_sqft ); ?>/sqft</div>
 				<?php endif; ?>
 			</div>
 		<?php elseif ( 'pg' === $property_type && $pg_single_rent ) : ?>
@@ -217,12 +235,6 @@ switch ( $property_type ) {
 			<div class="tp-pdp-header__price">
 				<div class="tp-pdp-header__price-label">Starting from</div>
 				<div class="tp-pdp-header__price-value"><?php echo esc_html( tp_format_price( $price_min ) ); ?></div>
-				<?php
-				$emi_val = tp_calculate_emi( $price_min * 0.8 );
-				if ( $emi_val > 0 ) :
-				?>
-					<div class="tp-pdp-header__emi">EMI ~₹<?php echo number_format( $emi_val ); ?>/mo</div>
-				<?php endif; ?>
 			</div>
 		<?php endif; ?>
 	</div>
@@ -432,7 +444,7 @@ switch ( $property_type ) {
 			<?php elseif ( 'commercial' === $property_type ) : ?>
 				<?php get_template_part( 'template-parts/project/commercial-specs', null, array( 'post_id' => $post_id ) ); ?>
 				<?php get_template_part( 'template-parts/project/amenities', null, array( 'post_id' => $post_id ) ); ?>
-				<?php get_template_part( 'template-parts/project/floor-plans', null, array( 'post_id' => $post_id, 'label' => 'Unit Plans' ) ); ?>
+				<?php get_template_part( 'template-parts/project/floor-plans', null, array( 'post_id' => $post_id, 'label' => 'Unit Plans', 'property_type' => 'commercial' ) ); ?>
 
 			<?php elseif ( 'plot' === $property_type || 'plots' === $property_type ) : ?>
 				<?php get_template_part( 'template-parts/project/plot-details', null, array( 'post_id' => $post_id ) ); ?>
@@ -443,13 +455,13 @@ switch ( $property_type ) {
 				<?php get_template_part( 'template-parts/project/pg-rules', null, array( 'post_id' => $post_id ) ); ?>
 
 			<?php else : /* Buy / Resale */ ?>
-				<?php get_template_part( 'template-parts/project/price-config', null, array( 'post_id' => $post_id ) ); ?>
 				<?php get_template_part( 'template-parts/project/floor-plans', null, array( 'post_id' => $post_id ) ); ?>
 				<?php get_template_part( 'template-parts/project/amenities', null, array( 'post_id' => $post_id ) ); ?>
 			<?php endif; ?>
 
 			<?php get_template_part( 'template-parts/project/pros-cons', null, array( 'pros' => $pros, 'cons' => $cons ) ); ?>
 			<?php get_template_part( 'template-parts/project/location', null, array( 'post_id' => $post_id ) ); ?>
+			<?php get_template_part( 'template-parts/project/virtual-tour', null, array( 'post_id' => $post_id, 'property_type' => $property_type ) ); ?>
 
 			<!-- Mid-page CTA -->
 			<div class="tp-mid-cta">
@@ -466,7 +478,7 @@ switch ( $property_type ) {
 				</div>
 			</div>
 
-			<?php if ( in_array( $property_type, array( 'buy', 'resale' ), true ) ) : ?>
+			<?php if ( in_array( $property_type, array( 'buy', 'resale', 'commercial' ), true ) ) : ?>
 				<?php get_template_part( 'template-parts/project/emi-calculator', null, array( 'post_id' => $post_id ) ); ?>
 
 				<!-- Loan Eligibility Banner -->
@@ -477,7 +489,7 @@ switch ( $property_type ) {
 						</svg>
 					</div>
 					<div class="tp-loan-banner__content">
-						<div class="tp-loan-banner__title">Check Your Home Loan Eligibility</div>
+						<div class="tp-loan-banner__title"><?php echo 'commercial' === $property_type ? 'Check Your Commercial Loan Eligibility' : 'Check Your Home Loan Eligibility'; ?></div>
 						<div class="tp-loan-banner__text">Know how much loan you can get from top banks. Free, instant &amp; no impact on credit score.</div>
 					</div>
 					<button type="button" class="tp-loan-banner__btn js-open-lead-popup" data-source="loan_eligibility">
@@ -490,7 +502,9 @@ switch ( $property_type ) {
 			<?php if ( 'pg' !== $property_type ) : ?>
 				<?php get_template_part( 'template-parts/project/developer', null, array( 'post_id' => $post_id ) ); ?>
 			<?php endif; ?>
-			<?php get_template_part( 'template-parts/project/faq', null, array( 'post_id' => $post_id, 'property_type' => $property_type ) ); ?>
+			<?php if ( 'rent' !== $property_type ) : ?>
+				<?php get_template_part( 'template-parts/project/faq', null, array( 'post_id' => $post_id, 'property_type' => $property_type ) ); ?>
+			<?php endif; ?>
 			<?php get_template_part( 'template-parts/project/why-us' ); ?>
 			<?php get_template_part( 'template-parts/project/similar', null, array( 'post_id' => $post_id ) ); ?>
 		</div>
@@ -594,6 +608,44 @@ switch ( $property_type ) {
 	var sourceInput = document.getElementById('tp-lead-popup-source');
 	if (!popup || !form) return;
 
+	/* UTM & device tracking */
+	function getTrackingData() {
+		var params = new URLSearchParams(window.location.search);
+		return {
+			utm_source:   params.get('utm_source') || '',
+			utm_medium:   params.get('utm_medium') || '',
+			utm_campaign: params.get('utm_campaign') || '',
+			utm_term:     params.get('utm_term') || '',
+			utm_content:  params.get('utm_content') || '',
+			referrer:     document.referrer || '',
+			device:       /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+			browser: (function() {
+				var ua = navigator.userAgent;
+				if (ua.indexOf('Chrome') > -1 && ua.indexOf('Edg') === -1) return 'Chrome';
+				if (ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') === -1) return 'Safari';
+				if (ua.indexOf('Firefox') > -1) return 'Firefox';
+				if (ua.indexOf('Edg') > -1) return 'Edge';
+				return 'Other';
+			})(),
+			os: (function() {
+				var ua = navigator.userAgent;
+				if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
+				if (/Android/.test(ua)) return 'Android';
+				if (/Windows/.test(ua)) return 'Windows';
+				if (/Mac/.test(ua)) return 'macOS';
+				if (/Linux/.test(ua)) return 'Linux';
+				return 'Other';
+			})(),
+			screen_width:  screen.width,
+			screen_height: screen.height,
+			page_url:      window.location.href
+		};
+	}
+	function appendTracking(formData) {
+		var t = getTrackingData();
+		for (var k in t) { if (t[k]) formData.append(k, t[k]); }
+	}
+
 	/* Open */
 	document.querySelectorAll('.js-open-lead-popup').forEach(function(btn){
 		btn.addEventListener('click', function(){
@@ -614,6 +666,9 @@ switch ( $property_type ) {
 	document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePopup(); });
 
 	/* Submit */
+	var thankYouUrl = '<?php echo esc_url( home_url( "/thank-you/" ) ); ?>';
+	var projectName = <?php echo wp_json_encode( get_the_title() ); ?>;
+
 	form.addEventListener('submit', function(e){
 		e.preventDefault();
 		var btn = form.querySelector('.tp-lead-popup__submit');
@@ -640,30 +695,18 @@ switch ( $property_type ) {
 		btn.querySelector('.tp-lf__submit-text').textContent = 'Submitting...';
 
 		var data = new FormData(form);
+		appendTracking(data);
+
+		var tyRedirect = thankYouUrl + '?name=' + encodeURIComponent(name) + '&project=' + encodeURIComponent(projectName);
+
 		fetch('<?php echo esc_url( admin_url("admin-ajax.php") ); ?>', { method: 'POST', body: data })
 			.then(function(r){ return r.json(); })
-			.then(function(res){
-				if (res.success) {
-					/* Success state */
-					var card = popup.querySelector('.tp-lead-popup__card');
-					card.innerHTML = '<div class="tp-popup__success">' +
-						'<div class="tp-popup__success-icon"><svg width="56" height="56" fill="none" viewBox="0 0 24 24" stroke="#10B981" stroke-width="1.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>' +
-						'<h3>Thank You!</h3>' +
-						'<p>Our expert will call you within <strong>15 minutes</strong> with the best deal on this project.</p>' +
-						'<button type="button" class="tp-popup__success-close" onclick="document.getElementById(\'tp-lead-popup\').classList.remove(\'is-open\');document.body.style.overflow=\'\';">Got it</button>' +
-						'</div>';
-				} else {
-					status.className = 'tp-lead-popup__status is-error';
-					status.textContent = 'Something went wrong. Please try again.';
-					btn.disabled = false;
-					btn.querySelector('.tp-lf__submit-text').textContent = 'Get Best Price';
-				}
+			.then(function(){
+				window.location.href = tyRedirect;
 			})
 			.catch(function(){
-				status.className = 'tp-lead-popup__status is-error';
-				status.textContent = 'Network error. Please try again.';
-				btn.disabled = false;
-				btn.querySelector('.tp-lf__submit-text').textContent = 'Get Best Price';
+				/* Redirect anyway — lead is likely saved */
+				window.location.href = tyRedirect;
 			});
 	});
 
@@ -679,4 +722,25 @@ switch ( $property_type ) {
 </script>
 
 <?php get_template_part( 'template-parts/project/brochure-modal', null, array( 'post_id' => $post_id ) ); ?>
+
+<script>
+/* Track project view in localStorage for homepage returning-user personalization */
+(function () {
+	try {
+		var pid  = <?php echo (int) get_the_ID(); ?>;
+		var type = '<?php
+			$_tp_types = wp_get_object_terms( get_the_ID(), 'tp_property_type' );
+			echo ( $_tp_types && ! is_wp_error( $_tp_types ) ) ? esc_js( $_tp_types[0]->slug ) : '';
+		?>';
+		var loc  = '<?php echo esc_js( $loc_slug ); ?>';
+		var d    = JSON.parse( localStorage.getItem('tp_viewed') || '{"projects":[],"types":{},"locations":{}}' );
+		if ( !d.projects.includes(pid) ) d.projects.unshift(pid);
+		if ( type ) d.types[type]    = (d.types[type]    || 0) + 1;
+		if ( loc )  d.locations[loc] = (d.locations[loc] || 0) + 1;
+		d.last_visit = new Date().toISOString();
+		d.projects   = d.projects.slice(0, 50);
+		localStorage.setItem('tp_viewed', JSON.stringify(d));
+	} catch (e) {}
+})();
+</script>
 <?php get_footer(); ?>

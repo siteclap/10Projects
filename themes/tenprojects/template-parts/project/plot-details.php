@@ -23,7 +23,7 @@ $water_connection       = tp_get_meta( $post_id, 'water_connection' );
 $electricity_connection = tp_get_meta( $post_id, 'electricity_connection' );
 $sewage_connection      = tp_get_meta( $post_id, 'sewage_connection' );
 $gated_community        = tp_get_meta( $post_id, 'gated_community' );
-$price_min              = intval( tp_get_meta( $post_id, 'price_display_min' ) );
+$price_min              = floatval( tp_get_meta( $post_id, 'price_display_min' ) );
 $price_per_sqft         = intval( tp_get_meta( $post_id, 'price_per_sqft' ) );
 
 $has_data = $plot_area || $plot_type || $price_min;

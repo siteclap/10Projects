@@ -8,7 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 $post_id   = $args['post_id'] ?? get_the_ID();
-$price_min = intval( tp_get_meta( $post_id, 'price_display_min' ) );
+$price_min = floatval( tp_get_meta( $post_id, 'price_display_min' ) );
 $location  = tp_get_location_term( $post_id );
 $loc_name  = $location ? $location->name : '';
 
@@ -53,10 +53,10 @@ if ( empty( $configs ) ) {
 						</div>
 						<div class="tp-config-card__detail">
 							<span class="label">Price</span>
-							<span class="value price"><?php echo esc_html( tp_format_price_range( $c->price_min, $c->price_max ) ); ?></span>
+							<span class="value price"><?php echo esc_html( tp_format_price_range( $c->price_min / 100, $c->price_max / 100 ) ); ?></span>
 						</div>
 						<?php
-						$config_emi = tp_calculate_emi( $c->price_min * 0.8 );
+						$config_emi = tp_calculate_emi( $c->price_min / 100 * 0.8 );
 						if ( $config_emi > 0 ) :
 						?>
 						<div class="tp-config-card__detail">

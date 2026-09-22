@@ -84,6 +84,7 @@ class Settings_Admin {
 			'logo'        => array( 'Logo & Media', 'dashicons-format-image' ),
 			'colors'      => array( 'Color Guidelines', 'dashicons-art' ),
 			'social'      => array( 'Social Links', 'dashicons-share' ),
+			'reviews'     => array( 'Google Reviews', 'dashicons-star-filled' ),
 			'lead'        => array( 'Lead Integration', 'dashicons-admin-links' ),
 		);
 	}
@@ -109,6 +110,7 @@ class Settings_Admin {
 		$this->register_brand_logo_fields();
 		$this->register_brand_color_fields();
 		$this->register_brand_social_fields();
+		$this->register_brand_reviews_fields();
 		$this->register_brand_lead_fields();
 
 		$tabs        = $this->get_brand_tabs();
@@ -158,6 +160,11 @@ class Settings_Admin {
 			case 'social':
 				settings_fields( 'tp_brand_social_group' );
 				do_settings_sections( 'tp_brand_social_group' );
+				break;
+
+			case 'reviews':
+				settings_fields( 'tp_brand_reviews_group' );
+				do_settings_sections( 'tp_brand_reviews_group' );
 				break;
 
 			case 'lead':
@@ -272,7 +279,91 @@ class Settings_Admin {
 	}
 
 	/**
-	 * Register Lead Integration fields (tab 5).
+	 * Register Google Reviews fields (tab: reviews).
+	 */
+	private function register_brand_reviews_fields(): void {
+		$group   = 'tp_brand_reviews_group';
+		$section = 'tp_brand_reviews_section';
+
+		add_settings_section(
+			$section,
+			__( 'Google Reviews', 'tenprojects-ai-matcher' ),
+			function () {
+				echo '<p>' . esc_html__( 'Enter your Google Business name and API key to automatically fetch and display Google reviews on the homepage.', 'tenprojects-ai-matcher' ) . '</p>';
+			},
+			$group
+		);
+
+		$this->add_text_field( $group, $section, 'google_business_name', __( 'Google Business Name', 'tenprojects-ai-matcher' ) );
+
+		// Google Place ID — auto-resolved from business name or entered manually.
+		$opt_key_pid = self::OPT_PREFIX . 'google_place_id';
+		register_setting( $group, $opt_key_pid, array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => '',
+		) );
+		add_settings_field(
+			'google_place_id',
+			__( 'Google Place ID', 'tenprojects-ai-matcher' ),
+			function () use ( $opt_key_pid ) {
+				$value = get_option( $opt_key_pid, '' );
+				echo '<input type="text" name="' . esc_attr( $opt_key_pid ) . '" value="' . esc_attr( $value )
+					. '" class="regular-text" />';
+				echo '<p class="description">' . esc_html__( 'Auto-detected from business name, or enter manually. Find yours at: Google Maps > Your Business > Share > Place ID.', 'tenprojects-ai-matcher' ) . '</p>';
+			},
+			$group,
+			$section
+		);
+
+		$this->add_password_field( $group, $section, 'google_places_api_key', __( 'Google Places API Key', 'tenprojects-ai-matcher' ) );
+
+		// Fetch status display.
+		$opt_key_status = self::OPT_PREFIX . 'google_reviews_status';
+		register_setting( $group, $opt_key_status, array(
+			'type'    => 'string',
+			'default' => '',
+		) );
+
+		add_settings_field(
+			'google_reviews_status',
+			__( 'Status', 'tenprojects-ai-matcher' ),
+			function () {
+				$reviews = get_transient( 'tp_google_reviews' );
+				if ( false !== $reviews && is_array( $reviews ) ) {
+					$count = count( $reviews );
+					echo '<span style="color:#10b981;font-weight:600;">' . esc_html( $count . ' reviews cached' ) . '</span>';
+					echo '<p class="description">' . esc_html__( 'Reviews refresh automatically every 24 hours.', 'tenprojects-ai-matcher' ) . '</p>';
+				} else {
+					echo '<span style="color:#9ca3af;">' . esc_html__( 'No reviews fetched yet. Save settings to trigger first fetch.', 'tenprojects-ai-matcher' ) . '</span>';
+				}
+				echo '<p style="margin-top:10px;"><button type="button" class="button" id="tp-refresh-reviews">' . esc_html__( 'Refresh Reviews Now', 'tenprojects-ai-matcher' ) . '</button></p>';
+				echo '<script>
+				document.getElementById("tp-refresh-reviews").addEventListener("click", function() {
+					this.disabled = true;
+					this.textContent = "Fetching...";
+					fetch(ajaxurl + "?action=tp_refresh_google_reviews&_wpnonce=' . esc_js( wp_create_nonce( 'tp_refresh_reviews' ) ) . '")
+						.then(r => r.json())
+						.then(d => {
+							if (d.success) {
+								this.textContent = "Done! " + d.data.count + " reviews fetched";
+								this.style.color = "#10b981";
+							} else {
+								this.textContent = "Error: " + (d.data || "Unknown");
+								this.style.color = "#ef4444";
+							}
+						})
+						.catch(() => { this.textContent = "Network error"; this.style.color = "#ef4444"; });
+				});
+				</script>';
+			},
+			$group,
+			$section
+		);
+	}
+
+	/**
+	 * Register Lead Integration fields (tab 6).
 	 */
 	private function register_brand_lead_fields(): void {
 		$group   = 'tp_brand_lead_group';
@@ -451,6 +542,7 @@ class Settings_Admin {
 		$this->register_brand_logo_fields();
 		$this->register_brand_color_fields();
 		$this->register_brand_social_fields();
+		$this->register_brand_reviews_fields();
 		$this->register_brand_lead_fields();
 	}
 

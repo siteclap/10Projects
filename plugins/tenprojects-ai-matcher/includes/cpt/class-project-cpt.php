@@ -39,10 +39,12 @@ class Project_CPT {
 	public function register() {
 		add_action( 'init', array( $this, 'register_post_type' ) );
 		add_action( 'init', array( $this, 'register_meta_fields' ) );
+		add_action( 'init', array( $this, 'register_type_rewrite_rules' ), 20 );
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
 		add_action( 'save_post_' . self::POST_TYPE, array( $this, 'save_meta' ), 10, 2 );
 		add_filter( 'post_type_link', array( $this, 'project_permalink' ), 10, 2 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_media_scripts' ) );
+		add_action( 'template_redirect', array( $this, 'redirect_old_project_urls' ) );
 
 		// Force classic editor for projects — tabbed meta boxes don't work well with Gutenberg.
 		add_filter( 'use_block_editor_for_post_type', array( $this, 'disable_gutenberg' ), 10, 2 );
@@ -112,7 +114,7 @@ class Project_CPT {
 			'show_in_rest'        => true,
 			'query_var'           => true,
 			'rewrite'             => array(
-				'slug'       => 'navi-mumbai/%tp_location_area%',
+				'slug'       => 'buy/navi-mumbai/%tp_location_area%',
 				'with_front' => false,
 			),
 			'capability_type'     => 'post',
@@ -149,15 +151,72 @@ class Project_CPT {
 			return $post_link;
 		}
 
-		$terms = wp_get_object_terms( $post->ID, 'tp_location_area' );
+		// Replace location area placeholder.
+		$loc_terms = wp_get_object_terms( $post->ID, 'tp_location_area' );
+		$loc_slug  = ( ! is_wp_error( $loc_terms ) && ! empty( $loc_terms ) ) ? $loc_terms[0]->slug : 'uncategorized';
+		$post_link = str_replace( '%tp_location_area%', $loc_slug, $post_link );
 
-		if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
-			$post_link = str_replace( '%tp_location_area%', $terms[0]->slug, $post_link );
-		} else {
-			$post_link = str_replace( '%tp_location_area%', 'uncategorized', $post_link );
+		// Replace the default 'buy' prefix with the actual property type slug.
+		$type_terms = wp_get_object_terms( $post->ID, 'tp_property_type', array( 'fields' => 'slugs' ) );
+		$type_slug  = ( ! is_wp_error( $type_terms ) && ! empty( $type_terms ) ) ? $type_terms[0] : 'buy';
+		if ( 'buy' !== $type_slug ) {
+			$post_link = preg_replace( '#^(https?://[^/]+)/buy/#', '$1/' . $type_slug . '/', $post_link );
 		}
 
 		return $post_link;
+	}
+
+	/**
+	 * Register rewrite rules for non-buy property types + taxonomy archives.
+	 * 'buy' project URLs are handled automatically by the CPT's own rewrite slug.
+	 * Taxonomy archives need 'top' priority so standard WP post/attachment rules don't take precedence.
+	 */
+	public function register_type_rewrite_rules() {
+		// Property type taxonomy archives — must be 'top' so WP attachment rules don't intercept.
+		add_rewrite_rule(
+			'^properties/([^/]+)/page/?([0-9]{1,})/?$',
+			'index.php?tp_property_type=$matches[1]&paged=$matches[2]',
+			'top'
+		);
+		add_rewrite_rule(
+			'^properties/([^/]+)/?$',
+			'index.php?tp_property_type=$matches[1]',
+			'top'
+		);
+
+		// Non-buy property type project URLs.
+		add_rewrite_rule(
+			'^(rent|resale|commercial|plot|pg)/navi-mumbai/([^/]+)/([^/]+)/?$',
+			'index.php?tp_project=$matches[3]&tp_location_area=$matches[2]',
+			'top'
+		);
+
+		// Location area taxonomy archives — must be 'top' so standard WP attachment rules don't win.
+		add_rewrite_rule(
+			'^navi-mumbai/([^/]+)/?$',
+			'index.php?tp_location_area=$matches[1]',
+			'top'
+		);
+	}
+
+	/**
+	 * 301-redirect old project URLs (/navi-mumbai/{loc}/{slug}/) to new typed URLs.
+	 */
+	public function redirect_old_project_urls() {
+		$uri = trim( parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' );
+		// Match: navi-mumbai/{location}/{project-slug}
+		if ( ! preg_match( '#^navi-mumbai/([^/]+)/([^/]+)$#', $uri, $m ) ) {
+			return;
+		}
+		$post = get_page_by_path( $m[2], OBJECT, self::POST_TYPE );
+		if ( ! $post ) {
+			return;
+		}
+		$new_url = get_permalink( $post->ID );
+		if ( $new_url && $new_url !== home_url( '/' . $uri . '/' ) ) {
+			wp_redirect( $new_url, 301 );
+			exit;
+		}
 	}
 
 	/**
@@ -179,6 +238,7 @@ class Project_CPT {
 			'sales_office_address'   => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_textarea_field' ),
 
 			// --- About Developer / Project Overview ---
+			'project_name'           => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
 			'developer_id'           => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
 			'developer_about'        => array( 'type' => 'string',  'sanitize_callback' => 'wp_kses_post' ),
 			'developer_name'         => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
@@ -201,18 +261,12 @@ class Project_CPT {
 			'status'                 => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
 			'launch_date'            => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
 			'verified'               => array( 'type' => 'boolean', 'sanitize_callback' => 'rest_sanitize_boolean' ),
-			'price_display_min'      => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
-			'price_display_max'      => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
-			'primary_config'         => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'is_new_launch'          => array( 'type' => 'boolean', 'sanitize_callback' => 'rest_sanitize_boolean' ),
+			'is_featured'            => array( 'type' => 'boolean', 'sanitize_callback' => 'rest_sanitize_boolean' ),
+			'price_display_min'      => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			'price_display_max'      => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
 
-			// --- Construction ---
-			'rera_registration_date' => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
-			'construction_start'     => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
-			'construction_stage'     => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
-			'construction_progress'  => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
-			'promised_possession'    => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
-			'rera_possession'        => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
-			'expected_possession'    => array( 'type' => 'string',  'sanitize_callback' => 'sanitize_text_field' ),
+			// --- Project Scale ---
 			'total_towers'           => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
 			'total_floors'           => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
 			'total_units'            => array( 'type' => 'integer', 'sanitize_callback' => 'absint' ),
@@ -380,6 +434,10 @@ class Project_CPT {
 			'normal',
 			'high'
 		);
+
+		// Hide default metaboxes — handled in custom panels.
+		remove_meta_box( 'postimagediv', self::POST_TYPE, 'side' );
+		remove_meta_box( 'postexcerpt', self::POST_TYPE, 'normal' );
 	}
 
 	/**
@@ -453,17 +511,14 @@ class Project_CPT {
 
 		$tabs = array(
 			'graphics'     => __( 'Graphics & Media', 'tenprojects-ai-matcher' ),
-			'contact'      => __( 'Contact Details', 'tenprojects-ai-matcher' ),
-			'developer'    => __( 'About Developer', 'tenprojects-ai-matcher' ),
+			'developer'    => __( 'Project Overview', 'tenprojects-ai-matcher' ),
+			'contact'      => __( 'Contact', 'tenprojects-ai-matcher' ),
 			'offers'       => __( 'Offers', 'tenprojects-ai-matcher' ),
-			'pricing'      => __( 'Carpet Area & Price', 'tenprojects-ai-matcher' ),
-			'construction' => __( 'Construction', 'tenprojects-ai-matcher' ),
+			'location'     => __( 'Location', 'tenprojects-ai-matcher' ),
 			'rental'       => __( 'Rental Details', 'tenprojects-ai-matcher' ),
 			'commercial'   => __( 'Commercial Details', 'tenprojects-ai-matcher' ),
 			'plot'         => __( 'Plot Details', 'tenprojects-ai-matcher' ),
 			'pg'           => __( 'PG Details', 'tenprojects-ai-matcher' ),
-			'location'     => __( 'Location Details', 'tenprojects-ai-matcher' ),
-			'scoring'      => __( 'Scoring & Editorial', 'tenprojects-ai-matcher' ),
 		);
 
 		echo '<div class="tp-meta-box" data-post-id="' . esc_attr( $post->ID ) . '">';
@@ -482,17 +537,14 @@ class Project_CPT {
 		// Tab panels wrapper (flex right side).
 		echo '<div class="tp-meta-panels">';
 		$this->render_graphics_panel( $post );
-		$this->render_contact_panel( $post );
 		$this->render_developer_panel( $post );
+		$this->render_contact_panel( $post );
 		$this->render_offers_panel( $post );
-		$this->render_pricing_panel( $post );
-		$this->render_construction_panel( $post );
+		$this->render_location_panel( $post );
 		$this->render_rental_panel( $post );
 		$this->render_commercial_panel( $post );
 		$this->render_plot_panel( $post );
 		$this->render_pg_panel( $post );
-		$this->render_location_panel( $post );
-		$this->render_scoring_panel( $post );
 		echo '</div>';
 
 		echo '</div>';
@@ -546,7 +598,7 @@ class Project_CPT {
 			var catTabs = {
 				buy:        { show: ["pricing","construction"], hide: ["rental","commercial","plot","pg"] },
 				resale:     { show: ["pricing","construction"], hide: ["rental","commercial","plot","pg"] },
-				rent:       { show: ["pricing","rental"],       hide: ["construction","commercial","plot","pg"] },
+				rent:       { show: ["pricing","rental"],       hide: ["construction","commercial","plot","pg","offers","location"] },
 				commercial: { show: ["pricing","commercial","construction"], hide: ["rental","plot","pg"] },
 				plot:       { show: ["plot"],                   hide: ["pricing","construction","rental","commercial","pg"] },
 				pg:         { show: ["pg"],                     hide: ["pricing","construction","rental","commercial","plot"] }
@@ -610,6 +662,46 @@ class Project_CPT {
 				item.remove();
 				input.value = input.value.split(",").filter(function(id){ return id && id !== removeId; }).join(",");
 			});
+
+			/* --- Featured Image picker --- */
+			(function(){
+				var setBtn = document.getElementById("tp-set-featured-img");
+				var removeBtn = document.getElementById("tp-remove-featured-img");
+				var hiddenInput = document.getElementById("tp-featured-img-id");
+				var wrap = document.getElementById("tp-featured-img-wrap");
+				if(!setBtn) return;
+				setBtn.addEventListener("click", function(e){
+					e.preventDefault();
+					var frame = wp.media({ title:"Set Featured Image", button:{text:"Set Image"}, multiple:false, library:{type:"image"} });
+					frame.on("select", function(){
+						var att = frame.state().get("selection").first().toJSON();
+						var url = (att.sizes && att.sizes.medium) ? att.sizes.medium.url : att.url;
+						hiddenInput.value = att.id;
+						wrap.innerHTML = "<img src=\""+url+"\" style=\"max-width:100%;height:auto;border-radius:8px;margin-bottom:8px;display:block;\">";
+						setBtn.textContent = "Change Image";
+						if(!removeBtn){
+							removeBtn = document.createElement("button");
+							removeBtn.type = "button";
+							removeBtn.className = "button";
+							removeBtn.id = "tp-remove-featured-img";
+							removeBtn.style.color = "#a00";
+							removeBtn.textContent = "Remove";
+							setBtn.after(document.createTextNode(" "), removeBtn);
+						}
+					});
+					frame.open();
+				});
+				document.addEventListener("click", function(e){
+					if(e.target && e.target.id === "tp-remove-featured-img"){
+						e.preventDefault();
+						hiddenInput.value = "";
+						wrap.innerHTML = "";
+						setBtn.textContent = "Set Featured Image";
+						e.target.remove();
+						removeBtn = null;
+					}
+				});
+			})();
 
 			/* --- JSON field add/remove --- */
 			document.addEventListener("click", function(e){
@@ -811,28 +903,41 @@ class Project_CPT {
 		echo '<div class="tp-field-group" style="margin-bottom:0;">';
 		echo '<div class="tp-field-group__title">' . esc_html__( 'Banner — Desktop', 'tenprojects-ai-matcher' ) . '</div>';
 		echo '<div style="padding:14px 16px;">';
-		$this->render_gallery_field( $post->ID, 'banner_desktop_ids', __( 'Desktop Banner (1920×800)', 'tenprojects-ai-matcher' ) );
+		$this->render_gallery_field( $post->ID, 'banner_desktop_ids', __( 'Desktop Banner (1400×600 recommended)', 'tenprojects-ai-matcher' ) );
+		echo '<span class="description" style="margin-top:6px;display:block;">Used in the gallery strip on PDP. Add 2-5 project images.</span>';
 		echo '</div>';
 		echo '</div>';
 
 		echo '<div class="tp-field-group" style="margin-bottom:0;">';
-		echo '<div class="tp-field-group__title">' . esc_html__( 'Banner — Mobile', 'tenprojects-ai-matcher' ) . '</div>';
+		echo '<div class="tp-field-group__title">' . esc_html__( 'Featured Image', 'tenprojects-ai-matcher' ) . '</div>';
 		echo '<div style="padding:14px 16px;">';
-		$this->render_gallery_field( $post->ID, 'banner_mobile_ids', __( 'Mobile Banner (768×600)', 'tenprojects-ai-matcher' ) );
+		$thumb_id = get_post_thumbnail_id( $post->ID );
+		$thumb_url = $thumb_id ? wp_get_attachment_image_url( $thumb_id, 'medium' ) : '';
+		echo '<div id="tp-featured-img-wrap">';
+		if ( $thumb_url ) {
+			echo '<img src="' . esc_url( $thumb_url ) . '" style="max-width:100%;height:auto;border-radius:8px;margin-bottom:8px;display:block;">';
+		}
 		echo '</div>';
-		echo '</div>';
-
-		echo '<div class="tp-field-group" style="margin-bottom:0;">';
-		echo '<div class="tp-field-group__title">' . esc_html__( 'Project Gallery', 'tenprojects-ai-matcher' ) . '</div>';
-		echo '<div style="padding:14px 16px;">';
-		$this->render_gallery_field( $post->ID, 'gallery_ids', __( 'Gallery Images', 'tenprojects-ai-matcher' ) );
+		echo '<button type="button" class="button" id="tp-set-featured-img">' . ( $thumb_id ? 'Change Image' : 'Set Featured Image' ) . '</button>';
+		if ( $thumb_id ) {
+			echo ' <button type="button" class="button" id="tp-remove-featured-img" style="color:#a00;">Remove</button>';
+		}
+		echo '<input type="hidden" name="_thumbnail_id" id="tp-featured-img-id" value="' . esc_attr( $thumb_id ?: '' ) . '">';
+		echo '<span class="description" style="margin-top:6px;display:block;">Used as thumbnail in listings, SEO, and social sharing (1200×630 recommended).</span>';
 		echo '</div>';
 		echo '</div>';
 
 		echo '<div class="tp-field-group" style="margin-bottom:0;">';
 		echo '<div class="tp-field-group__title">' . esc_html__( 'Developer Logo', 'tenprojects-ai-matcher' ) . '</div>';
 		echo '<div style="padding:14px 16px;">';
-		$this->render_gallery_field( $post->ID, 'developer_logo_id', __( 'Developer Logo', 'tenprojects-ai-matcher' ) );
+		$this->render_gallery_field( $post->ID, 'developer_logo_id', __( 'Logo (200×200, transparent PNG)', 'tenprojects-ai-matcher' ) );
+		echo '</div>';
+		echo '</div>';
+
+		echo '<div class="tp-field-group" style="margin-bottom:0;">';
+		echo '<div class="tp-field-group__title">' . esc_html__( 'QR Code', 'tenprojects-ai-matcher' ) . '</div>';
+		echo '<div style="padding:14px 16px;">';
+		$this->render_gallery_field( $post->ID, 'qr_code_id', __( 'RERA QR Code (100×100 pixels)', 'tenprojects-ai-matcher' ) );
 		echo '</div>';
 		echo '</div>';
 
@@ -863,12 +968,12 @@ class Project_CPT {
 	private function render_developer_panel( \WP_Post $post ) {
 		echo '<div class="tp-meta-panel" data-panel="developer">';
 
-		// Row 1: Developer, Location, Developer ID (3 columns).
+		// Row 1: Project Name, Developer, Location (3 columns).
 		echo '<div class="tp-field-group">';
 		echo '<div class="tp-field-row">';
+		$this->render_field( $post->ID, 'project_name', __( 'Project Name', 'tenprojects-ai-matcher' ) );
 		$this->render_field( $post->ID, 'developer_name', __( 'By Developer', 'tenprojects-ai-matcher' ) );
 		$this->render_field( $post->ID, 'project_location', __( 'Project Location', 'tenprojects-ai-matcher' ) );
-		$this->render_field( $post->ID, 'developer_id', __( 'Developer ID', 'tenprojects-ai-matcher' ), 'number', __( 'Post ID of the developer CPT.', 'tenprojects-ai-matcher' ) );
 		echo '</div>';
 
 		// Row 2: Land Parcel, Floors, Possession (3 columns).
@@ -878,27 +983,52 @@ class Project_CPT {
 		$this->render_field( $post->ID, 'expected_possession', __( 'Possession', 'tenprojects-ai-matcher' ), 'text', __( 'Estimated possession date.', 'tenprojects-ai-matcher' ) );
 		echo '</div>';
 
-		// Row 3: RERA Number, QR Code (2 columns).
+		// Row 3: RERA Number, RERA Verified.
 		echo '<div class="tp-field-row tp-cols-2">';
 		$this->render_field( $post->ID, 'rera_number', __( 'RERA Number', 'tenprojects-ai-matcher' ) );
-		echo '<div class="tp-field">';
-		echo '<label>' . esc_html__( 'QR Code', 'tenprojects-ai-matcher' ) . '</label>';
-		echo '<span class="description" style="margin-bottom:4px;">' . esc_html__( '100 x 100 pixels', 'tenprojects-ai-matcher' ) . '</span>';
-		$this->render_gallery_field( $post->ID, 'qr_code_id', '' );
-		echo '</div>';
+		$this->render_checkbox( $post->ID, 'verified', __( 'RERA Verified', 'tenprojects-ai-matcher' ) );
 		echo '</div>';
 
-		// Row 4: Short Overview, About Developer (2 columns).
+		// Row 3b: Homepage flags.
+		echo '<div class="tp-field-row tp-cols-2">';
+		$this->render_checkbox( $post->ID, 'is_new_launch', __( 'New Launch (homepage carousel)', 'tenprojects-ai-matcher' ) );
+		$this->render_checkbox( $post->ID, 'is_featured', __( 'Featured Project (homepage carousel)', 'tenprojects-ai-matcher' ) );
+		echo '</div>';
+
+		// Row 4: Price Range (2 columns).
+		echo '<div class="tp-field-row tp-cols-2">';
+		$this->render_field( $post->ID, 'price_display_min', __( 'Price Min', 'tenprojects-ai-matcher' ), 'text', __( 'e.g., 88 Lacs or 2.18 Cr', 'tenprojects-ai-matcher' ) );
+		$this->render_field( $post->ID, 'price_display_max', __( 'Price Max', 'tenprojects-ai-matcher' ), 'text', __( 'e.g., 1.50 Cr or 3.50 Cr', 'tenprojects-ai-matcher' ) );
+		echo '</div>';
+
+		// Row 5: Short Overview, About Developer (2 columns).
 		echo '<div class="tp-field-row tp-cols-2">';
 		$this->render_textarea( $post->ID, 'short_overview', __( 'Short Overview of Project', 'tenprojects-ai-matcher' ) );
 		$this->render_textarea( $post->ID, 'developer_about', __( 'About Developer', 'tenprojects-ai-matcher' ) );
 		echo '</div>';
 
-		// Row 5: Google Review, Available Configurations (2 columns).
+		// Row 6: Google Review, Available Configurations (2 columns).
 		echo '<div class="tp-field-row tp-cols-2">';
 		$this->render_field( $post->ID, 'google_review_rating', __( 'Google Customer Review', 'tenprojects-ai-matcher' ), 'text', __( 'Out of 5 (On Google)', 'tenprojects-ai-matcher' ) );
 		$this->render_field( $post->ID, 'available_configs_text', __( 'Available Configurations', 'tenprojects-ai-matcher' ), 'text', __( 'e.g., Luxurious 2 & 3 BHK', 'tenprojects-ai-matcher' ) );
 		echo '</div>';
+		echo '</div>';
+
+		// Row 7: Project Scale (3 columns).
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">' . esc_html__( 'Project Scale', 'tenprojects-ai-matcher' ) . '</div>';
+		echo '<div class="tp-field-row">';
+		$this->render_field( $post->ID, 'total_towers', __( 'Total Towers', 'tenprojects-ai-matcher' ), 'number' );
+		$this->render_field( $post->ID, 'total_floors', __( 'Total Floors', 'tenprojects-ai-matcher' ), 'number' );
+		$this->render_field( $post->ID, 'total_units', __( 'Total Units', 'tenprojects-ai-matcher' ), 'number' );
+		echo '</div>';
+		echo '</div>';
+
+		// Row 8: Pros & Cons.
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">' . esc_html__( 'Pros & Cons', 'tenprojects-ai-matcher' ) . '</div>';
+		$this->render_json_field( $post->ID, 'pros', __( 'Pros', 'tenprojects-ai-matcher' ) );
+		$this->render_json_field( $post->ID, 'cons', __( 'Cons', 'tenprojects-ai-matcher' ) );
 		echo '</div>';
 
 		echo '</div>';
@@ -926,90 +1056,7 @@ class Project_CPT {
 		echo '</div>';
 	}
 
-	/**
-	 * Carpet Area & Price panel — pricing, RERA, configurations.
-	 */
-	private function render_pricing_panel( \WP_Post $post ) {
-		echo '<div class="tp-meta-panel" data-panel="pricing">';
 
-		echo '<div class="tp-field-group">';
-		echo '<div class="tp-field-group__title">' . esc_html__( 'RERA & Status', 'tenprojects-ai-matcher' ) . '</div>';
-		echo '<div class="tp-field-row">';
-		$this->render_field( $post->ID, 'rera_number', __( 'RERA Number', 'tenprojects-ai-matcher' ) );
-		$this->render_field( $post->ID, 'rera_phase', __( 'RERA Phase', 'tenprojects-ai-matcher' ) );
-		$this->render_select( $post->ID, 'status', __( 'Status', 'tenprojects-ai-matcher' ), array(
-			'active'   => __( 'Active', 'tenprojects-ai-matcher' ),
-			'paused'   => __( 'Paused', 'tenprojects-ai-matcher' ),
-			'sold_out' => __( 'Sold Out', 'tenprojects-ai-matcher' ),
-			'delisted' => __( 'Delisted', 'tenprojects-ai-matcher' ),
-		) );
-		echo '</div>';
-		echo '</div>';
-
-		echo '<div class="tp-field-group">';
-		echo '<div class="tp-field-group__title">' . esc_html__( 'Pricing & Configuration', 'tenprojects-ai-matcher' ) . '</div>';
-		echo '<div class="tp-field-row">';
-		$this->render_field( $post->ID, 'price_display_min', __( 'Price Display Min (₹)', 'tenprojects-ai-matcher' ), 'number' );
-		$this->render_field( $post->ID, 'price_display_max', __( 'Price Display Max (₹)', 'tenprojects-ai-matcher' ), 'number' );
-		$this->render_field( $post->ID, 'primary_config', __( 'Primary Configuration', 'tenprojects-ai-matcher' ), 'text', __( 'e.g., 2 BHK, 3 BHK', 'tenprojects-ai-matcher' ) );
-		echo '</div>';
-		echo '<div class="tp-field-row tp-cols-2">';
-		$this->render_field( $post->ID, 'launch_date', __( 'Launch Date', 'tenprojects-ai-matcher' ), 'date' );
-		$this->render_checkbox( $post->ID, 'verified', __( 'RERA Verified', 'tenprojects-ai-matcher' ) );
-		echo '</div>';
-		echo '</div>';
-
-		echo '</div>';
-	}
-
-	/**
-	 * Construction panel.
-	 */
-	private function render_construction_panel( \WP_Post $post ) {
-		echo '<div class="tp-meta-panel" data-panel="construction">';
-
-		echo '<div class="tp-field-group">';
-		echo '<div class="tp-field-group__title">' . esc_html__( 'Construction Status', 'tenprojects-ai-matcher' ) . '</div>';
-		echo '<div class="tp-field-row">';
-		$this->render_select( $post->ID, 'construction_stage', __( 'Construction Stage', 'tenprojects-ai-matcher' ), array(
-			'pre_launch'        => __( 'Pre-Launch', 'tenprojects-ai-matcher' ),
-			'excavation'        => __( 'Excavation', 'tenprojects-ai-matcher' ),
-			'foundation'        => __( 'Foundation', 'tenprojects-ai-matcher' ),
-			'plinth'            => __( 'Plinth', 'tenprojects-ai-matcher' ),
-			'superstructure'    => __( 'Superstructure', 'tenprojects-ai-matcher' ),
-			'brickwork'         => __( 'Brickwork', 'tenprojects-ai-matcher' ),
-			'internal_plaster'  => __( 'Internal Plaster', 'tenprojects-ai-matcher' ),
-			'external_plaster'  => __( 'External Plaster', 'tenprojects-ai-matcher' ),
-			'flooring'          => __( 'Flooring', 'tenprojects-ai-matcher' ),
-			'finishing'         => __( 'Finishing', 'tenprojects-ai-matcher' ),
-			'ready_to_move'     => __( 'Ready to Move', 'tenprojects-ai-matcher' ),
-		) );
-		$this->render_field( $post->ID, 'construction_progress', __( 'Construction Progress (%)', 'tenprojects-ai-matcher' ), 'number' );
-		$this->render_field( $post->ID, 'construction_start', __( 'Construction Start', 'tenprojects-ai-matcher' ), 'date' );
-		echo '</div>';
-		echo '</div>';
-
-		echo '<div class="tp-field-group">';
-		echo '<div class="tp-field-group__title">' . esc_html__( 'Possession Dates', 'tenprojects-ai-matcher' ) . '</div>';
-		echo '<div class="tp-field-row tp-cols-4">';
-		$this->render_field( $post->ID, 'rera_registration_date', __( 'RERA Registration Date', 'tenprojects-ai-matcher' ), 'date' );
-		$this->render_field( $post->ID, 'promised_possession', __( 'Promised Possession', 'tenprojects-ai-matcher' ), 'date' );
-		$this->render_field( $post->ID, 'rera_possession', __( 'RERA Possession', 'tenprojects-ai-matcher' ), 'date' );
-		$this->render_field( $post->ID, 'expected_possession', __( 'Expected Possession', 'tenprojects-ai-matcher' ), 'date' );
-		echo '</div>';
-		echo '</div>';
-
-		echo '<div class="tp-field-group">';
-		echo '<div class="tp-field-group__title">' . esc_html__( 'Project Scale', 'tenprojects-ai-matcher' ) . '</div>';
-		echo '<div class="tp-field-row">';
-		$this->render_field( $post->ID, 'total_towers', __( 'Total Towers', 'tenprojects-ai-matcher' ), 'number' );
-		$this->render_field( $post->ID, 'total_floors', __( 'Total Floors', 'tenprojects-ai-matcher' ), 'number' );
-		$this->render_field( $post->ID, 'total_units', __( 'Total Units', 'tenprojects-ai-matcher' ), 'number' );
-		echo '</div>';
-		echo '</div>';
-
-		echo '</div>';
-	}
 
 	/**
 	 * Location Details panel.
@@ -1017,35 +1064,28 @@ class Project_CPT {
 	private function render_location_panel( \WP_Post $post ) {
 		echo '<div class="tp-meta-panel" data-panel="location">';
 
-		// Row 1: Address To Pin (Google Maps embed address).
+		// Row 1: Google Maps Address.
 		echo '<div class="tp-field-group">';
-		echo '<div class="tp-field-group__title">' . esc_html__( 'Address & Map', 'tenprojects-ai-matcher' ) . '</div>';
+		echo '<div class="tp-field-group__title">' . esc_html__( 'Google Maps', 'tenprojects-ai-matcher' ) . '</div>';
 		echo '<div class="tp-field-row" style="grid-template-columns:1fr;">';
-		$this->render_field( $post->ID, 'address_pin', __( 'Address To Pin', 'tenprojects-ai-matcher' ), 'text', __( 'Google My Business headline — auto-shows on Google Maps.', 'tenprojects-ai-matcher' ) );
-		echo '</div>';
-		echo '<div class="tp-field-row tp-cols-2">';
-		$this->render_field( $post->ID, 'latitude', __( 'Latitude', 'tenprojects-ai-matcher' ), 'number' );
-		$this->render_field( $post->ID, 'longitude', __( 'Longitude', 'tenprojects-ai-matcher' ), 'number' );
-		echo '</div>';
-		echo '<div class="tp-field-row" style="grid-template-columns:1fr;">';
-		$this->render_textarea( $post->ID, 'address', __( 'Full Address', 'tenprojects-ai-matcher' ) );
+		$this->render_field( $post->ID, 'address_pin', __( 'Google My Business Name', 'tenprojects-ai-matcher' ), 'text', __( 'Enter the exact Google My Business name. The map will be auto-generated on the frontend.', 'tenprojects-ai-matcher' ) );
 		echo '</div>';
 		echo '</div>';
 
-		// Row 2: Location Advantage Text — Part 1 & Part 2 (side by side).
-		echo '<div class="tp-field-group">';
-		echo '<div class="tp-field-group__title">' . esc_html__( 'Location Advantages', 'tenprojects-ai-matcher' ) . '</div>';
-		echo '<div class="tp-field-row tp-cols-2">';
-		$this->render_textarea( $post->ID, 'location_advantage_1', __( 'Location Advantage Text — Part 1 [Max 8 Pointers]', 'tenprojects-ai-matcher' ), __( 'e.g., Mumbra-Panvel Highway - 3 min', 'tenprojects-ai-matcher' ) );
-		$this->render_textarea( $post->ID, 'location_advantage_2', __( 'Location Advantage Text — Part 2 [Max 4 Pointers]', 'tenprojects-ai-matcher' ), __( 'e.g., Proposed Metro Line - 5 min', 'tenprojects-ai-matcher' ) );
-		echo '</div>';
-		echo '</div>';
-
-		// Row 3: Small Location Brief.
+		// Row 2: Location Brief.
 		echo '<div class="tp-field-group">';
 		echo '<div class="tp-field-group__title">' . esc_html__( 'Location Description', 'tenprojects-ai-matcher' ) . '</div>';
 		echo '<div class="tp-field-row" style="grid-template-columns:1fr;">';
-		$this->render_textarea( $post->ID, 'location_brief', __( 'Small Location Brief', 'tenprojects-ai-matcher' ), __( 'A short paragraph describing the location and its connectivity.', 'tenprojects-ai-matcher' ) );
+		$this->render_textarea( $post->ID, 'location_brief', __( 'About the Location', 'tenprojects-ai-matcher' ), __( 'Short paragraph about the area — shown above the map on PDP.', 'tenprojects-ai-matcher' ) );
+		echo '</div>';
+		echo '</div>';
+
+		// Row 3: Location Advantages (side by side).
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">' . esc_html__( 'Location Advantages', 'tenprojects-ai-matcher' ) . '</div>';
+		echo '<div class="tp-field-row tp-cols-2">';
+		$this->render_textarea( $post->ID, 'location_advantage_1', __( 'Location Advantages [Max 8 Pointers]', 'tenprojects-ai-matcher' ), __( 'HTML list: <ul><li>Vashi Railway Station - 5 min</li></ul>', 'tenprojects-ai-matcher' ) );
+		$this->render_textarea( $post->ID, 'location_advantage_2', __( 'Nearby Connectivity [Max 4 Pointers]', 'tenprojects-ai-matcher' ), __( 'HTML list: <ul><li>Inorbit Mall - 5 min</li></ul>', 'tenprojects-ai-matcher' ) );
 		echo '</div>';
 		echo '</div>';
 
@@ -1066,91 +1106,12 @@ class Project_CPT {
 		echo '</div>';
 		echo '</div>';
 
-		// Row 5: Infrastructure & Utilities.
-		echo '<div class="tp-field-group">';
-		echo '<div class="tp-field-group__title">' . esc_html__( 'Infrastructure & Utilities', 'tenprojects-ai-matcher' ) . '</div>';
-		echo '<div class="tp-field-row">';
-		$this->render_field( $post->ID, 'water_source', __( 'Water Source', 'tenprojects-ai-matcher' ) );
-		$this->render_field( $post->ID, 'power_backup', __( 'Power Backup', 'tenprojects-ai-matcher' ) );
-		$this->render_field( $post->ID, 'parking_info', __( 'Parking Info', 'tenprojects-ai-matcher' ) );
-		echo '</div>';
-		echo '<div class="tp-field-row">';
-		$this->render_field( $post->ID, 'open_space_ratio', __( 'Open Space Ratio (%)', 'tenprojects-ai-matcher' ), 'number' );
-		$this->render_select( $post->ID, 'density_rating', __( 'Density Rating', 'tenprojects-ai-matcher' ), array(
-			'low'    => __( 'Low', 'tenprojects-ai-matcher' ),
-			'medium' => __( 'Medium', 'tenprojects-ai-matcher' ),
-			'high'   => __( 'High', 'tenprojects-ai-matcher' ),
-		) );
-		$this->render_field( $post->ID, 'maintenance_estimate', __( 'Maintenance Estimate (₹/month)', 'tenprojects-ai-matcher' ), 'number' );
-		echo '</div>';
-		echo '</div>';
-
 		echo '</div>';
 	}
 
 	/**
 	 * Scoring & Editorial panel — scoring metrics, editorial content, verification.
 	 */
-	private function render_scoring_panel( \WP_Post $post ) {
-		echo '<div class="tp-meta-panel" data-panel="scoring">';
-
-		echo '<div class="tp-field-group">';
-		echo '<div class="tp-field-group__title">' . esc_html__( 'Legal & Trust', 'tenprojects-ai-matcher' ) . '</div>';
-		echo '<div class="tp-field-row">';
-		$this->render_field( $post->ID, 'legal_confidence', __( 'Legal Confidence (0-100)', 'tenprojects-ai-matcher' ), 'number' );
-		$this->render_field( $post->ID, 'possession_confidence', __( 'Possession Confidence (0-100)', 'tenprojects-ai-matcher' ), 'number' );
-		$this->render_textarea( $post->ID, 'bank_approved', __( 'Bank Approvals', 'tenprojects-ai-matcher' ), __( 'Comma-separated list of approved banks.', 'tenprojects-ai-matcher' ) );
-		echo '</div>';
-		echo '<div class="tp-field-row" style="grid-template-columns:1fr;">';
-		$this->render_select( $post->ID, 'litigation_status', __( 'Litigation Status', 'tenprojects-ai-matcher' ), array(
-			'none'    => __( 'None', 'tenprojects-ai-matcher' ),
-			'minor'   => __( 'Minor', 'tenprojects-ai-matcher' ),
-			'major'   => __( 'Major', 'tenprojects-ai-matcher' ),
-			'unknown' => __( 'Unknown', 'tenprojects-ai-matcher' ),
-		) );
-		echo '</div>';
-		echo '</div>';
-
-		echo '<div class="tp-field-group">';
-		echo '<div class="tp-field-group__title">' . esc_html__( 'Investment Metrics', 'tenprojects-ai-matcher' ) . '</div>';
-		echo '<div class="tp-field-row">';
-		$this->render_field( $post->ID, 'micro_market_price', __( 'Micro Market Price (₹/sqft)', 'tenprojects-ai-matcher' ), 'number' );
-		$this->render_field( $post->ID, 'rental_range_min', __( 'Rental Range Min (₹)', 'tenprojects-ai-matcher' ), 'number' );
-		$this->render_field( $post->ID, 'rental_range_max', __( 'Rental Range Max (₹)', 'tenprojects-ai-matcher' ), 'number' );
-		echo '</div>';
-		echo '<div class="tp-field-row">';
-		$this->render_select( $post->ID, 'vacancy_risk', __( 'Vacancy Risk', 'tenprojects-ai-matcher' ), array(
-			'low'    => __( 'Low', 'tenprojects-ai-matcher' ),
-			'medium' => __( 'Medium', 'tenprojects-ai-matcher' ),
-			'high'   => __( 'High', 'tenprojects-ai-matcher' ),
-		) );
-		$this->render_field( $post->ID, 'appreciation_score', __( 'Appreciation Score (0-100)', 'tenprojects-ai-matcher' ), 'number' );
-		$this->render_field( $post->ID, 'rental_yield_pct', __( 'Rental Yield (%)', 'tenprojects-ai-matcher' ), 'number' );
-		echo '</div>';
-		echo '</div>';
-
-		echo '<div class="tp-field-group">';
-		echo '<div class="tp-field-group__title">' . esc_html__( 'Editorial Content', 'tenprojects-ai-matcher' ) . '</div>';
-		$this->render_json_field( $post->ID, 'highlights', __( 'Highlights', 'tenprojects-ai-matcher' ) );
-		$this->render_json_field( $post->ID, 'pros', __( 'Pros', 'tenprojects-ai-matcher' ) );
-		$this->render_json_field( $post->ID, 'cons', __( 'Cons', 'tenprojects-ai-matcher' ) );
-		$this->render_json_field( $post->ID, 'risks', __( 'Risks', 'tenprojects-ai-matcher' ) );
-		$this->render_json_field( $post->ID, 'best_for', __( 'Best For', 'tenprojects-ai-matcher' ) );
-		$this->render_json_field( $post->ID, 'not_for', __( 'Not Ideal For', 'tenprojects-ai-matcher' ) );
-		echo '</div>';
-
-		echo '<div class="tp-field-group">';
-		echo '<div class="tp-field-group__title">' . esc_html__( 'Verification', 'tenprojects-ai-matcher' ) . '</div>';
-		echo '<div class="tp-field-row">';
-		$this->render_field( $post->ID, 'last_verified', __( 'Last Verified', 'tenprojects-ai-matcher' ), 'date' );
-		$this->render_field( $post->ID, 'reviewed_by', __( 'Reviewed By', 'tenprojects-ai-matcher' ) );
-		echo '</div>';
-		$this->render_textarea( $post->ID, 'verification_checklist', __( 'Verification Checklist', 'tenprojects-ai-matcher' ), __( 'JSON or comma-separated checklist.', 'tenprojects-ai-matcher' ) );
-		$this->render_textarea( $post->ID, 'sources', __( 'Sources', 'tenprojects-ai-matcher' ), __( 'Links and references used for verification.', 'tenprojects-ai-matcher' ) );
-		echo '</div>';
-
-		echo '</div>';
-	}
 
 	/**
 	 * Save meta box data.
@@ -1209,6 +1170,13 @@ class Project_CPT {
 		echo '<div class="tp-field-group__title">Furnishing Details</div>';
 		echo '<div class="tp-field-row tp-cols-2">';
 		$this->render_textarea( $post->ID, 'furnishing_details', 'Furnishing Details', 'e.g. 2 AC, Geyser, Fridge, Washing Machine, Sofa, 2 Beds' );
+		echo '</div>';
+		echo '</div>';
+
+		echo '<div class="tp-field-group">';
+		echo '<div class="tp-field-group__title">Google Maps</div>';
+		echo '<div class="tp-field-row" style="grid-template-columns:1fr;">';
+		$this->render_field( $post->ID, 'address_pin', 'Google My Business Name', 'text', 'Enter the exact Google My Business name. The map will be auto-generated on the frontend.' );
 		echo '</div>';
 		echo '</div>';
 
@@ -1449,6 +1417,16 @@ class Project_CPT {
 		// Check permissions.
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
 			return;
+		}
+
+		// Save featured image (thumbnail).
+		if ( isset( $_POST['_thumbnail_id'] ) ) {
+			$thumb_id = absint( $_POST['_thumbnail_id'] );
+			if ( $thumb_id ) {
+				set_post_thumbnail( $post_id, $thumb_id );
+			} else {
+				delete_post_thumbnail( $post_id );
+			}
 		}
 
 		$fields = $this->get_meta_fields();

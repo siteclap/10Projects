@@ -821,6 +821,10 @@ class Project_API extends API_Base {
 			'rera_number'         => get_post_meta( $post_id, '_tp_rera_number', true ) ?: null,
 			'verified'            => (bool) get_post_meta( $post_id, '_tp_verified', true ),
 			'sponsored'           => (bool) get_post_meta( $post_id, '_tp_sponsored', true ),
+			'price_display_min'   => get_post_meta( $post_id, '_tp_price_display_min', true ) ?: null,
+			'price_display_max'   => get_post_meta( $post_id, '_tp_price_display_max', true ) ?: null,
+			'configs_text'        => get_post_meta( $post_id, '_tp_available_configs_text', true ) ?: null,
+			'monthly_rent'        => (int) get_post_meta( $post_id, '_tp_monthly_rent', true ) ?: null,
 		);
 	}
 

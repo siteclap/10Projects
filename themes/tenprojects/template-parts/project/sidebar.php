@@ -8,8 +8,8 @@
 defined( 'ABSPATH' ) || exit;
 
 $post_id   = $args['post_id'] ?? get_the_ID();
-$price_min = $args['price_min'] ?? intval( tp_get_meta( $post_id, 'price_display_min' ) );
-$price_max = $args['price_max'] ?? intval( tp_get_meta( $post_id, 'price_display_max' ) );
+$price_min = $args['price_min'] ?? floatval( tp_get_meta( $post_id, 'price_display_min' ) );
+$price_max = $args['price_max'] ?? floatval( tp_get_meta( $post_id, 'price_display_max' ) );
 $offers    = $args['offers'] ?? tp_parse_json_meta( $post_id, 'offers' );
 $phone     = tp_get_meta( $post_id, 'phone' );
 $wa_number = $phone ? preg_replace( '/[^0-9]/', '', $phone ) : '919999999999';

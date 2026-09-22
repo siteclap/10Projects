@@ -422,12 +422,19 @@ $url          = get_permalink( $post_id );
 
 /* ── RESPONSIVE ── */
 @media (max-width: 640px) {
-	.tp-bm__panel { grid-template-columns: 1fr; max-height: 95vh; }
-	.tp-bm__left { padding: 28px 24px 24px; }
-	.tp-bm__left-title { font-size: 24px; }
-	.tp-bm__benefits { gap: 14px; }
-	.tp-bm__right { padding: 24px; }
-	.tp-bm__close { top: 10px; right: 10px; }
+	.tp-bm__panel { grid-template-columns: 1fr; max-height: none; }
+	.tp-bm__left { display: none; }
+	.tp-bm__close { top: 10px; right: 10px; background: rgba(0,0,0,0.08); color: #6b7280; }
+	.tp-bm__close:hover { background: rgba(0,0,0,0.12); }
+	.tp-bm__right { padding: 20px; }
+	.tp-bm__form-title { font-size: 16px; margin-bottom: 16px; padding-right: 32px; }
+	.tp-bm__field { margin-bottom: 10px; }
+	.tp-bm__label { margin-bottom: 4px; }
+	.tp-bm__input { height: 42px; }
+	.tp-bm__submit { height: 44px; font-size: 14px; }
+	.tp-bm__social-proof { display: none; }
+	.tp-bm__privacy { margin-bottom: 8px; }
+	.tp-bm__status { margin-bottom: 2px; }
 }
 </style>
 
@@ -485,6 +492,23 @@ $url          = get_permalink( $post_id );
 		});
 	}
 
+	/* UTM & device tracking */
+	function getTrackingData() {
+		var params = new URLSearchParams(window.location.search);
+		return {
+			utm_source: params.get('utm_source') || '', utm_medium: params.get('utm_medium') || '',
+			utm_campaign: params.get('utm_campaign') || '', utm_term: params.get('utm_term') || '',
+			utm_content: params.get('utm_content') || '', referrer: document.referrer || '',
+			device: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+			browser: (function(){ var u=navigator.userAgent; if(u.indexOf('Chrome')>-1&&u.indexOf('Edg')===-1)return'Chrome'; if(u.indexOf('Safari')>-1&&u.indexOf('Chrome')===-1)return'Safari'; if(u.indexOf('Firefox')>-1)return'Firefox'; if(u.indexOf('Edg')>-1)return'Edge'; return'Other'; })(),
+			os: (function(){ var u=navigator.userAgent; if(/iPhone|iPad|iPod/.test(u))return'iOS'; if(/Android/.test(u))return'Android'; if(/Windows/.test(u))return'Windows'; if(/Mac/.test(u))return'macOS'; if(/Linux/.test(u))return'Linux'; return'Other'; })(),
+			screen_width: screen.width, screen_height: screen.height, page_url: window.location.href
+		};
+	}
+
+	var thankYouUrl = '<?php echo esc_url( home_url( "/thank-you/" ) ); ?>';
+	var projectName = <?php echo wp_json_encode( $title ); ?>;
+
 	/* ── Submit ── */
 	if (form) {
 		form.addEventListener('submit', function(e){
@@ -519,28 +543,20 @@ $url          = get_permalink( $post_id );
 			if (status)  { status.textContent = ''; status.className = 'tp-bm__status js-bm-status'; }
 
 			var data = new FormData(form);
+			var t = getTrackingData();
+			for (var k in t) { if (t[k]) data.append(k, t[k]); }
+
+			var tyRedirect = thankYouUrl + '?name=' + encodeURIComponent(name) + '&project=' + encodeURIComponent(projectName);
+
 			fetch(ajaxUrl, { method: 'POST', body: data })
 				.then(function(r){ return r.json(); })
-				.then(function(res){
-					/* Open brochure regardless of lead save result */
+				.then(function(){
 					window.open(brochureUrl, '_blank');
-
-					/* Show success state */
-					var right = form.closest('.tp-bm__right');
-					right.innerHTML =
-						'<div class="tp-bm__success">' +
-						  '<div class="tp-bm__success-check">' +
-						    '<svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>' +
-						  '</div>' +
-						  '<h4>Brochure Opening!</h4>' +
-						  '<p>Our expert will also call you shortly<br>with the best available offer.</p>' +
-						  '<button class="tp-bm__submit" onclick="document.getElementById(\'tp-brochure-modal\').setAttribute(\'hidden\',\'\');document.body.style.overflow=\'\'" style="max-width:200px;margin-top:8px;">Close</button>' +
-						'</div>';
+					window.location.href = tyRedirect;
 				})
 				.catch(function(){
-					/* Even on error, open brochure */
 					window.open(brochureUrl, '_blank');
-					closeModal();
+					window.location.href = tyRedirect;
 				});
 		});
 	}

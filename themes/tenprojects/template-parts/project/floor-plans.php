@@ -1,6 +1,12 @@
 <?php
 /**
- * Floor Plans Section — Tabbed config view with multiple units per config
+ * Price & Configuration Section — Merged (price-config + floor-plans)
+ *
+ * Tiers:
+ *   1. Grouped floor plans WITH real images → tabbed view
+ *   2. Grouped floor plans WITHOUT images → scroll cards with default BHK images
+ *   3. DB config table → scroll cards with default BHK images + full pricing
+ *   4. Text-only configs → scroll cards with default BHK images
  *
  * @package TenProjects
  */
@@ -8,20 +14,32 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Detect BHK number from config name and return placeholder SVG URL.
+ * Return default floor plan image URL based on config name and property type.
  */
-function tp_fp_placeholder_img( $config_name ) {
+if ( ! function_exists( 'tp_fp_placeholder_img' ) ) :
+function tp_fp_placeholder_img( $config_name, $property_type = 'buy' ) {
+	if ( 'commercial' === $property_type ) {
+		return get_template_directory_uri() . '/assets/images/fp-office.png';
+	}
 	$bhk = 2; // default
 	if ( preg_match( '/(\d+)\s*bhk/i', $config_name, $m ) ) {
 		$bhk = intval( $m[1] );
 	}
-	$bhk = max( 1, min( $bhk, 5 ) ); // clamp to 1-5
-	return get_template_directory_uri() . '/assets/images/fp-' . $bhk . 'bhk.svg';
+	if ( $bhk <= 1 ) {
+		$file = '1-BHK-3D-Floor.jpg';
+	} elseif ( $bhk == 2 ) {
+		$file = '2-BHK-3D-Floor.jpg';
+	} else {
+		$file = '3-4-BHK-3D-Floor.jpg';
+	}
+	return get_template_directory_uri() . '/assets/images/' . $file;
 }
+endif;
 
-$post_id     = $args['post_id'] ?? get_the_ID();
-$configs_text = tp_get_meta( $post_id, 'available_configs_text' );
-$price_min   = intval( tp_get_meta( $post_id, 'price_display_min' ) );
+$post_id       = $args['post_id'] ?? get_the_ID();
+$property_type = $args['property_type'] ?? 'buy';
+$configs_text  = tp_get_meta( $post_id, 'available_configs_text' );
+$price_min   = floatval( tp_get_meta( $post_id, 'price_display_min' ) );
 $location    = tp_get_location_term( $post_id );
 $loc_name    = $location ? $location->name : '';
 
@@ -70,6 +88,16 @@ if ( ! empty( $floor_plans_raw ) ) {
 	}
 }
 
+// Sort grouped floor plans: 1 BHK → 2 BHK → 3 BHK → 4+ BHK → Jodi.
+usort( $grouped, function( $a, $b ) {
+	$bhk_order = function( $name ) {
+		if ( stripos( $name, 'jodi' ) !== false ) return 9999;
+		if ( preg_match( '/^(\d+(?:\.\d+)?)\s*bhk/i', $name, $m ) ) return floatval( $m[1] ) * 10;
+		return 5000;
+	};
+	return $bhk_order( $a['config'] ) - $bhk_order( $b['config'] );
+} );
+
 $has_images = false;
 foreach ( $grouped as $g ) {
 	foreach ( $g['units'] as $u ) {
@@ -83,7 +111,13 @@ $table = $wpdb->prefix . 'tp_project_configurations';
 $configs = array();
 if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) ) === $table ) {
 	$configs = $wpdb->get_results( $wpdb->prepare(
-		"SELECT * FROM {$table} WHERE project_id = %d ORDER BY price_min ASC",
+		"SELECT * FROM {$table} WHERE project_id = %d ORDER BY
+			CASE
+				WHEN configuration LIKE '%%Jodi%%' THEN 9999
+				WHEN configuration REGEXP '^[0-9]' THEN CAST(SUBSTRING_INDEX(configuration, ' ', 1) AS UNSIGNED)
+				ELSE 5000
+			END ASC,
+			price_min ASC",
 		$post_id
 	) );
 }
@@ -94,8 +128,8 @@ if ( empty( $grouped ) && empty( $configs ) && ! $configs_text ) {
 }
 ?>
 
-<section class="tp-section" id="floor-plans">
-	<h2>Configuration of <?php the_title(); ?><?php echo $loc_name ? ', ' . esc_html( $loc_name ) : ''; ?></h2>
+<section class="tp-section" id="<?php echo 'commercial' === $property_type ? 'unit-plans' : 'price'; ?>">
+	<h2>Price & Configuration of <?php the_title(); ?><?php echo $loc_name ? ', ' . esc_html( $loc_name ) : ''; ?></h2>
 
 	<?php if ( $has_images && ! empty( $grouped ) ) : ?>
 		<!-- Tabbed floor plan view -->
@@ -147,7 +181,7 @@ if ( empty( $grouped ) && empty( $configs ) && ! $configs_text ) {
 				</div>
 				<?php else : ?>
 				<div class="tp-fp-display__img tp-fp-display__img--dummy">
-					<img src="<?php echo esc_url( tp_fp_placeholder_img( $g['config'] ) ); ?>" alt="<?php echo esc_attr( $g['config'] ); ?> — Indicative Layout" loading="lazy">
+					<img src="<?php echo esc_url( tp_fp_placeholder_img( $g['config'], $property_type ) ); ?>" alt="<?php echo esc_attr( $g['config'] ); ?> — Indicative Layout" loading="lazy">
 					<div class="tp-fp-display__badge">Indicative Layout</div>
 				</div>
 				<?php endif; ?>
@@ -251,94 +285,100 @@ if ( empty( $grouped ) && empty( $configs ) && ! $configs_text ) {
 		</script>
 
 	<?php elseif ( ! empty( $grouped ) ) : ?>
-		<!-- Floor plans without images — show as scroll cards -->
-		<div class="tp-fp-header" style="margin-top:-8px;">
-			<div></div>
-			<div class="tp-fp-nav-arrows">
-				<button class="tp-fp-arrow tp-fp-arrow--left" aria-label="Scroll left" onclick="fpScroll(-1)">
-					<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
-				</button>
-				<button class="tp-fp-arrow tp-fp-arrow--right" aria-label="Scroll right" onclick="fpScroll(1)">
-					<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
-				</button>
+		<!-- Floor plans without images — show as scroll cards with default images -->
+		<?php
+		$total_cards = 0;
+		foreach ( $grouped as $g ) { $total_cards += count( $g['units'] ); }
+		?>
+		<div class="tp-fp-scroll-wrap">
+			<?php if ( $total_cards > 3 ) : ?>
+			<button class="tp-fp-arrow tp-fp-arrow--left" aria-label="Scroll left" onclick="fpScroll(-1)">
+				<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
+			</button>
+			<button class="tp-fp-arrow tp-fp-arrow--right" aria-label="Scroll right" onclick="fpScroll(1)">
+				<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+			</button>
+			<?php endif; ?>
+			<div class="tp-fp-scroll" id="fpScrollContainer">
+				<?php foreach ( $grouped as $g ) :
+					foreach ( $g['units'] as $unit ) : ?>
+					<div class="tp-fp-card">
+						<div class="tp-fp-card__img">
+							<img src="<?php echo esc_url( tp_fp_placeholder_img( $g['config'], $property_type ) ); ?>" alt="<?php echo esc_attr( $g['config'] ); ?> — Indicative Layout" loading="lazy">
+							<div class="tp-fp-card__badge">Indicative Layout</div>
+						</div>
+						<div class="tp-fp-card__body">
+							<div class="tp-fp-card__type"><?php echo esc_html( $g['config'] ); ?></div>
+							<?php if ( ! empty( $unit['area'] ) ) : ?>
+							<div class="tp-fp-card__meta">
+								<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+								<?php echo esc_html( $unit['area'] ); ?>
+							</div>
+							<?php endif; ?>
+							<?php if ( ! empty( $unit['price'] ) ) : ?>
+							<div class="tp-fp-card__price">
+								<span class="tp-fp-card__price-label">Price</span>
+								<span class="tp-fp-card__price-value"><?php echo esc_html( $unit['price'] ); ?></span>
+							</div>
+							<?php endif; ?>
+						</div>
+					</div>
+				<?php endforeach; endforeach; ?>
 			</div>
-		</div>
-		<div class="tp-fp-scroll" id="fpScrollContainer">
-			<?php foreach ( $grouped as $g ) :
-				foreach ( $g['units'] as $unit ) : ?>
-				<div class="tp-fp-card">
-					<div class="tp-fp-card__img tp-fp-card__img--placeholder">
-						<svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="var(--gray-300)" stroke-width="1.5">
-							<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-						</svg>
-					</div>
-					<div class="tp-fp-card__body">
-						<div class="tp-fp-card__type"><?php echo esc_html( $g['config'] ); ?></div>
-						<?php if ( ! empty( $unit['area'] ) ) : ?>
-						<div class="tp-fp-card__meta">
-							<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
-							<?php echo esc_html( $unit['area'] ); ?>
-						</div>
-						<?php endif; ?>
-						<?php if ( ! empty( $unit['price'] ) ) : ?>
-						<div class="tp-fp-card__price">
-							<span class="tp-fp-card__price-label">Price</span>
-							<span class="tp-fp-card__price-value"><?php echo esc_html( $unit['price'] ); ?></span>
-						</div>
-						<?php endif; ?>
-					</div>
-				</div>
-			<?php endforeach; endforeach; ?>
 		</div>
 
 	<?php elseif ( ! empty( $configs ) ) : ?>
-		<!-- Fallback: config-based cards from DB — scrollable -->
-		<div class="tp-fp-header" style="margin-top:-8px;">
-			<div></div>
-			<div class="tp-fp-nav-arrows">
-				<button class="tp-fp-arrow tp-fp-arrow--left" aria-label="Scroll left" onclick="fpScroll(-1)">
-					<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
-				</button>
-				<button class="tp-fp-arrow tp-fp-arrow--right" aria-label="Scroll right" onclick="fpScroll(1)">
-					<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
-				</button>
-			</div>
-		</div>
+		<!-- DB config cards with default BHK images + full pricing -->
+		<div class="tp-fp-scroll-wrap">
+			<?php if ( count( $configs ) > 3 ) : ?>
+			<button class="tp-fp-arrow tp-fp-arrow--left" aria-label="Scroll left" onclick="fpScroll(-1)">
+				<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
+			</button>
+			<button class="tp-fp-arrow tp-fp-arrow--right" aria-label="Scroll right" onclick="fpScroll(1)">
+				<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+			</button>
+			<?php endif; ?>
 		<div class="tp-fp-scroll" id="fpScrollContainer">
-			<?php foreach ( $configs as $c ) : ?>
-				<div class="tp-fp-card">
-					<div class="tp-fp-card__img tp-fp-card__img--placeholder">
-						<svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="var(--gray-300)" stroke-width="1.5">
-							<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-						</svg>
+			<?php foreach ( $configs as $c ) :
+				$status = $c->inventory_status ?? 'Available';
+				$is_sold = $status === 'Sold Out';
+			?>
+				<div class="tp-fp-card<?php echo $is_sold ? ' tp-fp-card--sold' : ''; ?>">
+					<div class="tp-fp-card__img">
+						<img src="<?php echo esc_url( tp_fp_placeholder_img( $c->configuration, $property_type ) ); ?>" alt="<?php echo esc_attr( $c->configuration ); ?> — Indicative Layout" loading="lazy">
+						<div class="tp-fp-card__badge">Indicative Layout</div>
 					</div>
 					<div class="tp-fp-card__body">
-						<div class="tp-fp-card__type"><?php echo esc_html( $c->configuration ); ?></div>
-						<div class="tp-fp-card__meta">
-							<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
-							<?php echo esc_html( $c->carpet_area_min ); ?> sq.ft.
+						<div class="tp-fp-card__header-row">
+							<div class="tp-fp-card__type"><?php echo esc_html( $c->configuration ); ?></div>
+							<span class="tp-fp-card__status <?php echo $is_sold ? 'tp-fp-card__status--sold' : 'tp-fp-card__status--available'; ?>">
+								<?php echo esc_html( $status ); ?>
+							</span>
 						</div>
 						<div class="tp-fp-card__price">
 							<span class="tp-fp-card__price-label">Price</span>
-							<span class="tp-fp-card__price-value"><?php echo esc_html( tp_format_price( $c->price_min ) ); ?></span>
+							<span class="tp-fp-card__price-value"><?php echo esc_html( tp_format_price_range( $c->price_min / 100, $c->price_max / 100 ) ); ?></span>
 						</div>
+						<?php if ( ! $is_sold ) : ?>
+							<button type="button" class="tp-fp-card__btn js-open-lead-popup" data-source="price_breakup">Get Price Breakup</button>
+						<?php endif; ?>
 					</div>
 				</div>
 			<?php endforeach; ?>
 		</div>
+		</div>
 
 	<?php elseif ( $configs_text ) : ?>
-		<!-- Fallback: text-based cards — scrollable -->
+		<!-- Fallback: text-based cards with default images -->
 		<div class="tp-fp-scroll" id="fpScrollContainer">
 			<?php
 			$types = array_map( 'trim', explode( ',', $configs_text ) );
 			foreach ( $types as $type ) :
 			?>
 				<div class="tp-fp-card">
-					<div class="tp-fp-card__img tp-fp-card__img--placeholder">
-						<svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="var(--gray-300)" stroke-width="1.5">
-							<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-						</svg>
+					<div class="tp-fp-card__img">
+						<img src="<?php echo esc_url( tp_fp_placeholder_img( $type, $property_type ) ); ?>" alt="<?php echo esc_attr( $type ); ?> — Indicative Layout" loading="lazy">
+						<div class="tp-fp-card__badge">Indicative Layout</div>
 					</div>
 					<div class="tp-fp-card__body">
 						<div class="tp-fp-card__type"><?php echo esc_html( $type ); ?></div>

@@ -37,6 +37,12 @@ class Location_Taxonomy {
 	 */
 	public function register() {
 		add_action( 'init', array( $this, 'register_taxonomy' ) );
+		add_action( self::TAXONOMY . '_add_form_fields', array( $this, 'add_form_fields' ) );
+		add_action( self::TAXONOMY . '_edit_form_fields', array( $this, 'edit_form_fields' ), 10, 2 );
+		add_action( 'created_' . self::TAXONOMY, array( $this, 'save_term_meta' ) );
+		add_action( 'edited_' . self::TAXONOMY, array( $this, 'save_term_meta' ) );
+		add_filter( 'manage_edit-' . self::TAXONOMY . '_columns', array( $this, 'add_columns' ) );
+		add_filter( 'manage_' . self::TAXONOMY . '_custom_column', array( $this, 'render_column' ), 10, 3 );
 	}
 
 	/**
@@ -90,5 +96,59 @@ class Location_Taxonomy {
 		);
 
 		register_taxonomy( self::TAXONOMY, self::POST_TYPES, $args );
+	}
+
+	/**
+	 * "Add New" form — checkbox field.
+	 */
+	public function add_form_fields() {
+		?>
+		<div class="form-field">
+			<label><input type="checkbox" name="tp_show_on_homepage" value="1"> Show near search bar on homepage</label>
+			<p>When checked, this location appears as a popular chip on the homepage hero.</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * "Edit" form — checkbox field.
+	 */
+	public function edit_form_fields( $term ) {
+		$checked = get_term_meta( $term->term_id, 'tp_show_on_homepage', true );
+		?>
+		<tr class="form-field">
+			<th scope="row"><label for="tp_show_on_homepage">Homepage Search Bar</label></th>
+			<td>
+				<label><input type="checkbox" name="tp_show_on_homepage" id="tp_show_on_homepage" value="1" <?php checked( $checked, '1' ); ?>> Show near search bar on homepage</label>
+				<p class="description">When checked, this location appears as a popular chip on the homepage hero.</p>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Save term meta on create/edit.
+	 */
+	public function save_term_meta( $term_id ) {
+		$value = isset( $_POST['tp_show_on_homepage'] ) ? '1' : '';
+		update_term_meta( $term_id, 'tp_show_on_homepage', $value );
+	}
+
+	/**
+	 * Add "Homepage" column to term list table.
+	 */
+	public function add_columns( $columns ) {
+		$columns['tp_homepage'] = 'Homepage';
+		return $columns;
+	}
+
+	/**
+	 * Render the "Homepage" column.
+	 */
+	public function render_column( $content, $column_name, $term_id ) {
+		if ( 'tp_homepage' === $column_name ) {
+			return get_term_meta( $term_id, 'tp_show_on_homepage', true ) ? '&#10003;' : '—';
+		}
+		return $content;
 	}
 }
