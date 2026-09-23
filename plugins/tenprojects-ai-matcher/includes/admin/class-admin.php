@@ -124,18 +124,8 @@ class Admin {
 	 * Remove default WordPress sidebar menus that are not needed.
 	 */
 	public function hide_default_menus(): void {
-		remove_menu_page( 'edit.php' );                    // Posts
-		remove_menu_page( 'upload.php' );                  // Media
-		remove_menu_page( 'edit.php?post_type=page' );     // Pages
-		remove_menu_page( 'edit-comments.php' );           // Comments
-		remove_menu_page( 'themes.php' );                  // Appearance
-		remove_menu_page( 'plugins.php' );                 // Plugins
-		remove_menu_page( 'tools.php' );                   // Tools
-		remove_menu_page( 'options-general.php' );         // Settings
-		remove_menu_page( 'litespeed-cache' );             // LiteSpeed Cache
-		remove_menu_page( 'litespeed' );                   // LiteSpeed (alt slug)
-		// Remove the default Users menu (we re-add it at position 15).
-		remove_menu_page( 'users.php' );
+		remove_menu_page( 'edit.php' );                    // Posts (use tp_project CPT instead)
+		remove_menu_page( 'edit-comments.php' );           // Comments (not used)
 	}
 
 	/**
