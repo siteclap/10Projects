@@ -49,3 +49,7 @@ deploy/*.zip
 # Stale / one-off files
 10projects-project-page-showcase.html
 LeadMAAXX*.png
+
+# One-off import/fix scripts (run once, not production code)
+fix-*.php
+import-*.php
